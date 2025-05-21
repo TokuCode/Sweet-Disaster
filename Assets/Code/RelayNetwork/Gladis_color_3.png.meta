@@ -1,13 +1,10 @@
 fileFormatVersion: 2
-guid: 80e0cf7b644610647adca7fcaa1e31f3
+guid: f6db8a4ecccad054aaf97bc25af74b94
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1441941349661884608
-    second: NuGetIcon_0
-  - first:
-      213: 7000577335123920022
-    second: NuGetIcon_1
+      213: 4254021271541456957
+    second: Gladis_color_3_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -103,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: NuGetIcon_0
+      name: Gladis_color_3_0
       rect:
         serializedVersion: 2
-        x: 1
-        y: 9
-        width: 29
-        height: 46
+        x: 0
+        y: 0
+        width: 228
+        height: 309
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -118,30 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 04fb4727bf13dfbe0800000000000000
-      internalID: -1441941349661884608
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NuGetIcon_1
-      rect:
-        serializedVersion: 2
-        x: 34
-        y: 9
-        width: 29
-        height: 46
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 69446b2eefb072160800000000000000
-      internalID: 7000577335123920022
+      spriteID: d302f25cec1590b30800000000000000
+      internalID: 4254021271541456957
       vertices: []
       indices: 
       edges: []
@@ -159,9 +134,7 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable:
-      NuGetIcon_0: -1441941349661884608
-      NuGetIcon_1: 7000577335123920022
+    nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
