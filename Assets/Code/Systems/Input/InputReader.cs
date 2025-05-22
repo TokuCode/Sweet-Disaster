@@ -116,7 +116,7 @@ namespace Code.Systems.Input
                 _shieldInput = false;
         }
 
-        private void Awake()
+        protected override void Awake()
         {
             _controls = new();
             

@@ -2,6 +2,7 @@
 using Code.Systems.Input;
 using Unity.Netcode;
 using UnityEngine;
+using System.Collections;
 
 namespace Code.Gameplay.Character.Features
 {
@@ -22,10 +23,15 @@ namespace Code.Gameplay.Character.Features
         public override void OnNetworkSpawn()
         {
             if (!IsOwner) return;
-            
+            StartCoroutine(WaitForInputReader());
+        }
+
+        private IEnumerator WaitForInputReader()
+        {
+            yield return new WaitUntil(() => InputReader.Instance != null);
             InputReader.Instance.OnMove += OnMove;
         }
-        
+
         public override void OnNetworkDespawn()
         {
             if (!IsOwner) return;
