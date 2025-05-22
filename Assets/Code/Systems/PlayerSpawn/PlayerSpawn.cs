@@ -19,8 +19,8 @@ namespace Code.Systems.PlayerSpawn
 
         [Header("Spawn Points")]
         [SerializeField] private List<Transform> _spawnPoints;
-
-        private int _spawnPointIndex;
+        [SerializeField] private List<string> _tags;
+        private int _index;
 
         [Serializable]
         public struct CharacterPrefab
@@ -92,6 +92,7 @@ namespace Code.Systems.PlayerSpawn
             //GameObject playerObj = Instantiate(characterDefaultPrefab, spawnPoint.position, spawnPoint.rotation);
 
             NetworkObject networkObject = playerObj.GetComponent<NetworkObject>();
+            playerObject.tag = _tags[_index % _tags.Count];
             networkObject.SpawnAsPlayerObject(clientId);
 
             //sessionPlayer.Properties.TryGetValue(SessionManager.Instance.playerColorPropertyKey, out var colorProp);
@@ -100,8 +101,8 @@ namespace Code.Systems.PlayerSpawn
 
         private Transform GetNextSpawnPoint()
         {
-            Transform spawnPoint = _spawnPoints[_spawnPointIndex % _spawnPoints.Count];
-            _spawnPointIndex++;
+            var spawnPoint = _spawnPoints[_index % _spawnPoints.Count];
+            _index++;
             return spawnPoint;
         }
     }

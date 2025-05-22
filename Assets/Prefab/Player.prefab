@@ -100,6 +100,7 @@ GameObject:
   - component: {fileID: 4239236430110313552}
   - component: {fileID: 7325530532397030553}
   - component: {fileID: 5014826343002079511}
+  - component: {fileID: 10885935742829931}
   - component: {fileID: 5059216841921135527}
   - component: {fileID: 2005473438425743590}
   - component: {fileID: 4167940418973771865}
@@ -107,6 +108,8 @@ GameObject:
   - component: {fileID: 429711975276864296}
   - component: {fileID: 2297154596336009429}
   - component: {fileID: 48744601896482304}
+  - component: {fileID: 4644967760020992491}
+  - component: {fileID: 5953314880698276129}
   m_Layer: 9
   m_Name: Player
   m_TagString: Player
@@ -248,7 +251,7 @@ MonoBehaviour:
   UseUnreliableDeltas: 0
   SyncPositionX: 1
   SyncPositionY: 1
-  SyncPositionZ: 1
+  SyncPositionZ: 0
   SyncRotAngleX: 0
   SyncRotAngleY: 0
   SyncRotAngleZ: 0
@@ -265,6 +268,23 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &10885935742829931
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6295644469921195904}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80d7c879794dfda4687da0e400131852, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkRigidbodyBaseExpanded: 0
+  UseRigidBodyForMotion: 1
+  AutoUpdateKinematicState: 1
+  AutoSetKinematicOnDespawn: 1
 --- !u!114 &5059216841921135527
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -284,6 +304,8 @@ MonoBehaviour:
   _friction: {fileID: 429711975276864296}
   _crouching: {fileID: 2297154596336009429}
   _speed: {fileID: 48744601896482304}
+  _handle: {fileID: 4644967760020992491}
+  _shooting: {fileID: 5953314880698276129}
   _transform: {fileID: 5998088581405086654}
   _rigidbody: {fileID: 4239236430110313552}
   _capsule: {fileID: 1528993995768348853}
@@ -402,3 +424,60 @@ MonoBehaviour:
   _enableTransition: 0
   _maxSpeed: 0
   _acceleration: 0
+--- !u!114 &4644967760020992491
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6295644469921195904}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7ade6110d6649b39a577a3c8ba06de1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  _handleDistance: 0.5
+  _handleHeight: 0.5
+  _switchCooldown: 0
+  _handlePosition: {x: 0, y: 0, z: 0}
+  _handleDirection: {x: 0, y: 0, z: 0}
+  _switchTimer: 0.25
+  _serverMousePosition: {x: 0, y: 0}
+  _serverSwitchRequested: 0
+--- !u!114 &5953314880698276129
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6295644469921195904}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c7bb23d4a2c481f94be4900c42d4e55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  _active: 0
+  _timeBetweenShots: 0.05
+  _burstCount: 3
+  _timeBetweenBursts: 0.25
+  _holdToShoot: 1
+  _lastShotTime: 0
+  _isShooting: 0
+  _reloadTime: 0.85
+  _reloadTimer: 0
+  _magazineSize: 12
+  _bulletPrefab: {fileID: 3392542828733932666, guid: 164d47ae8f05cd143be5125ce73b26e3, type: 3}
+  _bulletSpeed: 24
+  _bulletLifeTime: 5
+  _bulletDamage: 0.05
+  _bulletKnockbackLevel: 2
+  _baseImprecision: 0
+  _imprecision: 0
+  _imprecisionToAngleFactor: 15
+  _airImprecision: 0.5
+  _movementImprecisionPerSpeedUnit: 0.25
+  _serverShootRequested: 0
+  _serverReloadRequested: 0
+  _serverShootHoldInput: 0
