@@ -32,7 +32,10 @@ namespace Code.Systems.Input
         public event Action OnJumpReleased;
         public event Action OnCrouch;
         public event Action OnCrouchReleased;
+        public event Action<Vector2> OnAim;
+        public event Action<bool> OnSwitch;
         public event Action OnShoot;
+        public event Action OnShootRelease;
         public event Action OnReload;
 
         private void OnMoveInput(InputAction.CallbackContext context)
@@ -76,6 +79,7 @@ namespace Code.Systems.Input
         private void OnAimInput(InputAction.CallbackContext context)
         {
             _aimInput = context.ReadValue<Vector2>();
+            OnAim?.Invoke(_aimInput);
         }
 
         private void OnShootInput(InputAction.CallbackContext context)
@@ -85,8 +89,11 @@ namespace Code.Systems.Input
                 OnShoot?.Invoke();
                 _shootInput = true;
             }
-            else if(context.canceled)
+            else if (context.canceled)
+            {
+                OnShootRelease?.Invoke();
                 _shootInput = false;
+            }
         }
 
         private void OnReloadInput(InputAction.CallbackContext context)
@@ -106,6 +113,8 @@ namespace Code.Systems.Input
                 _switchInput = context.ReadValue<Vector2>().y != 0;
             else if (context.canceled)
                 _switchInput = false;
+            
+            OnSwitch?.Invoke(_switchInput);
         }
 
         private void OnShieldInput(InputAction.CallbackContext context)

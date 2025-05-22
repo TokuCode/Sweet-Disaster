@@ -28,6 +28,18 @@ namespace Code.Gameplay.Character
         [SerializeField] private Speed _speed;
         public float MaxSpeed => _speed.MaxSpeed;
         public float Acceleration => _speed.Acceleration;
+        [SerializeField] private Handle _handle;
+        public Vector3 HandlePosition => _handle.HandlePosition;
+        public Vector3 HandleDirection => _handle.HandleDirection;
+        public Handle.Weapon CurrentWeapon => _handle.CurrentWeapon;
+        [SerializeField] private Shoot _shooting;
+        public bool IsShootingActive => _shooting.Active;
+        public bool IsShooting => _shooting.IsShooting;
+        public bool IsReloading => _shooting.IsReloading;
+        public int MagazineSize => _shooting.MagazineSize;
+        public int CurrentAmmo => _shooting.CurrentAmmo;
+        public float LastShotTime => _shooting.LastShotTime;
+        
         
         [Header("References")]
         [SerializeField] private Transform _transform;
@@ -36,12 +48,16 @@ namespace Code.Gameplay.Character
 
         public override void OnNetworkSpawn()
         {
+            // Movement Features
             _features.Add(_physicsCheck);
             _features.Add(_movement);
             _features.Add(_jump);
             _features.Add(_friction);
             _features.Add(_crouching);
             _features.Add(_speed);
+            // Combat Features
+            _features.Add(_handle);
+            _features.Add(_shooting);
             
             base.OnNetworkSpawn();
         }

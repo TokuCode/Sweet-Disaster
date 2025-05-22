@@ -10,7 +10,8 @@ namespace Code.Systems.PlayerSpawn
         [Header("Settings")]
         [SerializeField] private GameObject _playerPrefab;
         [SerializeField] private List<Transform> _spawnPoints;
-        private int _spawnPointIndex;
+        [SerializeField] private List<string> _tags;
+        private int _index;
 
         public override void OnNetworkSpawn()
         {
@@ -27,14 +28,16 @@ namespace Code.Systems.PlayerSpawn
             if (!IsServer) return;
             
             var spawnPoint = GetNextSpawnPoint();
-            NetworkObject playerObject = Instantiate(_playerPrefab, spawnPoint.position, spawnPoint.rotation).GetComponent<NetworkObject>();
-            playerObject.SpawnAsPlayerObject(clientId, true);
+            GameObject playerObject = Instantiate(_playerPrefab, spawnPoint.position, spawnPoint.rotation);
+            NetworkObject networkObject = playerObject.GetComponent<NetworkObject>();
+            playerObject.tag = _tags[_index % _tags.Count];
+            networkObject.SpawnAsPlayerObject(clientId, true);
         }
         
         private Transform GetNextSpawnPoint()
         {
-            var spawnPoint = _spawnPoints[_spawnPointIndex % _spawnPoints.Count];
-            _spawnPointIndex++;
+            var spawnPoint = _spawnPoints[_index % _spawnPoints.Count];
+            _index++;
             return spawnPoint;
         }
     }
