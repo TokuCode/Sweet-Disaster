@@ -1,8 +1,7 @@
 ﻿namespace Code.Helpers.Pipeline
 {
-    public interface IProcess<T> where T : IEvent
+    public interface IProcess<T>
     {
-        int Order { get; }
-        void Modify(ref T @event, out bool success);
+        void Apply(ref T @event);
     }
 }

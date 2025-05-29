@@ -1,31 +1,50 @@
-﻿using System.Collections.Generic;
-using Code.Helpers.NetworkSingleton;
+﻿using System;
+using System.Collections.Generic;
+using Code.Gameplay.Character.Features;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace Code.Gameplay.Character.Framework
 {
-    public abstract class Controller<T> : NetworkSingleton<T> where T : Component
+    public class Controller : NetworkBehaviour
     {
-        protected List<Feature<T>> _features = new ();
+        [SerializeField] protected List<Feature> _features = new();
+        public IDependencyManager Dependencies { get; } = new DependencyManager();
 
         public override void OnNetworkSpawn()
         {
-            base.OnNetworkSpawn();
-            
+            if (!IsOwner) return;
+
             foreach (var feature in _features)
+            {
+                Dependencies.TryAddFeature(feature);
                 feature.InitializeFeature(this);
+            }
         }
         
         protected virtual void Update()
         {
+            if (!IsOwner) return;
+
             foreach (var feature in _features)
+            {
                 feature.UpdateFeature();
+            }
         }
-        
-        private void FixedUpdate()
+
+        protected virtual void FixedUpdate()
         {
+            if (!IsOwner) return;
+
             foreach (var feature in _features)
+            {
                 feature.FixedUpdateFeature();
+            }
+        }
+
+        public bool Get<T>(out T feature) where T : IFeature
+        {
+            return Dependencies.TryGetFeature(out feature);
         }
     }
 }

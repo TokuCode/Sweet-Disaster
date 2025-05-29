@@ -1,8 +1,6 @@
-﻿using System;
-using Code.Gameplay.Character;
+﻿using Code.Gameplay.Character;
 using Code.Helpers.Utils;
 using Code.Systems.NetworkObjectPool;
-using Unity.Netcode;
 using UnityEngine;
 
 namespace Code.Gameplay.Objects
@@ -76,7 +74,7 @@ namespace Code.Gameplay.Objects
         {
             if(!IsServer) return;
             
-            if (!other.gameObject.CompareTag(OwnerTag) && LayerMaskUtils.CompareLayerMask(other.gameObject, characterLayer))
+            if (!other.gameObject.CompareTag(OwnerTag) && LayerMaskUtils.CompareGameObjectLayerMask(other.gameObject, characterLayer))
             {
                 PlayerController player = other.gameObject.GetComponent<PlayerController>();
                 if (player != null)
@@ -86,7 +84,7 @@ namespace Code.Gameplay.Objects
                 PoolReturn();
             }
             
-            else if (LayerMaskUtils.CompareLayerMask(other.gameObject, solidLayer))
+            else if (LayerMaskUtils.CompareGameObjectLayerMask(other.gameObject, solidLayer))
             {
                 PoolReturn();
             }

@@ -1,160 +1,102 @@
-﻿using System;
-using Code.Helpers.Singleton;
+﻿using Code.Helpers.Singleton;
+using Code.Helpers.Utils;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Code.Systems.Input
 {
-    public class InputReader : Singleton<InputReader>
+    public class InputReader: Singleton<InputReader>, PlayerControls.IGameplayActions, IControl
     {
-        private PlayerControls _controls;
+        [SerializeField] private float _handleHeight;
+        [SerializeField] private float _handleDistance;
+        private Vector3 _playerPosition;
         
-        [Header("Input Parameters")]
-        [SerializeField] private float _moveInput;
-        public float MoveInput => _moveInput;
-        [SerializeField] private bool _jumpInput;
-        public bool JumpInput => _jumpInput;
-        [SerializeField] private bool _crouchInput;
-        public bool CrouchInput => _crouchInput;
-        [SerializeField] private Vector2 _aimInput;
-        public Vector2 AimInput => _aimInput;
-        [SerializeField] private bool _shootInput;
-        public bool ShootInput => _shootInput;
-        [SerializeField] private bool _reloadInput;
-        public bool ReloadInput => _reloadInput;
-        [SerializeField] private bool _switchInput;
-        public bool SwitchInput => _switchInput;
-        [SerializeField] private bool _shieldInput;
-        public bool ShieldInput => _shieldInput;
-
-        public event Action<float> OnMove;
-        public event Action OnJump;
-        public event Action OnJumpReleased;
-        public event Action OnCrouch;
-        public event Action OnCrouchReleased;
-        public event Action<Vector2> OnAim;
-        public event Action<bool> OnSwitch;
-        public event Action OnShoot;
-        public event Action OnShootRelease;
-        public event Action OnReload;
-
-        private void OnMoveInput(InputAction.CallbackContext context)
-        {
-            if(context.performed) 
-                _moveInput = context.ReadValue<float>();
-            else if(context.canceled)
-                _moveInput = 0;
-            
-            OnMove?.Invoke(_moveInput);
-        }
-
-        private void OnJumpInput(InputAction.CallbackContext context)
-        {
-            if (context.performed)
-            {
-                OnJump?.Invoke();
-                _jumpInput = true;
-            }
-            else if (context.canceled)
-            {
-                OnJumpReleased?.Invoke();
-                _jumpInput = false;
-            }
-        }
-
-        private void OnCrouchInput(InputAction.CallbackContext context)
-        {
-            if (context.performed)
-            {
-                OnCrouch?.Invoke();
-                _crouchInput = true;
-            }
-            else if (context.canceled)
-            {
-                OnCrouchReleased?.Invoke();
-                _crouchInput = false;
-            }
-        }
-
-        private void OnAimInput(InputAction.CallbackContext context)
-        {
-            _aimInput = context.ReadValue<Vector2>();
-            OnAim?.Invoke(_aimInput);
-        }
-
-        private void OnShootInput(InputAction.CallbackContext context)
-        {
-            if (context.performed)
-            {
-                OnShoot?.Invoke();
-                _shootInput = true;
-            }
-            else if (context.canceled)
-            {
-                OnShootRelease?.Invoke();
-                _shootInput = false;
-            }
-        }
-
-        private void OnReloadInput(InputAction.CallbackContext context)
-        {
-            if (context.performed)
-            {
-                OnReload?.Invoke();
-                _reloadInput = true;
-            }
-            else if (context.canceled)
-                _reloadInput = false;
-        }
-
-        private void OnSwitchInput(InputAction.CallbackContext context)
-        {
-            if (context.performed)
-                _switchInput = context.ReadValue<Vector2>().y != 0;
-            else if (context.canceled)
-                _switchInput = false;
-            
-            OnSwitch?.Invoke(_switchInput);
-        }
-
-        private void OnShieldInput(InputAction.CallbackContext context)
-        {
-            if (context.performed)
-                _shieldInput = true;
-            else if (context.canceled)
-                _shieldInput = false;
-        }
-
-        private void Awake()
-        {
-            _controls = new();
-            
-            _controls.Gameplay.Move.performed += OnMoveInput;
-            _controls.Gameplay.Move.canceled += OnMoveInput;
-            _controls.Gameplay.Jump.performed += OnJumpInput;
-            _controls.Gameplay.Jump.canceled += OnJumpInput;
-            _controls.Gameplay.Crouch.performed += OnCrouchInput;
-            _controls.Gameplay.Crouch.canceled += OnCrouchInput;
-            _controls.Gameplay.Aim.performed += OnAimInput;
-            _controls.Gameplay.Aim.canceled += OnAimInput;
-            _controls.Gameplay.Shoot.performed += OnShootInput;
-            _controls.Gameplay.Shoot.canceled += OnShootInput;
-            _controls.Gameplay.Reload.performed += OnReloadInput;
-            _controls.Gameplay.Reload.canceled += OnReloadInput;
-            _controls.Gameplay.Switch.performed += OnSwitchInput;
-            _controls.Gameplay.Switch.canceled += OnSwitchInput;
-            _controls.Gameplay.Shield.performed += OnShieldInput;
-            _controls.Gameplay.Shield.canceled += OnShieldInput;
-        }
+        public float Move => inputActions.Gameplay.Move.ReadValue<float>();
+        public bool Jump { get; private set; }
+        public bool Crouch { get; private set; }
+        public bool Shoot { get; private set; }
+        public bool Reload { get; private set; }
+        public bool Shield { get; private set; }
+        public bool Switch => inputActions.Gameplay.Switch.ReadValue<float>() > 0;
+        public Vector3 HandlePosition { get; private set; }
+        public Vector3 HandleDirection { get; private set; }
+        
+        PlayerControls inputActions;
 
         private void OnEnable()
         {
-            _controls.Enable();
+            if (inputActions == null)
+            {
+                inputActions = new PlayerControls();
+                inputActions.Gameplay.SetCallbacks(this);
+                inputActions.Enable();
+            }
         }
 
-        private void OnDisable()
+        public void OnMove(InputAction.CallbackContext context)
         {
-            _controls.Disable();
+            //noop
+        }
+
+        public void OnJump(InputAction.CallbackContext context)
+        {
+            if(context.performed)
+                Jump = true;
+            else if (context.canceled)
+                Jump = false;
+        }
+
+        public void OnCrouch(InputAction.CallbackContext context)
+        {
+            if(context.performed)
+                Crouch = true;
+            else if (context.canceled)
+                Crouch = false;
+        }
+
+        public void OnAim(InputAction.CallbackContext context)
+        {
+            var mousePosition = context.ReadValue<Vector2>();
+            
+            var playerAimPosition = _playerPosition + Vector3.up * _handleHeight;
+            var mousePositionWorld = CameraUtils.ScreenToWorldPoint(mousePosition);
+            
+            HandleDirection = (mousePositionWorld - playerAimPosition).normalized;
+            HandlePosition = playerAimPosition + HandleDirection * _handleDistance;
+        }
+
+        public void OnShoot(InputAction.CallbackContext context)
+        {
+            if (context.performed)
+                Shoot = true;
+            else if (context.canceled)
+                Shoot = false;
+        }
+
+        public void OnReload(InputAction.CallbackContext context)
+        {
+            if(context.performed)
+                Reload = true;
+            else if (context.canceled)
+                Reload = false;
+        }
+
+        public void OnSwitch(InputAction.CallbackContext context)
+        {
+            //noop
+        }
+
+        public void OnShield(InputAction.CallbackContext context)
+        {
+            if(context.performed)
+                Shield = true;
+            else if (context.canceled)
+                Shield = false;
+        }
+
+        public void CachePlayerPosition(Vector3 playerPosition)
+        {
+            _playerPosition = playerPosition;
         }
     }
 }

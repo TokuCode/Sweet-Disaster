@@ -1,95 +1,71 @@
-﻿using Code.Gameplay.Character.Framework;
+﻿using Code.Gameplay.Character.Command;
+using Code.Gameplay.Character.Framework;
+using Code.Networking.ClientPrediction;
 using Code.Systems.Input;
 using Unity.Netcode;
 using UnityEngine;
 
 namespace Code.Gameplay.Character.Features
 {
-    public class Movement : NetworkBehaviour, Feature<PlayerController>
+    public class Movement : Feature
     {
-        private PlayerController _playerController;
-        
         [Header("Settings")]
         [SerializeField] private float _airMultiplier;
+        [SerializeField] private float _acceleration;
+        [SerializeField] private float _maxSpeed;
         
         [Header("Runtime")]
         [SerializeField] private bool _isMovementBlocked;
         public bool IsMovementBlocked => _isMovementBlocked;
-        
-        [Header("Server Side")]
-        [SerializeField] private float _serverMoveDirection;
 
-        public override void OnNetworkSpawn()
+        public override void UpdateFeature() {}
+        
+        public override void FixedUpdateFeature()
         {
-            if (!IsOwner) return;
+            if (!IsOwner && !IsServer) return;
             
-            InputReader.Instance.OnMove += OnMove;
-        }
-        
-        public override void OnNetworkDespawn()
-        {
-            if (!IsOwner) return;
-            
-            InputReader.Instance.OnMove -= OnMove;
+            LimitMovement();
         }
 
-        public void InitializeFeature(Controller<PlayerController> controller)
-        {
-            _playerController = (PlayerController)controller;
-        }
-
-        public void UpdateFeature() { }
-
-        public void FixedUpdateFeature()
-        {
-            if (IsServer)
-            {
-                ApplyServerMovement();
-                LimitServerMovement();
-            }
-        }
-
-        private void OnMove(float input)
-        {
-            SubmitClientInputServerRpc(input);
-        }
-
-        [ServerRpc]
-        private void SubmitClientInputServerRpc(float input, ServerRpcParams serverRpcParams = default)
-        {
-            _serverMoveDirection = input;
-        }
-        
-        private void ApplyServerMovement()
+        private void Move(float moveInput)
         {
             if (_isMovementBlocked) return;
 
-            if (Mathf.Abs(_serverMoveDirection) <= .1f) return;
+            if (Mathf.Abs(moveInput) <= .1f) return;
+
+            if (!_dependencies.TryGetFeature(out PhysicsCheck check)) return;
             
             Vector2 direction = Vector2.right;
-             if (_playerController && !_playerController.OnDeparture)
-                direction = _playerController.ProjectOnSlope(direction);
+             if (check.OnSlope) //TODO Add Departure Check
+                direction = check.ProjectOnSlopeDirection(direction);
             
-            Vector2 movement = direction * (_serverMoveDirection * _playerController.Acceleration);
-            float multiplier = _playerController.IsGrounded ? 1f : _airMultiplier;
-            _playerController.AddForce(movement * multiplier);
+            Vector2 movement = direction * (moveInput * _acceleration);
+            float multiplier = check.IsGrounded ? 1f : _airMultiplier;
+            _invoker.AddForce.Perform(new(movement * multiplier, ForceMode2D.Force));
         }
         
-        private void LimitServerMovement()
+        private void LimitMovement()
         {
-            float _maxSpeed = _playerController.MaxSpeed;
-            if(_playerController.OnSlope && !_playerController.OnDeparture)
+            if (!_dependencies.TryGetFeature(out PhysicsCheck check)) return;
+            if (!_invoker.Velocity.Request(out Vector2 velocity).success) return;
+            
+            if(check.OnSlope) //TODO Add Departure Check
             {
-                if (_playerController.Velocity.magnitude > _maxSpeed)
-                    _playerController.Velocity = _playerController.Velocity.normalized * _maxSpeed;
+                if (velocity.magnitude > _maxSpeed)
+                    _invoker.Velocity.Perform(velocity.normalized * _maxSpeed);
                 return;
             }
             
-            if(Mathf.Abs(_playerController.Velocity.x) > _maxSpeed)
-                _playerController.Velocity = new (Mathf.Sign(_playerController.Velocity.x) * _maxSpeed, _playerController.Velocity.y);
+            if(Mathf.Abs(velocity.x) > _maxSpeed)
+                _invoker.Velocity.Perform(new (Mathf.Sign(velocity.x) * _maxSpeed, velocity.y));
         }
         
         public void BlockMovement() => _isMovementBlocked = true;
         public void UnblockMovement() => _isMovementBlocked = false;
+
+        public override void Apply(ref InputPayload @event)
+        {
+            Move(@event.moveInput);
+        }
     }
 }

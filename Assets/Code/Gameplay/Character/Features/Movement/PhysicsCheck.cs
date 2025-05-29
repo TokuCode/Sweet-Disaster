@@ -1,16 +1,18 @@
-﻿using Code.Gameplay.Character.Framework;
-using Unity.Netcode;
+﻿using Code.Gameplay.Character.Command;
+using Code.Gameplay.Character.Framework;
+using Code.Networking.ClientPrediction;
 using UnityEngine;
 
 namespace Code.Gameplay.Character.Features
 {
-    public class PhysicsCheck : MonoBehaviour, Feature<PlayerController>
+    public class PhysicsCheck : Feature
     {
         private const float ExtraDistanceGround = .01f;
         private const float ExtraDistanceHead = .1f;
         private const float ExtraDistanceSlope = 1f;
-        
-        private PlayerController _playerController;
+
+        private Vector3 _playerPositionCache;
+        private Vector2 _playerSizeCache;
         
         [Header("Settings")]
         [SerializeField] private LayerMask _groundLayer;
@@ -27,24 +29,19 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private bool _isHeadBlocked;
         public bool HeadBlocked => _isHeadBlocked;
 
-        public void InitializeFeature(Controller<PlayerController> controller)
-        {
-            _playerController = (PlayerController)controller;
-        }
-
-        public void UpdateFeature()
+        public override void UpdateFeature()
         {
             GroundCheck();
             SlopeCheck();
             HeadBlockCheck();
         }
-        
-        public void FixedUpdateFeature() { }
+
+        public override void FixedUpdateFeature() { }
 
         private void GroundCheck()
         {
-            var position = _playerController.CenterPosition;
-            var size = _playerController.Size;
+            var position = _playerPositionCache;
+            var size = _playerSizeCache;
 
             var footSize = new Vector2(size.x / 2, ExtraDistanceGround);
             var distance = size.y / 2 + ExtraDistanceGround;
@@ -57,8 +54,8 @@ namespace Code.Gameplay.Character.Features
 
         private void SlopeCheck()
         {
-            var position = _playerController.CenterPosition;
-            var size = _playerController.Size;
+            var position = _playerPositionCache;
+            var size = _playerSizeCache;
             
             var distance = size.y / 2 + ExtraDistanceSlope;
             
@@ -74,14 +71,10 @@ namespace Code.Gameplay.Character.Features
 
         private void HeadBlockCheck()
         {
-            if (!_playerController.IsCrouching)
-            {
-                _isHeadBlocked = false;
-                return;
-            }
+            //Crouch Check
             
-            var position = _playerController.CenterPosition;
-            var size = _playerController.Size;
+            var position = _playerPositionCache;
+            var size = _playerSizeCache;
 
             var headSize = new Vector2(size.x / 2, ExtraDistanceHead);
             var distance = size.y / 2 + ExtraDistanceHead;
@@ -97,5 +90,13 @@ namespace Code.Gameplay.Character.Features
             Vector2 tangent = Vector2.Perpendicular(_slopeHit.normal).normalized;
             return tangent * Vector2.Dot(tangent, inputDirection);
         }
+
+        public void CachePlayerVariables()
+        {
+            _invoker.CenterPosition.Request(out _playerPositionCache);
+            _invoker.Size.Request(out _playerSizeCache);
+        }
+        
+        public override void Apply(ref InputPayload @event) { }
     }
 }

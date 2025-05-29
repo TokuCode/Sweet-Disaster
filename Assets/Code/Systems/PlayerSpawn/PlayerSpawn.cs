@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -8,9 +7,7 @@ namespace Code.Systems.PlayerSpawn
     public class PlayerSpawn : NetworkBehaviour
     {
         [Header("Settings")]
-        [SerializeField] private GameObject _playerPrefab;
-        [SerializeField] private List<Transform> _spawnPoints;
-        [SerializeField] private List<string> _tags;
+        [SerializeField] private List<PlayerConfigurationData> _configuration;
         private int _index;
 
         public override void OnNetworkSpawn()
@@ -26,19 +23,29 @@ namespace Code.Systems.PlayerSpawn
         private void OnClientConnected(ulong clientId)
         {
             if (!IsServer) return;
-            
-            var spawnPoint = GetNextSpawnPoint();
-            GameObject playerObject = Instantiate(_playerPrefab, spawnPoint.position, spawnPoint.rotation);
-            NetworkObject networkObject = playerObject.GetComponent<NetworkObject>();
-            playerObject.tag = _tags[_index % _tags.Count];
-            networkObject.SpawnAsPlayerObject(clientId, true);
+
+            if (TryGetNextPlayerData(out var playerConfig))
+            {
+                var player = Instantiate(playerConfig.prefab, playerConfig.spawn.position, playerConfig.spawn.rotation);
+                player.transform.localScale = playerConfig.spawn.localScale;
+                player.tag = playerConfig.tag;
+                
+                NetworkObject playerNetwork = player.GetComponent<NetworkObject>();
+                playerNetwork.SpawnAsPlayerObject(clientId, true);
+            }
         }
         
-        private Transform GetNextSpawnPoint()
+        private bool TryGetNextPlayerData(out PlayerConfigurationData playerConfig)
         {
-            var spawnPoint = _spawnPoints[_index % _spawnPoints.Count];
+            if (_index >= _configuration.Count)
+            {
+                playerConfig = default;
+                return false;
+            }
+            
+            playerConfig = _configuration[_index];
             _index++;
-            return spawnPoint;
+            return true;
         }
     }
 }
