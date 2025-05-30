@@ -1,8 +1,4 @@
-﻿using Code.Gameplay.Character.Command;
-using Code.Gameplay.Character.Framework;
-using Code.Networking.ClientPrediction;
-using Code.Systems.Input;
-using Unity.Netcode;
+﻿using Code.Networking.ClientPrediction;
 using UnityEngine;
 
 namespace Code.Gameplay.Character.Features
@@ -11,8 +7,6 @@ namespace Code.Gameplay.Character.Features
     {
         [Header("Settings")]
         [SerializeField] private float _airMultiplier;
-        [SerializeField] private float _acceleration;
-        [SerializeField] private float _maxSpeed;
         
         [Header("Runtime")]
         [SerializeField] private bool _isMovementBlocked;
@@ -29,17 +23,26 @@ namespace Code.Gameplay.Character.Features
 
         private void Move(float moveInput)
         {
+            if (!_dependencies.TryGetFeature(out Speed speed)) return;
+            float acceleration = speed.Acceleration;
+            
             if (_isMovementBlocked) return;
 
             if (Mathf.Abs(moveInput) <= .1f) return;
 
             if (!_dependencies.TryGetFeature(out PhysicsCheck check)) return;
             
+            bool onDeparture = false;
+            if (_dependencies.TryGetFeature(out Jump jump))
+            {
+                onDeparture = jump.OnDeparture;
+            }
+            
             Vector2 direction = Vector2.right;
-             if (check.OnSlope) //TODO Add Departure Check
+             if (check.OnSlope && !onDeparture)
                 direction = check.ProjectOnSlopeDirection(direction);
             
-            Vector2 movement = direction * (moveInput * _acceleration);
+            Vector2 movement = direction * (moveInput * acceleration);
             float multiplier = check.IsGrounded ? 1f : _airMultiplier;
             _invoker.AddForce.Perform(new(movement * multiplier, ForceMode2D.Force));
         }
@@ -48,16 +51,25 @@ namespace Code.Gameplay.Character.Features
         {
             if (!_dependencies.TryGetFeature(out PhysicsCheck check)) return;
             if (!_invoker.Velocity.Request(out Vector2 velocity).success) return;
+            if (!_dependencies.TryGetFeature(out Speed speed)) return;
+
+            float maxSpeed = speed.MaxSpeed;
             
-            if(check.OnSlope) //TODO Add Departure Check
+            bool onDeparture = false;
+            if (_dependencies.TryGetFeature(out Jump jump))
             {
-                if (velocity.magnitude > _maxSpeed)
-                    _invoker.Velocity.Perform(velocity.normalized * _maxSpeed);
+                onDeparture = jump.OnDeparture;
+            }
+            
+            if(check.OnSlope && !onDeparture)
+            {
+                if (velocity.magnitude > maxSpeed)
+                    _invoker.Velocity.Perform(velocity.normalized * maxSpeed);
                 return;
             }
             
-            if(Mathf.Abs(velocity.x) > _maxSpeed)
-                _invoker.Velocity.Perform(new (Mathf.Sign(velocity.x) * _maxSpeed, velocity.y));
+            if(Mathf.Abs(velocity.x) > maxSpeed)
+                _invoker.Velocity.Perform(new (Mathf.Sign(velocity.x) *maxSpeed, velocity.y));
         }
         
         public void BlockMovement() => _isMovementBlocked = true;
@@ -65,7 +77,7 @@ namespace Code.Gameplay.Character.Features
 
         public override void Apply(ref InputPayload @event)
         {
-            Move(@event.moveInput);
+            Move(@event.move);
         }
     }
 }

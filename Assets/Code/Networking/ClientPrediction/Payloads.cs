@@ -11,7 +11,7 @@ namespace Code.Networking.ClientPrediction
         
         public Vector3 position;
         public Vector2 velocity;
-        //public bool isCrouching;
+        public float localYScale;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
@@ -19,15 +19,8 @@ namespace Code.Networking.ClientPrediction
             serializer.SerializeValue(ref networkObjectId);
             serializer.SerializeValue(ref position);
             serializer.SerializeValue(ref velocity);
-            //serializer.SerializeValue(ref isCrouching);
+            serializer.SerializeValue(ref localYScale);
         }
-    }
-
-    public enum InputActionButton
-    {
-        Pressed,
-        Released,
-        Unchanged
     }
 
     public struct InputPayload : INetworkSerializable
@@ -36,14 +29,14 @@ namespace Code.Networking.ClientPrediction
         public DateTime timestamp;
         public ulong networkObjectId;
         
-        public float moveInput;
+        public float move;
         //public Vector3 handlePosition;
         //public Vector3 handleDirection;
-        //public InputActionButton jumpAction;
-        //public InputActionButton crouchAction;
+        public bool jump;
+        public bool crouch;
         //public InputActionButton shieldAction;
         //public bool shootRequested;
-        //public bool bombRequested;
+        //public InputActionButton bombRequested;
         //public bool reloadRequested;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
@@ -51,11 +44,11 @@ namespace Code.Networking.ClientPrediction
             serializer.SerializeValue(ref tick);
             serializer.SerializeValue(ref timestamp);
             serializer.SerializeValue(ref networkObjectId);
-            serializer.SerializeValue(ref moveInput);
+            serializer.SerializeValue(ref move);
             //serializer.SerializeValue(ref handlePosition);
             //serializer.SerializeValue(ref handleDirection);
-            //serializer.SerializeValue(ref jumpAction);
-            //serializer.SerializeValue(ref crouchAction);
+            serializer.SerializeValue(ref jump);
+            serializer.SerializeValue(ref crouch);
             //serializer.SerializeValue(ref shieldAction);
             //serializer.SerializeValue(ref shootRequested);
             //serializer.SerializeValue(ref bombRequested);

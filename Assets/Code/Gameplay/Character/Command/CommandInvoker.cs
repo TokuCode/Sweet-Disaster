@@ -1,6 +1,4 @@
-﻿using System;
-using Code.Gameplay.Character.Framework;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Code.Gameplay.Character.Command
 {

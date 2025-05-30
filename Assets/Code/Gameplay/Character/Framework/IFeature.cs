@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Code.Gameplay.Character.Framework
+﻿namespace Code.Gameplay.Character.Framework
 {
     public interface IFeature
     {

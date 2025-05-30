@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Code.Gameplay.Character.Features;
 using Unity.Netcode;
 using UnityEngine;
@@ -13,7 +12,7 @@ namespace Code.Gameplay.Character.Framework
 
         public override void OnNetworkSpawn()
         {
-            if (!IsOwner) return;
+            if (!IsOwner && !IsServer) return;
 
             foreach (var feature in _features)
             {
@@ -24,7 +23,7 @@ namespace Code.Gameplay.Character.Framework
         
         protected virtual void Update()
         {
-            if (!IsOwner) return;
+            if (!IsOwner && !IsServer) return;
 
             foreach (var feature in _features)
             {
@@ -34,7 +33,7 @@ namespace Code.Gameplay.Character.Framework
 
         protected virtual void FixedUpdate()
         {
-            if (!IsOwner) return;
+            if (!IsOwner && !IsServer) return;
 
             foreach (var feature in _features)
             {

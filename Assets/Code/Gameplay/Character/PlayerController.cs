@@ -7,7 +7,6 @@ using Code.Helpers.Pipeline;
 using Code.Networking.ClientPrediction;
 using Code.Systems.Input;
 using Unity.Netcode;
-using Unity.Netcode.Components;
 using UnityEngine;
 
 namespace Code.Gameplay.Character
@@ -86,6 +85,12 @@ namespace Code.Gameplay.Character
 
         public override void OnNetworkSpawn()
         {
+            SetSingleton();
+            base.OnNetworkSpawn();
+        }
+
+        void SetSingleton()
+        {
             if (!IsOwner) return;
 
             if (Singleton != null)
@@ -96,8 +101,6 @@ namespace Code.Gameplay.Character
             }
             
             Singleton = this;
-            
-            base.OnNetworkSpawn();
         }
         
         protected override void Update()
@@ -107,7 +110,7 @@ namespace Code.Gameplay.Character
             _extrapolationTimer.Tick(Time.deltaTime);
             Extrapolate();
             
-            if (!IsOwner) return;
+            if (!IsOwner && !IsServer) return;
             
             if (Invoker.CenterPosition.Request(out Vector3 centerPosition).success)
             {
@@ -172,7 +175,9 @@ namespace Code.Gameplay.Character
                 tick = currentTick,
                 timestamp = DateTime.Now,
                 networkObjectId = NetworkObjectId,
-                moveInput = _input.Move
+                move = _input.Move,
+                jump = _input.Jump,
+                crouch = _input.Crouch
             };
             
             _clientInputBuffer.Add(inputPayload, bufferIndex);
@@ -204,7 +209,8 @@ namespace Code.Gameplay.Character
                 tick = input.tick,
                 networkObjectId = NetworkObjectId,
                 position = transform.position,
-                velocity = rigidbody.linearVelocity
+                velocity = rigidbody.linearVelocity,
+                localYScale = transform.localScale.y
             };
         }
 
@@ -244,6 +250,7 @@ namespace Code.Gameplay.Character
         {
             transform.position = rewindState.position;
             rigidbody.linearVelocity = rewindState.velocity;
+            transform.localScale = new Vector3(transform.localScale.x, rewindState.localYScale, transform.localScale.z);
 
             if (rewindState.Equals(_lastServerState)) return;
             
@@ -267,6 +274,7 @@ namespace Code.Gameplay.Character
             bool shouldSync = mode == AuthorityType.Client;
             _clientNetworkTransform.SyncPositionX = shouldSync;
             _clientNetworkTransform.SyncPositionY = shouldSync;
+            _clientNetworkTransform.SyncScaleY = shouldSync;
         }
         
         static float CalculateLatencyMiliseconds(InputPayload inputPayload) => (DateTime.Now - inputPayload.timestamp).Milliseconds / 1000f; 
@@ -291,6 +299,7 @@ namespace Code.Gameplay.Character
                 var posAdjustment = latest.velocity * (1 + latency * _extrapolationMultiplier);
                 _extrapolationState.position = posAdjustment;
                 _extrapolationState.velocity = latest.velocity;
+                _extrapolationState.localYScale = latest.localYScale;
                 _extrapolationTimer.Start();
             }
             else

@@ -104,6 +104,10 @@ GameObject:
   - component: {fileID: 5059216841921135527}
   - component: {fileID: 2005473438425743590}
   - component: {fileID: 4167940418973771865}
+  - component: {fileID: 3522210923310492348}
+  - component: {fileID: 8255697083224363140}
+  - component: {fileID: 2026413833703698187}
+  - component: {fileID: 4175982370712746216}
   m_Layer: 9
   m_Name: Player
   m_TagString: Player
@@ -250,7 +254,7 @@ MonoBehaviour:
   SyncRotAngleY: 0
   SyncRotAngleZ: 0
   SyncScaleX: 0
-  SyncScaleY: 0
+  SyncScaleY: 1
   SyncScaleZ: 0
   PositionThreshold: 0.001
   RotAngleThreshold: 0.01
@@ -296,6 +300,10 @@ MonoBehaviour:
   _features:
   - {fileID: 2005473438425743590}
   - {fileID: 4167940418973771865}
+  - {fileID: 3522210923310492348}
+  - {fileID: 8255697083224363140}
+  - {fileID: 2026413833703698187}
+  - {fileID: 4175982370712746216}
   _reconciliationCooldownTime: 1
   _reconciliationThreshold: 2.5
   _extrapolationLimit: 0.5
@@ -335,6 +343,79 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   _airMultiplier: 0.9
-  _acceleration: 20
-  _maxSpeed: 10
   _isMovementBlocked: 0
+--- !u!114 &3522210923310492348
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6295644469921195904}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c034cdc25f61ba43bcdc498ba7e0659, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  _groundFriction: 5
+  _airFriction: 3
+  _applyingFriction: 0
+--- !u!114 &8255697083224363140
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6295644469921195904}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c60a17f75c75a1b45b5dfc4e093799e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  _jumpImpulse: 10
+  _jumpCooldown: 0.4
+  _coyoteTime: 0.25
+  _fallGravityMultiplier: 3.5
+  _lowJumpGravityMultiplier: 2.5
+  _onDeparture: 0
+--- !u!114 &2026413833703698187
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6295644469921195904}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11e31c5191552f14b82b4ac1dd6dc051, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  _crouchHeightMultiplier: 0.45
+  _isCrouching: 0
+  _startingCrouch: 0
+--- !u!114 &4175982370712746216
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6295644469921195904}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71d30989cdbee8e4ab45c1b7b0f230b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  _maxSpeedIdle: 10
+  _accelerationIdle: 20
+  _maxSpeedCrouching: 5
+  _accelerationCrouching: 5
+  _maxSpeedStunned: 50
+  _transitionTime: 0.5
+  _movementState: 0
+  _desiredMaxSpeed: 0
+  _enableTransition: 0
+  _maxSpeed: 0
+  _acceleration: 0

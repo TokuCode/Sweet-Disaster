@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 namespace Code.Systems.Input
 {
-    public class InputReader: Singleton<InputReader>, PlayerControls.IGameplayActions, IControl
+    public class InputReader: Singleton<InputReader>, IControl
     {
         [SerializeField] private float _handleHeight;
         [SerializeField] private float _handleDistance;
@@ -28,14 +28,13 @@ namespace Code.Systems.Input
             if (inputActions == null)
             {
                 inputActions = new PlayerControls();
-                inputActions.Gameplay.SetCallbacks(this);
                 inputActions.Enable();
+                
+                inputActions.Gameplay.Jump.performed += OnJump;
+                inputActions.Gameplay.Jump.canceled += OnJump;
+                inputActions.Gameplay.Crouch.performed += OnCrouch;
+                inputActions.Gameplay.Crouch.canceled += OnCrouch;
             }
-        }
-
-        public void OnMove(InputAction.CallbackContext context)
-        {
-            //noop
         }
 
         public void OnJump(InputAction.CallbackContext context)
@@ -79,11 +78,6 @@ namespace Code.Systems.Input
                 Reload = true;
             else if (context.canceled)
                 Reload = false;
-        }
-
-        public void OnSwitch(InputAction.CallbackContext context)
-        {
-            //noop
         }
 
         public void OnShield(InputAction.CallbackContext context)

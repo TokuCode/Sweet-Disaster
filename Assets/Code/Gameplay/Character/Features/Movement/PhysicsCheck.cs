@@ -1,6 +1,4 @@
-﻿using Code.Gameplay.Character.Command;
-using Code.Gameplay.Character.Framework;
-using Code.Networking.ClientPrediction;
+﻿using Code.Networking.ClientPrediction;
 using UnityEngine;
 
 namespace Code.Gameplay.Character.Features
@@ -31,6 +29,7 @@ namespace Code.Gameplay.Character.Features
 
         public override void UpdateFeature()
         {
+            CachePlayerVariables();
             GroundCheck();
             SlopeCheck();
             HeadBlockCheck();
@@ -71,7 +70,14 @@ namespace Code.Gameplay.Character.Features
 
         private void HeadBlockCheck()
         {
-            //Crouch Check
+            if (_dependencies.TryGetFeature(out Crouch crouch))
+            {
+                if (!crouch.IsCrouching)
+                {
+                    _isHeadBlocked = false;
+                    return;
+                }
+            }
             
             var position = _playerPositionCache;
             var size = _playerSizeCache;
@@ -96,7 +102,7 @@ namespace Code.Gameplay.Character.Features
             _invoker.CenterPosition.Request(out _playerPositionCache);
             _invoker.Size.Request(out _playerSizeCache);
         }
-        
+
         public override void Apply(ref InputPayload @event) { }
     }
 }
