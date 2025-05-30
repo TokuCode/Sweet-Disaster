@@ -1,18 +1,15 @@
 ﻿using Code.Systems.Session;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 using Unity.Netcode;
 using Unity.Services.Multiplayer;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 namespace Code.Systems.PlayerSpawn
 {
     public class PlayerSpawn : NetworkBehaviour
     {
-        [SerializeField] GameObject characterDefaultPrefab;
+        [SerializeField] private GameObject characterDefaultPrefab;
 
         [Header("Character Prefabs")]
         [SerializeField] private List<CharacterPrefab> characterPrefabs;
@@ -54,24 +51,15 @@ namespace Code.Systems.PlayerSpawn
 
         private void SpawnPlayer(IReadOnlyPlayer sessionPlayer)
         {
-            // 1. Get the player's authentication ID
-            if (!sessionPlayer.Properties.TryGetValue(SessionManager.Instance.playerAuthIdPropertyKey, out var authIdProp))
+            // Map authentication ID to client ID
+            if (!SessionManager.Instance.PlayerIdToClientId.TryGetValue(sessionPlayer.Id, out ulong clientId))
             {
-                Debug.LogError($"Authentication ID not found for player: {sessionPlayer.Id}");
+                Debug.LogError($"Client ID not found for authentication ID: {clientId}");
                 return;
             }
 
-            string authId = authIdProp.Value;
-
-            // 2. Map authentication ID to client ID
-            if (!SessionManager.Instance.playerIdToClientId.TryGetValue(authId, out ulong clientId))
-            {
-                Debug.LogError($"Client ID not found for authentication ID: {authId}");
-                return;
-            }
-
-            // 3. Get the player's selected character
-            if (!sessionPlayer.Properties.TryGetValue(SessionManager.Instance.playerCharacterPropertyKey, out var characterProp))
+            // Get the player's selected character
+            if (!sessionPlayer.Properties.TryGetValue(SessionManager.Instance.PlayerKeys[PlayerPropertyKeys.PlayerCharacter], out var characterProp))
             {
                 Debug.LogError($"Character not selected for player: {sessionPlayer.Id}");
                 return;
@@ -86,17 +74,13 @@ namespace Code.Systems.PlayerSpawn
                 return;
             }
 
-            // 4. Spawn the player
+            // Spawn the player
             Transform spawnPoint = GetNextSpawnPoint();
             GameObject playerObj = Instantiate(character.characterPrefab, spawnPoint.position, spawnPoint.rotation);
-            //GameObject playerObj = Instantiate(characterDefaultPrefab, spawnPoint.position, spawnPoint.rotation);
 
             NetworkObject networkObject = playerObj.GetComponent<NetworkObject>();
-            playerObject.tag = _tags[_index % _tags.Count];
-            networkObject.SpawnAsPlayerObject(clientId);
-
-            //sessionPlayer.Properties.TryGetValue(SessionManager.Instance.playerColorPropertyKey, out var colorProp);
-            //networkObject.transform.GetChild(0).GetComponent<SpriteRenderer>().color = SessionManager.Instance.colors[colorProp.Value];
+            playerObj.tag = _tags[_index % _tags.Count];
+            networkObject.SpawnWithOwnership(clientId);
         }
 
         private Transform GetNextSpawnPoint()

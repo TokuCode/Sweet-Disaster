@@ -22,6 +22,7 @@ namespace Code.Gameplay.Character.Features
 
         public override void OnNetworkSpawn()
         {
+            Debug.Log($"Spawned Player | IsOwner: {IsOwner} | ClientId: {OwnerClientId}");
             if (!IsOwner) return;
             StartCoroutine(WaitForInputReader());
         }
@@ -48,24 +49,23 @@ namespace Code.Gameplay.Character.Features
 
         public void FixedUpdateFeature()
         {
-            if (IsServer)
-            {
-                ApplyServerMovement();
-                LimitServerMovement();
-            }
+            if (!IsServer) return;
+            ApplyServerMovement();
+            LimitServerMovement();
         }
 
         private void OnMove(float input)
         {
-            SubmitClientInputServerRpc(input);
+            SubmitClientInputRpc(input);
         }
 
-        [ServerRpc]
-        private void SubmitClientInputServerRpc(float input, ServerRpcParams serverRpcParams = default)
+        [Rpc(SendTo.Server)]
+        private void SubmitClientInputRpc(float input)
         {
             _serverMoveDirection = input;
+            Debug.Log(_serverMoveDirection);
         }
-        
+
         private void ApplyServerMovement()
         {
             if (_isMovementBlocked) return;
@@ -80,7 +80,7 @@ namespace Code.Gameplay.Character.Features
             float multiplier = _playerController.IsGrounded ? 1f : _airMultiplier;
             _playerController.AddForce(movement * multiplier);
         }
-        
+
         private void LimitServerMovement()
         {
             float _maxSpeed = _playerController.MaxSpeed;

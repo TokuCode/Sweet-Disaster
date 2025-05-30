@@ -25,10 +25,16 @@ namespace Code.Gameplay.Character.Features
         public override void OnNetworkSpawn()
         {
             if (!IsOwner) return;
-            
+
+            StartCoroutine(WaitForInputReader());
+        }
+
+        private System.Collections.IEnumerator WaitForInputReader()
+        {
+            yield return new WaitUntil(() => InputReader.Instance != null);
             InputReader.Instance.OnMove += OnMove;
         }
-        
+
         public override void OnNetworkDespawn()
         {
             if (!IsOwner) return;

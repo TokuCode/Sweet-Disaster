@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Runtime.Remoting.Messaging;
 using Code.Helpers.Singleton;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Code.Systems.Input
 {
-    public class InputReader : Singleton<InputReader>
+    public class InputReader : MonoBehaviour
     {
+        public static InputReader Instance { get; private set; }
+
         private PlayerControls _controls;
         
         [Header("Input Parameters")]
@@ -125,8 +129,9 @@ namespace Code.Systems.Input
                 _shieldInput = false;
         }
 
-        protected override void Awake()
+        /*protected override*/ void Awake()
         {
+            Instance = this;
             _controls = new();
             
             _controls.Gameplay.Move.performed += OnMoveInput;
@@ -156,5 +161,7 @@ namespace Code.Systems.Input
         {
             _controls.Disable();
         }
+
+        private void OnApplicationQuit() => Instance = null;
     }
 }

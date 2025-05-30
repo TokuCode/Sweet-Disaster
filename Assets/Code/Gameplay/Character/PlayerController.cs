@@ -83,7 +83,7 @@ namespace Code.Gameplay.Character
             get => _rigidbody.gravityScale;
             set => _rigidbody.gravityScale = value;
         }
-        
+
         public void AddForce(Vector2 force) => _rigidbody.AddForce(force);
         public void AddImpulse(Vector2 impulse) => _rigidbody.AddForce(impulse, ForceMode2D.Impulse);
     }

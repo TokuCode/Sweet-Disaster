@@ -23,9 +23,12 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Adrian/GameplayTest.unity
     guid: 17ae68cbc873d9e408b4745c90d3d3de
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Adrian/GameplayTest1.unity
     guid: 80e95bca5faa9624790bcbe7b21461f1
+  - enabled: 1
+    path: Assets/Scenes/Adrian/Gameplay-Test.unity
+    guid: f67568becea1b6745bc06ca3eeb66cb2
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

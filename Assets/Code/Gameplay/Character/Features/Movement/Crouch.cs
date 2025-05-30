@@ -29,6 +29,12 @@ namespace Code.Gameplay.Character.Features
         {
             if (!IsOwner) return;
             
+            StartCoroutine(WaitForInputReader());
+        }
+
+        private System.Collections.IEnumerator WaitForInputReader()
+        {
+            yield return new WaitUntil(() => InputReader.Instance != null);
             InputReader.Instance.OnCrouch += OnCrouch;
             InputReader.Instance.OnCrouchReleased += OnCrouchReleased;
         }
