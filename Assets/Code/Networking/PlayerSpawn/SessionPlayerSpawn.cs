@@ -1,12 +1,12 @@
 using Unity.Netcode;
 using UnityEngine;
 using System.Collections.Generic;
-using Code.Systems.Session;
+using Code.Networking.Session;
 using Unity.Services.Multiplayer;
 using System;
 using UnityEngine.SceneManagement;
 
-namespace Code.Systems.PlayerSpawn
+namespace Code.Networking.PlayerSpawn
 {
     [Serializable]
     public struct CharacterPrefab

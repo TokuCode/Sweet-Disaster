@@ -44,6 +44,7 @@ namespace Code.Gameplay.Character
         [SerializeField] private float _reconciliationThreshold = 2.5f;
         [SerializeField] private float _extrapolationLimit = .5f;
         [SerializeField] private float _extrapolationMultiplier = 1.2f;
+        [SerializeField] private float _extrapolationMinLatency = .25f;
         private CountdownTimer _reconciliationTimer;
         private CountdownTimer _extrapolationTimer;
         StatePayload _extrapolationState;
@@ -308,7 +309,7 @@ namespace Code.Gameplay.Character
                 _extrapolationTimer.Stop();
             }
         }
-        
-        bool ShouldExtrapolate(float latency) => latency < _extrapolationLimit && latency > Time.fixedDeltaTime;
+
+        bool ShouldExtrapolate(float latency) => latency < _extrapolationLimit && latency > _extrapolationMinLatency;
     }
 }

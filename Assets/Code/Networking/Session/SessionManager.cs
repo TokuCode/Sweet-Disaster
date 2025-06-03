@@ -10,7 +10,7 @@ using UnityEngine;
 using Code.Helpers.UI;
 using System.Linq;
 
-namespace Code.Systems.Session
+namespace Code.Networking.Session
 {
     // Enums
     public enum PlayerPropertyKeys
@@ -26,7 +26,7 @@ namespace Code.Systems.Session
         Map
     }
 
-    public class SessionManager : PersistentSingleton<SessionManager>
+    public class SessionManager : PersistentNetowrkSingleton<SessionManager>
     {
         // Private members
         private ISession activeSession;

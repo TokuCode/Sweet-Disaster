@@ -6,7 +6,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using Code.Helpers.UI;
 using Unity.Services.Multiplayer;
-using Code.Systems.Session;
+using SessionManager = Code.Networking.Session.SessionManager;
+using Code.Networking.Session;
 
 namespace Code.UserInterface.LobbyUI
 {

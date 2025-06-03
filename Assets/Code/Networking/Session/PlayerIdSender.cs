@@ -2,7 +2,7 @@ using Unity.Netcode;
 using Unity.Services.Authentication;
 using UnityEngine;
 
-namespace Code.Systems.Session
+namespace Code.Networking.Session
 {
     public class PlayerIdSender : NetworkBehaviour
     {
