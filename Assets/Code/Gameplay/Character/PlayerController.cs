@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using Code.Gameplay.Character.Command;
 using Code.Gameplay.Character.Framework;
 using Code.Helpers;
@@ -169,7 +170,7 @@ namespace Code.Gameplay.Character
 
             var currentTick = _networkTimer.CurrentTick;
             var bufferIndex = currentTick % bufferSize;
-
+            
             InputPayload inputPayload = new()
             {
                 tick = currentTick,

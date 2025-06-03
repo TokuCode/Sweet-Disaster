@@ -1,4 +1,5 @@
-﻿using Unity.Netcode.Components;
+using System;
+using Unity.Netcode.Components;
 
 namespace Code.Networking.ClientPrediction {
     public enum AuthorityType {
