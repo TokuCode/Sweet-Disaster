@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Code.Systems.PlayerSpawn
+namespace Code.Networking.PlayerSpawn
 {
     [Serializable]
     public struct PlayerConfigurationData

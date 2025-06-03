@@ -2,7 +2,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-namespace Code.Systems.PlayerSpawn
+namespace Code.Networking.PlayerSpawn
 {
     public class PlayerSpawn : NetworkBehaviour
     {

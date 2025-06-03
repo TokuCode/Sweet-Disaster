@@ -1,5 +1,5 @@
 using System;
-using Code.Systems.Session;
+using Code.Networking.Session;
 using Unity.Services.Multiplayer;
 using UnityEngine;
 using UnityEngine.EventSystems;
