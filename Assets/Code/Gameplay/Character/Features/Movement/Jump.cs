@@ -1,0 +1,83 @@
+﻿using Code.Networking.ClientPrediction;
+using UnityEngine;
+
+namespace Code.Gameplay.Character.Features
+{
+    public class Jump : Feature
+    {
+        [Header("Settings")] 
+        [SerializeField] private float _jumpImpulse;
+        [SerializeField] private float _jumpCooldown;
+        [SerializeField] private float _coyoteTime;
+        [SerializeField] private float _fallGravityMultiplier; 
+        [SerializeField] private float _lowJumpGravityMultiplier;
+        
+        [Header("Runtime")]
+        [SerializeField] private bool _onDeparture;
+        public bool OnDeparture => _onDeparture;
+        public bool CanJump(Crouch crouch) => !crouch.IsCrouching; //TODO Add Shield, Stun, Throw Checks
+        private bool _cachedJumpInput;
+        private float _jumpCooldownTimer;
+
+        public override void UpdateFeature()
+        {
+            if (!IsOwner && !IsServer) return;
+
+            if (!_dependencies.TryGetFeature(out PhysicsCheck check)) return;
+            
+            if(_jumpCooldownTimer > 0) _jumpCooldownTimer -= Time.deltaTime;
+            else if (check.IsGrounded) _onDeparture = false;
+            
+            _invoker.GravityScale.Perform(check.OnSlope ? 0f : 1f);
+        }
+
+        public override void FixedUpdateFeature()
+        {
+            if (!IsOwner && !IsServer) return;
+            
+            BetterServerJump();
+        }
+
+        public void TryServerJump()
+        {
+            if(!_dependencies.TryGetFeature(out Crouch crouch)) return;
+
+            bool canJump = CanJump(crouch);
+            
+            if(_jumpCooldownTimer > 0 || !canJump) return;
+            
+            if (!_dependencies.TryGetFeature(out PhysicsCheck check)) return;
+            
+            float timeSinceGrounded = Time.time - check.LastTimeOnGround;
+            if (timeSinceGrounded > _coyoteTime) return;
+
+            JumpAction();
+            _jumpCooldownTimer = _jumpCooldown;
+            _onDeparture = true;
+        }
+        
+        private void JumpAction() => _invoker.AddForce.Perform(new(Vector2.up, _jumpImpulse, ForceMode2D.Impulse));
+
+        private void BetterServerJump()
+        {
+            if (!_dependencies.TryGetFeature(out PhysicsCheck check)) return;
+            
+            if (check.IsGrounded && !check.OnSlope) return;
+            
+            if(!_invoker.Velocity.Request(out Vector2 velocity).success) return;
+
+            if (velocity.y < 0)
+                _invoker.AddForce.Perform(new(Vector2.up, Physics2D.gravity.y * (_fallGravityMultiplier - 1) * Time.fixedDeltaTime, ForceMode2D.Impulse));
+            else if (velocity.y > 0 && !_cachedJumpInput)
+                _invoker.AddForce.Perform(new(Vector2.up, Physics2D.gravity.y * (_lowJumpGravityMultiplier - 1) * Time.fixedDeltaTime, ForceMode2D.Impulse));
+        }
+
+        public override void Apply(ref InputPayload @event)
+        {
+            bool jumpRequested = @event.jump & !_cachedJumpInput;
+            if (jumpRequested) TryServerJump();
+                
+            _cachedJumpInput = @event.jump;
+        }
+    }
+}
