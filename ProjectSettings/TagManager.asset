@@ -5,6 +5,11 @@ TagManager:
   serializedVersion: 3
   tags:
   - Shield
+  - P1
+  - P2
+  - P3
+  - P4
+  - Deathbox
   layers:
   - Default
   - TransparentFX
