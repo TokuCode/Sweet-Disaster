@@ -9,7 +9,6 @@ using Unity.Services.Multiplayer;
 using UnityEngine;
 using Code.Helpers.UI;
 using System.Linq;
-using Color = UnityEngine.Color;
 
 namespace Code.Systems.Session
 {
