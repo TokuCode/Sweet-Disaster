@@ -8,6 +8,7 @@ namespace Code.Systems.Input
     public class InputReader: Singleton<InputReader>, IControl
     {
         [SerializeField] private float _handleHeight;
+        public float HandleHeight => _handleHeight;
         [SerializeField] private float _handleDistance;
         private Vector3 _playerPosition;
         
@@ -17,7 +18,7 @@ namespace Code.Systems.Input
         public bool Shoot { get; private set; }
         public bool Reload { get; private set; }
         public bool Shield { get; private set; }
-        public bool Switch => inputActions.Gameplay.Switch.ReadValue<float>() > 0;
+        public bool Switch => inputActions.Gameplay.Switch.ReadValue<Vector2>().y != 0;
         public Vector3 HandlePosition { get; private set; }
         public Vector3 HandleDirection { get; private set; }
         
@@ -34,6 +35,14 @@ namespace Code.Systems.Input
                 inputActions.Gameplay.Jump.canceled += OnJump;
                 inputActions.Gameplay.Crouch.performed += OnCrouch;
                 inputActions.Gameplay.Crouch.canceled += OnCrouch;
+                inputActions.Gameplay.Shoot.performed += OnShoot;
+                inputActions.Gameplay.Shoot.canceled += OnShoot;
+                inputActions.Gameplay.Reload.performed += OnReload;
+                inputActions.Gameplay.Reload.canceled += OnReload;
+                inputActions.Gameplay.Shield.performed += OnShield;
+                inputActions.Gameplay.Shield.canceled += OnShield;
+                inputActions.Gameplay.Aim.performed += OnAim;
+                inputActions.Gameplay.Aim.canceled += OnAim;
             }
         }
 
@@ -61,7 +70,7 @@ namespace Code.Systems.Input
             var mousePositionWorld = CameraUtils.ScreenToWorldPoint(mousePosition);
             
             HandleDirection = (mousePositionWorld - playerAimPosition).normalized;
-            HandlePosition = playerAimPosition + HandleDirection * _handleDistance;
+            HandlePosition = HandleDirection * _handleDistance;
         }
 
         public void OnShoot(InputAction.CallbackContext context)

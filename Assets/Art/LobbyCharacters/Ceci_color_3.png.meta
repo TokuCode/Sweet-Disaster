@@ -134,7 +134,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Ceci_color_3_0: -7590338337177074199
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

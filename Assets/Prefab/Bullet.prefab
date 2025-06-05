@@ -76,7 +76,7 @@ SpriteRenderer:
   m_SortingLayerID: 103242549
   m_SortingLayer: 1
   m_SortingOrder: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+  m_Sprite: {fileID: 21300000, guid: f06ec50152c47014bb96b20be6d20794, type: 3}
   m_Color: {r: 1, g: 1, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -99,8 +99,8 @@ GameObject:
   - component: {fileID: 4640074391930752477}
   - component: {fileID: 6285292473920302630}
   - component: {fileID: 2859321048920751573}
-  - component: {fileID: 2474300215536379165}
-  - component: {fileID: 8630264276293783751}
+  - component: {fileID: 1814047829866904089}
+  - component: {fileID: 6261173954927154113}
   - component: {fileID: 1406811976941379322}
   m_Layer: 12
   m_Name: Bullet
@@ -119,7 +119,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5923534425305643380}
@@ -160,7 +160,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.5
+  m_Radius: 0.3
 --- !u!50 &6285292473920302630
 Rigidbody2D:
   serializedVersion: 5
@@ -187,7 +187,7 @@ Rigidbody2D:
   m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 1
-  m_Constraints: 4
+  m_Constraints: 0
 --- !u!114 &2859321048920751573
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -203,7 +203,7 @@ MonoBehaviour:
   GlobalObjectIdHash: 3179014487
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
-  Ownership: 1
+  Ownership: 8
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
@@ -213,7 +213,7 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
---- !u!114 &2474300215536379165
+--- !u!114 &1814047829866904089
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -222,11 +222,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 3392542828733932666}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Script: {fileID: 11500000, guid: 5c851e3e554a3f849bc51aec4ccff439, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  NetworkTransformExpanded: 0
+  NetworkTransformExpanded: 1
   AutoOwnerAuthorityTickOffset: 1
   PositionInterpolationType: 0
   RotationInterpolationType: 0
@@ -259,7 +259,8 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
---- !u!114 &8630264276293783751
+  authority: 1
+--- !u!114 &6261173954927154113
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -289,19 +290,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  Prefab: {fileID: 0}
-  networkObject: {fileID: 0}
   _rigidbody: {fileID: 6285292473920302630}
   _circleCollider2D: {fileID: 4640074391930752477}
-  OwnerTag: 
-  LifeTime: 0
-  Damage: 0
-  KnockbackLevel: 0
-  Speed: 0
-  Direction: {x: 0, y: 0}
-  characterLayer:
+  _ownerTag: 
+  _lifeTime: 4
+  _lifeTimeTimer: 0
+  _damage: 0.05
+  _knockbackLevel: 5
+  _knockbackUpLevel: 10
+  _speed: 25
+  _direction: {x: 0, y: 0}
+  _characterLayer:
     serializedVersion: 2
     m_Bits: 512
-  solidLayer:
+  _solidLayer:
     serializedVersion: 2
     m_Bits: 384

@@ -84,6 +84,15 @@ namespace Code.Gameplay.Character
                 SwitchAutorityMode(AuthorityType.Client);
             };
         }
+        
+        void SwitchAutorityMode(AuthorityType mode)
+        {
+            _clientNetworkTransform.authority = mode;
+            bool shouldSync = mode == AuthorityType.Client;
+            _clientNetworkTransform.SyncPositionX = shouldSync;
+            _clientNetworkTransform.SyncPositionY = shouldSync;
+            _clientNetworkTransform.SyncScaleY = shouldSync;
+        }
 
         public override void OnNetworkSpawn()
         {
@@ -179,7 +188,11 @@ namespace Code.Gameplay.Character
                 networkObjectId = NetworkObjectId,
                 move = _input.Move,
                 jump = _input.Jump,
-                crouch = _input.Crouch
+                crouch = _input.Crouch,
+                handlePosition = _input.HandlePosition,
+                handleDirection = _input.HandleDirection,
+                shootRequested = _input.Shoot,
+                reloadRequested = _input.Reload
             };
             
             _clientInputBuffer.Add(inputPayload, bufferIndex);
@@ -270,15 +283,6 @@ namespace Code.Gameplay.Character
             }
         }
 
-        void SwitchAutorityMode(AuthorityType mode)
-        {
-            _clientNetworkTransform.authority = mode;
-            bool shouldSync = mode == AuthorityType.Client;
-            _clientNetworkTransform.SyncPositionX = shouldSync;
-            _clientNetworkTransform.SyncPositionY = shouldSync;
-            _clientNetworkTransform.SyncScaleY = shouldSync;
-        }
-        
         static float CalculateLatencyMiliseconds(InputPayload inputPayload) => (DateTime.Now - inputPayload.timestamp).Milliseconds / 1000f; 
 
         void Extrapolate()

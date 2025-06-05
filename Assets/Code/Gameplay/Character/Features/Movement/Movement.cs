@@ -1,4 +1,5 @@
 ﻿using Code.Networking.ClientPrediction;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace Code.Gameplay.Character.Features
@@ -9,8 +10,8 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private float _airMultiplier;
         
         [Header("Runtime")]
-        [SerializeField] private bool _isMovementBlocked;
-        public bool IsMovementBlocked => _isMovementBlocked;
+        [SerializeField] private NetworkVariable<bool> _isMovementBlocked = new (false, NetworkVariableReadPermission.Owner);
+        public bool IsMovementBlocked => _isMovementBlocked.Value;
 
         public override void UpdateFeature() {}
         
@@ -26,7 +27,7 @@ namespace Code.Gameplay.Character.Features
             if (!_dependencies.TryGetFeature(out Speed speed)) return;
             float acceleration = speed.Acceleration;
             
-            if (_isMovementBlocked) return;
+            if (_isMovementBlocked.Value) return;
 
             if (Mathf.Abs(moveInput) <= .1f) return;
 
@@ -72,8 +73,8 @@ namespace Code.Gameplay.Character.Features
                 _invoker.Velocity.Perform(new (Mathf.Sign(velocity.x) *maxSpeed, velocity.y));
         }
         
-        public void BlockMovement() => _isMovementBlocked = true;
-        public void UnblockMovement() => _isMovementBlocked = false;
+        public void BlockMovement() => _isMovementBlocked.Value = true;
+        public void UnblockMovement() => _isMovementBlocked.Value = false;
 
         public override void Apply(ref InputPayload @event)
         {
