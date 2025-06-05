@@ -32,7 +32,8 @@ namespace Code.Gameplay.Character.Features
             if(!_dependencies.TryGetFeature(out PhysicsCheck check)) return;
             if(!_invoker.Velocity.Request(out Vector2 velocity).success) return;
 
-            //TODO Add Stun Check
+            if(!_dependencies.TryGetFeature(out Health health)) return;
+            if(health.IsStunned) return;
             
             if(!check.IsGrounded)
                 ApplyFriction(_airFriction, velocity);

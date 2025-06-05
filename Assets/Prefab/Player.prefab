@@ -108,6 +108,9 @@ GameObject:
   - component: {fileID: 8255697083224363140}
   - component: {fileID: 2026413833703698187}
   - component: {fileID: 4175982370712746216}
+  - component: {fileID: 390764865389147194}
+  - component: {fileID: 5385415895683851131}
+  - component: {fileID: 573164576663406118}
   m_Layer: 9
   m_Name: Player
   m_TagString: Player
@@ -304,10 +307,14 @@ MonoBehaviour:
   - {fileID: 8255697083224363140}
   - {fileID: 2026413833703698187}
   - {fileID: 4175982370712746216}
+  - {fileID: 390764865389147194}
+  - {fileID: 5385415895683851131}
+  - {fileID: 573164576663406118}
   _reconciliationCooldownTime: 1
   _reconciliationThreshold: 2.5
   _extrapolationLimit: 0.5
   _extrapolationMultiplier: 1.2
+  _extrapolationMinLatency: 0.25
 --- !u!114 &2005473438425743590
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -343,7 +350,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   _airMultiplier: 0.9
-  _isMovementBlocked: 0
+  _isMovementBlocked:
+    m_InternalValue: 0
 --- !u!114 &3522210923310492348
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -419,3 +427,71 @@ MonoBehaviour:
   _enableTransition: 0
   _maxSpeed: 0
   _acceleration: 0
+--- !u!114 &390764865389147194
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6295644469921195904}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e4bb8ac8cee42bbbd16078ba59934d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  _cooldown: 0.5
+  _activeWeapon:
+    m_InternalValue: 0
+--- !u!114 &5385415895683851131
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6295644469921195904}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9161d942b785324e86cde7afc364dc4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  _active: 0
+  _timeBetweenShots: 0.05
+  _burstCount: 3
+  _timeBetweenBursts: 0.25
+  _holdToShoot: 1
+  _lastShotTime: 0
+  _isShooting: 0
+  _reloadTime: 0.75
+  _reloadTimer: 0
+  _magazineSize: 12
+  _bulletPrefab: {fileID: 3392542828733932666, guid: 164d47ae8f05cd143be5125ce73b26e3, type: 3}
+  _baseImprecision: 0
+  _imprecision: 0
+  _imprecisionToAngleFactor: 15
+  _airImprecision: 2
+  _movementImprecisionPerSpeedUnit: 0.5
+  _shootRequested: 0
+  _reloadRequested: 0
+--- !u!114 &573164576663406118
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6295644469921195904}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c89891105bf46dd9d1eeeb226111fe8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  _health:
+    m_InternalValue: 0
+  _baseHealth: 100
+  _isStunned:
+    m_InternalValue: 0
+  _stunMinDuration: 0.1
+  _stunDurationPerKnockback: 0.1
+  _stunTimer: 0

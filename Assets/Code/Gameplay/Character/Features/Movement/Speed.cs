@@ -46,7 +46,11 @@ namespace Code.Gameplay.Character.Features
         {
             _enableTransition = false;
 
-            //TODO Add Stun State
+            bool isStunned = false;
+            if (_dependencies.TryGetFeature(out Health health))
+            {
+                isStunned = health.IsStunned;
+            }
             
             bool isMovementBlocked = false;
             if (_dependencies.TryGetFeature(out Movement movement))
@@ -68,7 +72,12 @@ namespace Code.Gameplay.Character.Features
                 onSlope = check.OnSlope;
             }
 
-            if (isMovementBlocked)
+            if (isStunned)
+            {
+                _movementState = MovementState.Stunned;
+                _desiredMaxSpeed = _maxSpeedStunned;
+            }
+            else if (isMovementBlocked)
             {
                 _movementState = MovementState.Blocked;
             }

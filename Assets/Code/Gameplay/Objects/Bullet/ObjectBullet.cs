@@ -1,52 +1,43 @@
 ﻿using Code.Gameplay.Character;
+using Code.Gameplay.Character.Features;
 using Code.Helpers.Utils;
-using Code.Systems.NetworkObjectPool;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace Code.Gameplay.Objects
 {
-    public class ObjectBullet : PoolCustomBehaviour
+    public class ObjectBullet : NetworkBehaviour
     {
         [Header("References")]
         [SerializeField] private Rigidbody2D _rigidbody;
         [SerializeField] private CircleCollider2D _circleCollider2D;
         
         [Header("Settings")] 
-        public string OwnerTag;
-        public float LifeTime;
-        private float _lifeTimeTimer;
-        public float Damage;
-        public int KnockbackLevel;
-        public float Speed;
-        public Vector2 Direction;
+        [SerializeField] private string _ownerTag;
+        [SerializeField] private float _lifeTime;
+        [SerializeField] private float _lifeTimeTimer;
+        [SerializeField] private float _damage;
+        [SerializeField] private int _knockbackLevel;
+        [SerializeField] private int _knockbackUpLevel;
+        [SerializeField] private float _speed;
+        [SerializeField] private Vector2 _direction;
         
         [Header("Collision Settings")]
-        public LayerMask characterLayer;
-        public LayerMask solidLayer;
+        [SerializeField] LayerMask _characterLayer;
+        [SerializeField] LayerMask _solidLayer;
 
-        public override void Reset()
+        public override void OnNetworkDespawn()
         {
-            _lifeTimeTimer = LifeTime;
-            Direction = Vector2.zero;
+            _lifeTimeTimer = _lifeTime;
+            _direction = Vector2.zero;
             _rigidbody.linearVelocity = Vector2.zero;
         }
         
-        public override void SetArgs(CustomBehaviourArgs args)
+        public void Set(string ownerTag, Vector2 direction)
         {
-            if (args is BulletArgs bulletArgs)
-            {
-                OwnerTag = bulletArgs.OwnerTag;
-                Damage = bulletArgs.Damage;
-                LifeTime = bulletArgs.LifeTime;
-                KnockbackLevel = bulletArgs.KnockbackLevel;
-                Speed = bulletArgs.Speed;
-                Direction = bulletArgs.Direction;
-
-                if (Direction != Vector2.zero)
-                {
-                    transform.up = Direction.normalized;
-                }
-            }
+            _ownerTag = ownerTag;
+            _direction = direction;
+            transform.right = direction;
         }
 
         private void Update()
@@ -56,17 +47,15 @@ namespace Code.Gameplay.Objects
             if(_lifeTimeTimer > 0) _lifeTimeTimer -= Time.deltaTime;
             else 
             {
-                PoolReturn();
+                SelfDestroy();
             }
         }
 
         private void FixedUpdate()
         {
-            if(!IsServer) return;
-            
-            if (Direction != Vector2.zero)
+            if (_direction != Vector2.zero)
             {
-                _rigidbody.linearVelocity = Direction.normalized * Speed;
+                _rigidbody.linearVelocity = _direction.normalized * _speed;
             }
         }
 
@@ -74,27 +63,36 @@ namespace Code.Gameplay.Objects
         {
             if(!IsServer) return;
             
-            if (!other.gameObject.CompareTag(OwnerTag) && LayerMaskUtils.CompareGameObjectLayerMask(other.gameObject, characterLayer))
+            if (!other.gameObject.CompareTag(_ownerTag) && LayerMaskUtils.CompareGameObjectLayerMask(other.gameObject, _characterLayer))
             {
                 PlayerController player = other.gameObject.GetComponent<PlayerController>();
                 if (player != null)
                 {
-                    // Handle player hit logic
+                    if (player.Dependencies.TryGetFeature(out Health health))
+                    {
+                        health.Attack(new ()
+                        {
+                            DamagePercentage = _damage,
+                            KnockbackLevel = _knockbackLevel,
+                            KnockbackUpLevel = _knockbackUpLevel,
+                            SourcePosition = transform.position,
+                            Success = true
+                        });
+                    }
                 }
-                PoolReturn();
+                SelfDestroy();
             }
             
-            else if (LayerMaskUtils.CompareGameObjectLayerMask(other.gameObject, solidLayer))
+            else if (LayerMaskUtils.CompareGameObjectLayerMask(other.gameObject, _solidLayer))
             {
-                PoolReturn();
+                SelfDestroy();
             }
         }
 
-        private void PoolReturn()
+        private void SelfDestroy()
         {
             if(!IsServer) return;
-            
-            networkObject.Despawn();
+            NetworkObject.Despawn();
         }
     }
 }

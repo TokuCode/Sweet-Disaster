@@ -58,18 +58,12 @@ namespace Code.Systems.NetworkObjectPool
             }
         }
 
-        public NetworkObject GetNetworkObject(GameObject prefab, Vector3 position, Quaternion rotation, CustomBehaviourArgs args = null)
+        public NetworkObject GetNetworkObject(GameObject prefab, Vector3 position, Quaternion rotation)
         {
             var networkObject = _pooledObjects[prefab].Get();
             var noTransform = networkObject.transform;
             noTransform.position = position;
             noTransform.rotation = rotation;
-            
-            var customBehaviour = networkObject.gameObject.GetComponent<PoolCustomBehaviour>();
-            if (customBehaviour != null)
-            {
-                customBehaviour.SetArgs(args);
-            }
             
             return networkObject;
         }
@@ -83,15 +77,7 @@ namespace Code.Systems.NetworkObjectPool
         {
             NetworkObject CreateFunc()
             {
-                var networkObject = Instantiate(prefab).GetComponent<NetworkObject>();
-                
-                var customBehaviour = networkObject.gameObject.GetComponent<PoolCustomBehaviour>();
-                if (customBehaviour != null)
-                {
-                    customBehaviour.Prefab = prefab;
-                }
-                
-                return networkObject;
+                return Instantiate(prefab).GetComponent<NetworkObject>();
             }
 
             void ActionOnGet(NetworkObject networkObject)
@@ -101,12 +87,6 @@ namespace Code.Systems.NetworkObjectPool
             
             void ActionOnRelease(NetworkObject networkObject)
             {
-                var customBehaviour = networkObject.gameObject.GetComponent<PoolCustomBehaviour>();
-                if (customBehaviour != null)
-                {
-                    customBehaviour.Reset();
-                }
-                
                 networkObject.gameObject.SetActive(false);
             }
             
