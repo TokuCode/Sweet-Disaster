@@ -9,6 +9,7 @@ using Unity.Services.Multiplayer;
 using UnityEngine;
 using Code.Helpers.UI;
 using System.Linq;
+using UnityEngine.SceneManagement;
 
 namespace Code.Networking.Session
 {
@@ -17,7 +18,8 @@ namespace Code.Networking.Session
     {
         PlayerName,
         PlayerColor,
-        PlayerCharacter
+        PlayerCharacter,
+        PlayerReadyToRestart
     }
 
     public enum SessionPropertyKeys
@@ -53,7 +55,8 @@ namespace Code.Networking.Session
         {
             { PlayerPropertyKeys.PlayerName, "playerName" },
             { PlayerPropertyKeys.PlayerColor, "playerColor" },
-            { PlayerPropertyKeys.PlayerCharacter, "playerCharacter" }
+            { PlayerPropertyKeys.PlayerCharacter, "playerCharacter" },
+            { PlayerPropertyKeys.PlayerReadyToRestart, "playerReadyToRestart" }
         };
 
         private readonly Dictionary<SessionPropertyKeys, string> sessionKeys = new()
@@ -204,6 +207,7 @@ namespace Code.Networking.Session
 
         private void OnGameHasBeenStarted()
         {
+            if (SceneManager.GetActiveScene().name != "LobbyTest") return;
             if (ActiveSession == null) return;
             if (ActiveSession.Properties.TryGetValue(SessionKeys[SessionPropertyKeys.PlayersReady], out var value))
             {
@@ -299,7 +303,7 @@ namespace Code.Networking.Session
             await ActiveSession.SaveCurrentPlayerDataAsync();
             return true;
         }
-        
+    
         public bool AllPlayersHaveSelectedCharacters()
         {
             foreach (var player in ActiveSession.Players)

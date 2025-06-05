@@ -8,6 +8,7 @@ using Code.Helpers.UI;
 using Unity.Services.Multiplayer;
 using SessionManager = Code.Networking.Session.SessionManager;
 using Code.Networking.Session;
+using UnityEngine.SceneManagement;
 
 namespace Code.UserInterface.LobbyUI
 {
@@ -29,7 +30,7 @@ namespace Code.UserInterface.LobbyUI
         [SerializeField] private TMP_InputField codeInputField;
         [SerializeField] private Button startGameButton;
 
-        private void Awake()
+        private async void Awake()
         {
             if (SessionManager.Instance == null) return;
             
@@ -40,6 +41,15 @@ namespace Code.UserInterface.LobbyUI
             
             // Session events
             SessionManager.Instance.ActiveSessionAvailable += OnActiveSessionAvailable;
+
+            if (SessionManager.Instance.ActiveSession != null)
+            {
+                GameObject.Find("PreLobby").SetActive(false);
+                SessionManager.Instance.ActiveSession.CurrentPlayer.SetProperty(
+                    SessionManager.Instance.PlayerKeys[PlayerPropertyKeys.PlayerReadyToRestart],
+                    new PlayerProperty("false", VisibilityPropertyOptions.Member));
+                await SessionManager.Instance.ActiveSession.SaveCurrentPlayerDataAsync();
+            }
         }
         
         private void OnDisable()
@@ -71,6 +81,7 @@ namespace Code.UserInterface.LobbyUI
         
         private void RefreshLobby()
         {
+            if (SceneManager.GetActiveScene().name != "LobbyTest") return;
             RefreshPlayerList(SessionManager.Instance.ActiveSession.Players.ToList(), SessionManager.Instance.PlayerColors);
             RefreshCharacterSelectionUI(SessionManager.Instance.ActiveSession.Players.ToList(), SessionManager.Instance.PlayerColors);
             RefreshStartGameButton();
