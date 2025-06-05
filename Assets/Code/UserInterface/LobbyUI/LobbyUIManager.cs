@@ -22,8 +22,9 @@ namespace Code.UserInterface.LobbyUI
         
         [Header("Character selection visuals")]
         [SerializeField] private List<CharacterButtonUI> characterButtons;
-        
-        [Header("Lobby general")]
+
+        [Header("Lobby general")] 
+        [SerializeField] private TextMeshProUGUI statusText;
         [SerializeField] private TextMeshProUGUI codeText;
         [SerializeField] private TMP_InputField codeInputField;
         [SerializeField] private Button startGameButton;
@@ -73,6 +74,7 @@ namespace Code.UserInterface.LobbyUI
             RefreshPlayerList(SessionManager.Instance.ActiveSession.Players.ToList(), SessionManager.Instance.PlayerColors);
             RefreshCharacterSelectionUI(SessionManager.Instance.ActiveSession.Players.ToList(), SessionManager.Instance.PlayerColors);
             RefreshStartGameButton();
+            RefreshStatusText();
         }
 
         private void RefreshPlayerList(List<IReadOnlyPlayer> players, IReadOnlyDictionary<string, Color> colorMap)
@@ -130,14 +132,34 @@ namespace Code.UserInterface.LobbyUI
             if (SessionManager.Instance.ActiveSession.IsHost && SessionManager.Instance.ActiveSession.PlayerCount > 1)
                 startGameButton.interactable = SessionManager.Instance.AllPlayersHaveSelectedCharacters();
         }
-        
-        public async void OnCharacterSelected(string characterName)
+
+        private void RefreshStatusText()
         {
-            bool success = await SessionManager.Instance.TrySelectCharacter(characterName);
+            string charName = SessionManager.Instance.ActiveSession.CurrentPlayer.Properties.
+                TryGetValue(SessionManager.Instance.PlayerKeys[PlayerPropertyKeys.PlayerCharacter], out var charProp)
+                ? charProp.Value : String.Empty;
+            
+            if (charName != String.Empty && charName != "None")
+            {
+                if (SessionManager.Instance.ActiveSession.PlayerCount > 1)
+                {
+                    if (SessionManager.Instance.AllPlayersHaveSelectedCharacters())
+                        statusText.text = SessionManager.Instance.ActiveSession.IsHost ? 
+                            "La partida esta lista para ser iniciada" : "Esperando al anfitrión";
+                    else statusText.text = "Esperando a los jugadores";
+                }
+                else statusText.text = "Esperando a los jugadores";
+            }
+            else statusText.text = "Elige tu personaje";
+        }
+        
+        public async void OnCharacterSelected(CharacterButtonUI character)
+        {
+            bool success = await SessionManager.Instance.TrySelectCharacter(character.characterName);
             if (!success)
                 Debug.Log("Character already taken");
             else
-                Debug.Log($"My Character: {characterName}");
+                Debug.Log($"My Character: {character.characterName}");
         }
         
         public void CopyToClipboard() => GUIUtility.systemCopyBuffer = codeText.text;

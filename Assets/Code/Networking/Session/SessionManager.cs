@@ -23,10 +23,11 @@ namespace Code.Networking.Session
     public enum SessionPropertyKeys
     {
         PlayersReady,
-        Map
+        Map,
+        Winner
     }
 
-    public class SessionManager : PersistentNetowrkSingleton<SessionManager>
+    public class SessionManager : PersistentSingleton<SessionManager>
     {
         // Private members
         private ISession activeSession;
@@ -39,6 +40,14 @@ namespace Code.Networking.Session
             { "yellow", Color.yellow },
             { "green", Color.green }
         };
+        
+        private readonly Dictionary<Color, string> playerColorToTag = new()
+        {
+            { Color.blue, "P1" },
+            { Color.red, "P2" },
+            { Color.yellow, "P3" },
+            { Color.green, "P4" }
+        };
 
         private readonly Dictionary<PlayerPropertyKeys, string> playerKeys = new()
         {
@@ -50,7 +59,8 @@ namespace Code.Networking.Session
         private readonly Dictionary<SessionPropertyKeys, string> sessionKeys = new()
         {
             { SessionPropertyKeys.PlayersReady, "playersReady" },
-            { SessionPropertyKeys.Map, "Map" }
+            { SessionPropertyKeys.Map, "Map" },
+            { SessionPropertyKeys.Winner, "winner" }
         };
 
         private readonly string[] randomNames =
@@ -84,6 +94,8 @@ namespace Code.Networking.Session
         public Dictionary<string, ulong> PlayerIdToClientId => playerIdToClientId;
 
         public IReadOnlyDictionary<string, Color> PlayerColors => playerColors;
+        
+        public IReadOnlyDictionary<Color, string> PlayerColorToTag => playerColorToTag;
 
         public IReadOnlyDictionary<PlayerPropertyKeys, string> PlayerKeys => playerKeys;
 
@@ -95,6 +107,8 @@ namespace Code.Networking.Session
         private async void Start() =>
             await InitializeServices(); // Initialize unity services and sign in player anonymously
 
+        private void OnDisable() => Destroy(gameObject);
+        
         private async Task InitializeServices()
         {
             try
@@ -279,8 +293,7 @@ namespace Code.Networking.Session
                 p.Properties.TryGetValue(playerKeys[PlayerPropertyKeys.PlayerCharacter], out var prop) &&
                 prop.Value == characterName);
 
-            if (isTaken)
-                return false;
+            if (isTaken) return false;
 
             ActiveSession.CurrentPlayer.SetProperty(playerKeys[PlayerPropertyKeys.PlayerCharacter], new PlayerProperty(characterName, VisibilityPropertyOptions.Member));
             await ActiveSession.SaveCurrentPlayerDataAsync();

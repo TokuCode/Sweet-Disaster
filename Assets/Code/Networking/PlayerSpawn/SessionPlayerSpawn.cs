@@ -47,8 +47,10 @@ namespace Code.Networking.PlayerSpawn
                 return;
             }
 
-            foreach (var sessionPlayer in SessionManager.Instance.ActiveSession.Players) 
+            foreach (var sessionPlayer in SessionManager.Instance.ActiveSession.Players)
+            {
                 SpawnPlayer(sessionPlayer);
+            }
         }
 		
         private void SpawnPlayer(IReadOnlyPlayer sessionPlayer)
@@ -77,20 +79,21 @@ namespace Code.Networking.PlayerSpawn
             }
 
             // Spawn the player
-            Transform spawnPoint = GetNextSpawnPoint();
+            Transform spawnPoint = _spawnPoints[_index % _spawnPoints.Count];
             GameObject playerObj = Instantiate(character.characterPrefab, spawnPoint.position, spawnPoint.rotation);
+            
+            playerObj.tag = _tags[_index % _tags.Count];
+            
+            /*string colorName = sessionPlayer.Properties.
+                TryGetValue(SessionManager.Instance.PlayerKeys[PlayerPropertyKeys.PlayerColor], out var colorProp)
+                ? colorProp.Value : String.Empty;
+            playerObj.transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>().color =
+                SessionManager.Instance.PlayerColors[colorName];*/
+            
+            _index++;
 
             NetworkObject networkObject = playerObj.GetComponent<NetworkObject>();
-            playerObj.gameObject.tag = _tags[_index % _tags.Count];
-            
-            networkObject.SpawnAsPlayerObject(clientId);
-        }
-
-        private Transform GetNextSpawnPoint()
-        {
-            var spawnPoint = _spawnPoints[_index % _spawnPoints.Count];
-            _index++;
-            return spawnPoint;
+            networkObject.SpawnAsPlayerObject(clientId, true);
         }
     }   
 }
