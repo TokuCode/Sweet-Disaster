@@ -15,7 +15,7 @@ namespace Code.Gameplay.Character.Features
         [Header("Runtime")]
         [SerializeField] private bool _onDeparture;
         public bool OnDeparture => _onDeparture;
-        public bool CanJump(Crouch crouch) => !crouch.IsCrouching; //TODO Add Shield, Stun, Throw Checks
+        public bool CanJump(Crouch crouch, Health health) => !crouch.IsCrouching && !health.IsStunned;
         private bool _cachedJumpInput;
         private float _jumpCooldownTimer;
 
@@ -41,8 +41,9 @@ namespace Code.Gameplay.Character.Features
         public void TryServerJump()
         {
             if(!_dependencies.TryGetFeature(out Crouch crouch)) return;
+            if(!_dependencies.TryGetFeature(out Health health)) return;
 
-            bool canJump = CanJump(crouch);
+            bool canJump = CanJump(crouch, health);
             
             if(_jumpCooldownTimer > 0 || !canJump) return;
             

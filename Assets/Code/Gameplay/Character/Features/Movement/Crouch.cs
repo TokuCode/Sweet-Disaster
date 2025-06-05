@@ -15,7 +15,7 @@ namespace Code.Gameplay.Character.Features
         [Header("Runtime")]
         [SerializeField] private bool _isCrouching;
         public bool IsCrouching => _isCrouching;
-        public bool CanCrouch(PhysicsCheck check, Jump jump) => check.IsGrounded && !jump.OnDeparture; //TODO Add Stun Check 
+        public bool CanCrouch(PhysicsCheck check, Jump jump, Health health) => check.IsGrounded && !jump.OnDeparture && !health.IsStunned; //TODO Add Stun Check 
         [SerializeField] private bool _startingCrouch;
         public bool StartingCrouch => _startingCrouch;
 
@@ -47,8 +47,9 @@ namespace Code.Gameplay.Character.Features
         {
             if (!_dependencies.TryGetFeature(out Jump jump)) return;
             if (!_dependencies.TryGetFeature(out PhysicsCheck check)) return;
+            if (!_dependencies.TryGetFeature(out Health health)) return;
             
-            bool canCrouch = CanCrouch(check, jump);
+            bool canCrouch = CanCrouch(check, jump, health);
             
             if (!_isCrouching && crouchInput && canCrouch)
             {

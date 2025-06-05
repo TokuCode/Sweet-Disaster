@@ -5,7 +5,7 @@ namespace Code.Helpers.Pipeline
 {
     public class Pipeline<T>
     {
-        private readonly List<IProcess<T>> bindings = new List<IProcess<T>>();
+        private readonly List<IProcess<T>> bindings = new ();
         
         public void Register(IProcess<T> binding) => bindings.Add(binding);
         public void Deregister(IProcess<T> binding) => bindings.Remove(binding);
