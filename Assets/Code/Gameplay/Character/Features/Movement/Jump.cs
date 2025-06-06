@@ -57,7 +57,15 @@ namespace Code.Gameplay.Character.Features
             _onDeparture = true;
         }
         
-        private void JumpAction() => _invoker.AddForce.Perform(new(Vector2.up, _jumpImpulse, ForceMode2D.Impulse));
+        private void JumpAction()
+        {
+            float compensation = 0;
+            if (_invoker.Velocity.Request(out var velocity).success)
+            {
+                if(velocity.y < 0) compensation = -velocity.y;
+            }
+            _invoker.AddForce.Perform(new(Vector2.up, _jumpImpulse + compensation, ForceMode2D.Impulse));
+        }
 
         private void BetterServerJump()
         {

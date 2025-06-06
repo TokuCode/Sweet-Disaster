@@ -61,6 +61,7 @@ namespace Code.Systems.NetworkObjectPool
         public NetworkObject GetNetworkObject(GameObject prefab, Vector3 position, Quaternion rotation)
         {
             var networkObject = _pooledObjects[prefab].Get();
+            
             var noTransform = networkObject.transform;
             noTransform.position = position;
             noTransform.rotation = rotation;
@@ -94,22 +95,21 @@ namespace Code.Systems.NetworkObjectPool
             {
                 Destroy(networkObject.gameObject);
             }
-            
+
             _prefabs.Add(prefab);
             
             _pooledObjects[prefab] = new ObjectPool<NetworkObject>(CreateFunc, ActionOnGet, ActionOnRelease, ActionOnDestroy, defaultCapacity: prewarmCount);
-            
             var prewarmNetworkObjects = new List<NetworkObject>();
-            for (int i = 0; i < prewarmCount; i++)
+            
+            for (var i = 0; i < prewarmCount; i++)
             {
                 prewarmNetworkObjects.Add(_pooledObjects[prefab].Get());
             }
-            
             foreach (var networkObject in prewarmNetworkObjects)
             {
                 _pooledObjects[prefab].Release(networkObject);
             }
-
+            
             NetworkManager.Singleton.PrefabHandler.AddHandler(prefab, new PooledPrefabInstanceHandler(prefab, this));
         }
     }

@@ -1,11 +1,14 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using Code.Gameplay.Character.Framework;
 using Code.Gameplay.Objects;
+using Code.Helpers.Utils;
 using Code.Networking.ClientPrediction;
 using Code.Systems.Input;
 using Code.Systems.NetworkObjectPool;
 using Unity.Netcode;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Code.Gameplay.Character.Features
 {
@@ -42,6 +45,7 @@ namespace Code.Gameplay.Character.Features
         
         [Header("Projectile Settings")]
         [SerializeField] private GameObject _bulletPrefab;
+        private NetworkObject _bulletNetworkObject;
         
         [Header("Trajectory Settings")]
         [SerializeField] private float _baseImprecision;
@@ -49,14 +53,19 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private float _imprecisionToAngleFactor;
         [SerializeField] private float _airImprecision;
         [SerializeField] private float _movementImprecisionPerSpeedUnit;
+        
+        [Header("Recoil Settings")]
+        [SerializeField] private float _recoilForce;
 
         [Header("Server Side")] 
-        [SerializeField] private bool _shootRequested;
         [SerializeField] private bool _reloadRequested;
 
         public override void InitializeFeature(Controller controller)
         {
             if(IsServer) _currentAmmo.Value = _magazineSize;
+
+            if (IsOwner) InputReader.Instance.OnShootPressed += OnShootPressed;
+            
             base.InitializeFeature(controller);
         }
 
@@ -67,16 +76,13 @@ namespace Code.Gameplay.Character.Features
             SetActive();
             UpdateImprecision();
             
+            if (_holdToShoot && InputReader.Instance.Shoot && IsOwner)
+                TryShooting();
+            
             if (!IsServer) return;
             
             if(_reloadTimer > 0) _reloadTimer -= Time.deltaTime;
             else if (_isReloading.Value) StopReloading();
-
-            if (_shootRequested)
-            {
-                TryShooting();
-                _shootRequested = false;
-            }
 
             if (_reloadRequested)
             {
@@ -86,6 +92,11 @@ namespace Code.Gameplay.Character.Features
         }
 
         public override void FixedUpdateFeature() { }
+
+        private void OnShootPressed()
+        {
+            if(!_holdToShoot) TryShooting();
+        }
         
         private void TryShooting()
         {
@@ -97,7 +108,11 @@ namespace Code.Gameplay.Character.Features
             bool canShootExternal = !crouch.IsCrouching && !health.IsStunned;
             if (canShootInternal && canShootExternal)
                 StartCoroutine(ShootingSequence());
-            else if (_currentAmmo.Value <= 0) TryReload();
+            else if (_currentAmmo.Value <= 0)
+            {
+                if(!IsServer) RequestReloadToServerRpc();
+                else TryReload();
+            }
         }
 
         private IEnumerator ShootingSequence()
@@ -108,8 +123,9 @@ namespace Code.Gameplay.Character.Features
             {
                 ShootAction();
                 _lastShotTime = Time.time;
-                _currentAmmo.Value--;
-
+                if(IsHost)_currentAmmo.Value--;
+                else RequestAmmoDepletionToServerRpc();
+                
                 if (_currentAmmo.Value == 0)
                     break;
 
@@ -117,18 +133,48 @@ namespace Code.Gameplay.Character.Features
             }
             
             _isShooting = false;
-            
-            if(_currentAmmo.Value < 0) TryReload();
+
+            if (_currentAmmo.Value <= 0)
+            {
+                if(!IsServer) RequestReloadToServerRpc();
+                else TryReload();
+            }
         }
 
         private void ShootAction()
         {
-            if (!_invoker.CenterPosition.Request(out Vector3 centerposition).success) return;
-            var position = centerposition + Vector3.up * InputReader.Instance.HandleHeight + cachedHandlePosition;
-            var instance = NetworkObjectPool.Singleton.GetNetworkObject(_bulletPrefab, position, Quaternion.identity);
-            instance.Spawn();
-            var bullet = instance.gameObject.GetComponent<ObjectBullet>();
-            bullet?.Set(gameObject.tag, ImprecisionDirection(cachedHandleDirection));
+            var direction = ImprecisionDirection(InputReader.Instance.HandleDirection);
+            var position = InputReader.Instance.HandlePosition;
+            
+            FireAction(position, direction, out int id);
+            ReplicateFireGunRpc(position, direction, id, DateTime.Now);
+            
+            Recoil(direction);
+        }
+
+        private void FireAction(Vector3 position, Vector3 direction, out int bulletId)
+        {
+            var rotation = DirectionToRotation.GetRotation(direction);
+            
+            _bulletNetworkObject = NonNetworkObjectPool.Singleton.GetNetworkObject(_bulletPrefab, position, rotation, out bulletId);
+            
+            var bullet = _bulletNetworkObject.gameObject.GetComponent<ObjectBullet>();
+            bullet.Initialize(direction, gameObject.tag, 0);
+        }
+
+        private void ReplicateFireAction(Vector3 position, Vector3 direction, int bulletId, float latency)
+        {
+            var rotation = DirectionToRotation.GetRotation(direction);
+            
+            _bulletNetworkObject = NonNetworkObjectPool.Singleton.GetNetworkObjectById(_bulletPrefab, position, rotation, bulletId);
+            
+            var bullet = _bulletNetworkObject.gameObject.GetComponent<ObjectBullet>();
+            bullet.Initialize(direction, gameObject.tag, latency); 
+        }
+
+        private void Recoil(Vector3 direction)
+        {
+            _invoker.AddForce.Perform(new(-direction, _recoilForce, ForceMode2D.Impulse));
         }
 
         private void UpdateImprecision()
@@ -178,42 +224,30 @@ namespace Code.Gameplay.Character.Features
             if (!_dependencies.TryGetFeature(out GunBelt belt)) return;
             _active = belt.ActiveWeapon == GunBelt.Weapon.Gun;
         }
-
-        [ServerRpc]
-        private void CacheHandleForServerRpc(Vector3 position, Vector3 direction)
-        {
-            cachedHandlePosition = position;
-            cachedHandleDirection = direction;
-        }
         
         public override void Apply(ref InputPayload @event)
         {
-            CacheHandleForServerRpc(@event.handlePosition, @event.handleDirection);
-            
-            bool shootHold = @event.shootRequested;
-            bool shootPressed = @event.shootRequested && !lastShootInput;
-
-            if (_holdToShoot && shootHold)
-                RequestShootToServerRpc();
-            else if (!_holdToShoot && shootPressed)
-                RequestShootToServerRpc();
-            
-            if(@event.reloadRequested || _currentAmmo.Value == 0)
+            if(@event.reload)
                 RequestReloadToServerRpc();
-
-            lastShootInput = shootHold;
         }
 
-        [ServerRpc]
-        private void RequestShootToServerRpc()
-        {
-            _shootRequested = true;
-        }
-        
         [ServerRpc]
         private void RequestReloadToServerRpc()
         {
             _reloadRequested = true;
+        }
+
+        [ServerRpc]
+        private void RequestAmmoDepletionToServerRpc()
+        {
+            _currentAmmo.Value--;
+        }
+
+        [Rpc(SendTo.NotMe)]
+        private void ReplicateFireGunRpc(Vector3 position, Vector3 direction, int objectId, DateTime timestamp)
+        {
+            float latency = MilisecondsUtils.CalculateLatency(timestamp);
+            ReplicateFireAction(position, direction, objectId, latency);
         }
     }
 }

@@ -8,5 +8,8 @@ namespace Code.Systems.NetworkObjectPool
     {
         public GameObject prefab;
         public int prewarmCount;
+        public SerializableGuid prefabId;
     }
+    
+    
 }

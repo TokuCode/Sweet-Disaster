@@ -16,5 +16,10 @@ namespace Code.Gameplay.Character
                 transform.position = _cameraTarget.transform.position + Vector3.up * _height;
             }
         }
+
+        public void SetTarget(GameObject target)
+        {
+            _cameraTarget = target;
+        }
     }
 }

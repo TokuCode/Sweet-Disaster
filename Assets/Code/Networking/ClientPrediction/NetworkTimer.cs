@@ -27,5 +27,11 @@
 
             return false;
         }
+
+        public void Reset()
+        {
+            CurrentTick = 0;
+            timer = 0;
+        }
     }
 }

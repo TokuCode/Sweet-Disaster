@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using Unity.Netcode;
+using Unity.Collections;
 
 namespace Code.Networking.ClientPrediction
 {
@@ -30,12 +31,9 @@ namespace Code.Networking.ClientPrediction
         public ulong networkObjectId;
         
         public float move;
-        public Vector3 handlePosition;
-        public Vector3 handleDirection;
         public bool jump;
         public bool crouch;
-        public bool shootRequested;
-        public bool reloadRequested;
+        public bool reload;
         //public bool shieldAction;
         //public bool bombRequested;
 
@@ -45,14 +43,27 @@ namespace Code.Networking.ClientPrediction
             serializer.SerializeValue(ref timestamp);
             serializer.SerializeValue(ref networkObjectId);
             serializer.SerializeValue(ref move);
-            serializer.SerializeValue(ref handlePosition);
-            serializer.SerializeValue(ref handleDirection);
             serializer.SerializeValue(ref jump);
             serializer.SerializeValue(ref crouch);
             //serializer.SerializeValue(ref shieldAction);
-            serializer.SerializeValue(ref shootRequested);
             //serializer.SerializeValue(ref bombRequested);
-            serializer.SerializeValue(ref reloadRequested);
+            serializer.SerializeValue(ref reload);
+        }
+    }
+
+    public struct BulletStatePayload : INetworkSerializable
+    {
+        public int tick;
+        public Vector3 position;
+        public Vector3 direction;
+        public FixedString32Bytes ownerTag;
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref tick);
+            serializer.SerializeValue(ref position);
+            serializer.SerializeValue(ref direction);
+            serializer.SerializeValue(ref ownerTag);
         }
     }
 }
