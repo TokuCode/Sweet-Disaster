@@ -1,4 +1,5 @@
-﻿using Code.Helpers.Singleton;
+﻿using System;
+using Code.Helpers.Singleton;
 using Code.Helpers.Utils;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -8,9 +9,10 @@ namespace Code.Systems.Input
     public class InputReader: Singleton<InputReader>, IControl
     {
         [SerializeField] private float _handleHeight;
-        public float HandleHeight => _handleHeight;
         [SerializeField] private float _handleDistance;
         private Vector3 _playerPosition;
+
+        public event Action OnShootPressed;
         
         public float Move => inputActions.Gameplay.Move.ReadValue<float>();
         public bool Jump { get; private set; }
@@ -21,6 +23,8 @@ namespace Code.Systems.Input
         public bool Switch => inputActions.Gameplay.Switch.ReadValue<Vector2>().y != 0;
         public Vector3 HandlePosition { get; private set; }
         public Vector3 HandleDirection { get; private set; }
+        private Vector3 mousePosition;
+        
         
         PlayerControls inputActions;
 
@@ -64,19 +68,17 @@ namespace Code.Systems.Input
 
         public void OnAim(InputAction.CallbackContext context)
         {
-            var mousePosition = context.ReadValue<Vector2>();
-            
-            var playerAimPosition = _playerPosition + Vector3.up * _handleHeight;
-            var mousePositionWorld = CameraUtils.ScreenToWorldPoint(mousePosition);
-            
-            HandleDirection = (mousePositionWorld - playerAimPosition).normalized;
-            HandlePosition = HandleDirection * _handleDistance;
+            mousePosition = context.ReadValue<Vector2>();
+            CalculateHandle();
         }
 
         public void OnShoot(InputAction.CallbackContext context)
         {
             if (context.performed)
+            {
+                OnShootPressed?.Invoke(); 
                 Shoot = true;
+            }
             else if (context.canceled)
                 Shoot = false;
         }
@@ -100,6 +102,16 @@ namespace Code.Systems.Input
         public void CachePlayerPosition(Vector3 playerPosition)
         {
             _playerPosition = playerPosition;
+            CalculateHandle();
+        }
+        
+        void CalculateHandle()
+        {
+            var playerAimPosition = _playerPosition + Vector3.up * _handleHeight;
+            var mousePositionWorld = CameraUtils.ScreenToWorldPoint(mousePosition);
+            
+            HandleDirection = (mousePositionWorld - playerAimPosition).normalized;
+            HandlePosition = HandleDirection * _handleDistance + playerAimPosition;
         }
     }
 }

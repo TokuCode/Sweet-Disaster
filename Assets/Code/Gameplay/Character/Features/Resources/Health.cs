@@ -62,20 +62,13 @@ namespace Code.Gameplay.Character.Features
         {
             float knockback = knockbackForce * HealthRatio * 10f;
             
-            KnockbackClientRpc(direction, knockback);
+            _invoker.AddForce.Perform(new(direction, knockback, ForceMode2D.Impulse));
             
             float stunTime = _stunMinDuration + _stunDurationPerKnockback * knockback;
-            Stun(stunTime);
+            if(IsServer) Stun(stunTime);
+            //else RequestStunServerRpc(stunTime);
         }
 
-        [ClientRpc]
-        private void KnockbackClientRpc(Vector3 direction, float knockback)
-        {
-            if(!IsOwner) return;
-            
-            _invoker.AddForce.Perform(new(direction, knockback, ForceMode2D.Impulse));
-        }
-    
         public void Stun(float duration)
         {
             _isStunned.Value = true;
@@ -101,11 +94,25 @@ namespace Code.Gameplay.Character.Features
             
             if (attackEvent.Success)
             {
-                Damage(attackEvent.DamagePercentage);
+                if(IsServer)Damage(attackEvent.DamagePercentage);
+                //else DamageServerRpc(attackEvent.DamagePercentage);
+                
                 var direction = transform.position - attackEvent.SourcePosition;
                 Knockback(direction.normalized, KnockbackTable.Instance.GetKnockbackForce(attackEvent.KnockbackLevel));
                 Knockback(Vector3.up, KnockbackTable.Instance.GetKnockbackForce(attackEvent.KnockbackUpLevel));
             }
+        }
+
+        [ServerRpc]
+        private void DamageServerRpc(float damagePercentage)
+        {
+            Damage(damagePercentage);
+        }
+
+        [ServerRpc]
+        private void RequestStunServerRpc(float stunDuration)
+        {
+            Stun(stunDuration);
         }
     }
 }

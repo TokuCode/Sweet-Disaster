@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections;
 using Code.Gameplay.Character.Command;
 using Code.Gameplay.Character.Framework;
 using Code.Helpers;
@@ -97,6 +96,9 @@ namespace Code.Gameplay.Character
         public override void OnNetworkSpawn()
         {
             SetSingleton();
+
+            if (IsOwner) CameraTarget.Instance.SetTarget(gameObject);
+            
             base.OnNetworkSpawn();
         }
 
@@ -121,12 +123,8 @@ namespace Code.Gameplay.Character
             _extrapolationTimer.Tick(Time.deltaTime);
             Extrapolate();
             
-            if (!IsOwner && !IsServer) return;
-            
-            if (Invoker.CenterPosition.Request(out Vector3 centerPosition).success)
-            {
+            if (Invoker.CenterPosition.Request(out Vector3 centerPosition).success && IsOwner)
                 InputReader.Instance.CachePlayerPosition(centerPosition);
-            }
             
             base.Update();
         }
@@ -189,10 +187,7 @@ namespace Code.Gameplay.Character
                 move = _input.Move,
                 jump = _input.Jump,
                 crouch = _input.Crouch,
-                handlePosition = _input.HandlePosition,
-                handleDirection = _input.HandleDirection,
-                shootRequested = _input.Shoot,
-                reloadRequested = _input.Reload
+                reload = _input.Reload
             };
             
             _clientInputBuffer.Add(inputPayload, bufferIndex);

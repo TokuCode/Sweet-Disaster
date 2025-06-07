@@ -1,53 +1,64 @@
-﻿using Code.Gameplay.Character;
+﻿using System;
+using Code.Gameplay.Character;
 using Code.Gameplay.Character.Features;
+using Code.Helpers;
 using Code.Helpers.Utils;
+using Code.Networking.ClientPrediction;
 using Unity.Netcode;
 using UnityEngine;
+using Unity.Collections;
 
 namespace Code.Gameplay.Objects
 {
     public class ObjectBullet : NetworkBehaviour
     {
+        private const float maxLatencyMiliseconds = 250;
+        
+        [SerializeField] private bool started;
+        
         [Header("References")]
         [SerializeField] private Rigidbody2D _rigidbody;
         [SerializeField] private CircleCollider2D _circleCollider2D;
+        [SerializeField] private SerializableGuid prefabId;
         
-        [Header("Settings")] 
-        [SerializeField] private string _ownerTag;
+        [Header("Static Settings")] 
         [SerializeField] private float _lifeTime;
-        [SerializeField] private float _lifeTimeTimer;
+        private float _lifeTimeTimer;
         [SerializeField] private float _damage;
         [SerializeField] private int _knockbackLevel;
         [SerializeField] private int _knockbackUpLevel;
         [SerializeField] private float _speed;
+        
+        [Header("Dynamic Settings")]
+        [SerializeField] private string _ownerTag;
         [SerializeField] private Vector2 _direction;
         
         [Header("Collision Settings")]
         [SerializeField] LayerMask _characterLayer;
         [SerializeField] LayerMask _solidLayer;
 
-        public override void OnNetworkDespawn()
-        {
-            _lifeTimeTimer = _lifeTime;
-            _direction = Vector2.zero;
-            _rigidbody.linearVelocity = Vector2.zero;
-        }
-        
-        public void Set(string ownerTag, Vector2 direction)
+        public void Initialize(Vector2 direction, string ownerTag, float latency)
         {
             _ownerTag = ownerTag;
             _direction = direction;
             transform.right = direction;
+            
+            latency = Mathf.Min(latency, maxLatencyMiliseconds/1000);
+            _rigidbody.position += _direction.normalized * (_speed * latency);
+            
+            _lifeTimeTimer = _lifeTime;
+
+            started = true;
         }
 
         private void Update()
         {
-            if (!IsServer) return;
+            if(!started || !IsServer) return;
             
             if(_lifeTimeTimer > 0) _lifeTimeTimer -= Time.deltaTime;
             else 
             {
-                SelfDestroy();
+                Reset();
             }
         }
 
@@ -61,7 +72,7 @@ namespace Code.Gameplay.Objects
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            if(!IsServer) return;
+            if(!started && String.IsNullOrEmpty(_ownerTag)) return;
             
             if (!other.gameObject.CompareTag(_ownerTag) && LayerMaskUtils.CompareGameObjectLayerMask(other.gameObject, _characterLayer))
             {
@@ -80,19 +91,23 @@ namespace Code.Gameplay.Objects
                         });
                     }
                 }
-                SelfDestroy();
             }
             
-            else if (LayerMaskUtils.CompareGameObjectLayerMask(other.gameObject, _solidLayer))
+            if (LayerMaskUtils.CompareGameObjectLayerMask(other.gameObject, _solidLayer) || (LayerMaskUtils.CompareGameObjectLayerMask(other.gameObject, _characterLayer) && !other.gameObject.CompareTag(_ownerTag)))
             {
-                SelfDestroy();
+                Reset();
             }
         }
 
-        private void SelfDestroy()
+        private void Reset()
         {
-            if(!IsServer) return;
-            NetworkObject.Despawn();
+            gameObject.SetActive(false);
+            
+            _ownerTag = string.Empty;
+            _direction = Vector3.zero;
+            _rigidbody.linearVelocity = Vector3.zero; 
+            
+            started = false;
         }
     }
 }

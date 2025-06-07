@@ -208,7 +208,7 @@ MonoBehaviour:
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 0
-  SpawnWithObservers: 1
+  SpawnWithObservers: 0
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
@@ -292,13 +292,17 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _rigidbody: {fileID: 6285292473920302630}
   _circleCollider2D: {fileID: 4640074391930752477}
-  _ownerTag: 
+  prefabId:
+    Part1: 3770557096
+    Part2: 1082732653
+    Part3: 3859855505
+    Part4: 2102966229
   _lifeTime: 4
-  _lifeTimeTimer: 0
   _damage: 0.05
-  _knockbackLevel: 5
-  _knockbackUpLevel: 10
+  _knockbackLevel: 12
+  _knockbackUpLevel: 15
   _speed: 25
+  _ownerTag: 
   _direction: {x: 0, y: 0}
   _characterLayer:
     serializedVersion: 2
