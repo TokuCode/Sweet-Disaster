@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Code.Helpers.Singleton
 {
-    public class PersistentNetowrkSingleton<T> : NetworkBehaviour where T : Component
+    public class PersistentNetworkSingleton<T> : NetworkBehaviour where T : Component
     {
         public bool AutoUnparentOnAwake = true;
         

@@ -1,5 +1,4 @@
 using Unity.Netcode;
-using Unity.Services.Authentication;
 using UnityEngine;
 
 namespace Code.Networking.Session
@@ -8,7 +7,9 @@ namespace Code.Networking.Session
     {
         public override void OnNetworkSpawn()
         {
-            string playerId = AuthenticationService.Instance.PlayerId;
+            base.OnNetworkSpawn();
+
+            string playerId = SessionManager.Instance.ActiveSession.CurrentPlayer.Id;
             Debug.Log($"[Client] Sending PlayerId: {playerId} to server...");
             SendPlayerIdServerRpc(playerId);
         }

@@ -4,20 +4,16 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Code.Helpers.UI;
 using Unity.Services.Multiplayer;
 using SessionManager = Code.Networking.Session.SessionManager;
-using Code.Networking.Session;
-using UnityEngine.SceneManagement;
+using System.Threading.Tasks;
+using Code.Helpers.UI;
+using Unity.Netcode;
 
 namespace Code.UserInterface.LobbyUI
 {
     public class LobbyUIManager : MonoBehaviour
     {
-        [Header("Buttons")]
-        [SerializeField] private Button createSessionButton;
-        [SerializeField] private Button joinSessionButton;
-        
         [Header("Player list visuals")]
 		[SerializeField] private List<PlayerSlotUI> playerSlots;
         
@@ -27,68 +23,56 @@ namespace Code.UserInterface.LobbyUI
         [Header("Lobby general")] 
         [SerializeField] private TextMeshProUGUI statusText;
         [SerializeField] private TextMeshProUGUI codeText;
-        [SerializeField] private TMP_InputField codeInputField;
         [SerializeField] private Button startGameButton;
+        [SerializeField] private Button backButton;
+
+        private SessionManager _sessionManager;
 
         private async void Awake()
         {
             if (SessionManager.Instance == null) return;
+            _sessionManager = SessionManager.Instance;
             
             // Buttons
-            createSessionButton.onClick.AddListener(SessionManager.Instance.StartSessionAsHost);
-            joinSessionButton.onClick.AddListener(() => SessionManager.Instance.JoinSessionByCode(codeInputField.text));
-            startGameButton.onClick.AddListener(SessionManager.Instance.NotifyGameIsSetToStart);
-            
-            // Session events
-            SessionManager.Instance.ActiveSessionAvailable += OnActiveSessionAvailable;
-
-            if (SessionManager.Instance.ActiveSession != null)
-            {
-                GameObject.Find("PreLobby").SetActive(false);
-                SessionManager.Instance.ActiveSession.CurrentPlayer.SetProperty(
-                    SessionManager.Instance.PlayerKeys[PlayerPropertyKeys.PlayerReadyToRestart],
-                    new PlayerProperty("false", VisibilityPropertyOptions.Member));
-                await SessionManager.Instance.ActiveSession.SaveCurrentPlayerDataAsync();
-            }
-        }
-        
-        private void OnDisable()
-        {
-            createSessionButton.onClick.RemoveAllListeners();
-            joinSessionButton.onClick.RemoveAllListeners();
-            startGameButton.onClick.RemoveAllListeners();
-            
-            if (SessionManager.Instance == null) return;
-            SessionManager.Instance.ActiveSessionAvailable -= OnActiveSessionAvailable;
+            startGameButton.onClick.AddListener(StartGame);
+            backButton.onClick.AddListener(_sessionManager.LeaveSession);
+            backButton.onClick.AddListener(() => UIUtilities.Instance.LoadScene("MainMenu"));
         }
 
-        private void OnActiveSessionAvailable()
+        private void Start()
         {
-            // Hide panel and pop
-            if (SessionManager.Instance.ActiveSession == null) return;
-            UIUtilities.Instance.PopDown(UIUtilities.Instance.MessageGameObject);
-            UIUtilities.Instance.PopDown(GameObject.Find("PreLobby"));
-            
             // Set code
-            codeText.text = SessionManager.Instance.ActiveSession.Code;
+            codeText.text = _sessionManager.ActiveSession.Code;
             
             // Build the lobby
             RefreshLobby();
             
             // Listen to changes to refresh the player list, character selection UI, and start game button
-            SessionManager.Instance.ActiveSession.Changed += RefreshLobby;
+            _sessionManager.ActiveSession.Changed += RefreshLobby;
+        }
+
+        private void OnDisable()
+        {
+            _sessionManager.ActiveSession.Changed -= RefreshLobby;
+            startGameButton.onClick.RemoveAllListeners();
+            backButton.onClick.RemoveAllListeners();
+        }
+
+        public void StartGame()
+        {
+            if (!_sessionManager.ActiveSession.IsHost) return;
+            NetworkManager.Singleton.SceneManager.LoadScene("MultiplayerTest", UnityEngine.SceneManagement.LoadSceneMode.Single);
         }
         
         private void RefreshLobby()
         {
-            if (SceneManager.GetActiveScene().name != "LobbyTest") return;
-            RefreshPlayerList(SessionManager.Instance.ActiveSession.Players.ToList(), SessionManager.Instance.PlayerColors);
-            RefreshCharacterSelectionUI(SessionManager.Instance.ActiveSession.Players.ToList(), SessionManager.Instance.PlayerColors);
+            RefreshPlayerList(_sessionManager.ActiveSession.Players.ToList());
+            RefreshCharacterSelectionUI(_sessionManager.ActiveSession.Players.ToList());
             RefreshStartGameButton();
             RefreshStatusText();
         }
 
-        private void RefreshPlayerList(List<IReadOnlyPlayer> players, IReadOnlyDictionary<string, Color> colorMap)
+        private void RefreshPlayerList(List<IReadOnlyPlayer> players)
         {
             // Clear old entries
             foreach (var slot in playerSlots)
@@ -96,23 +80,16 @@ namespace Code.UserInterface.LobbyUI
 
             for (int i = 0; i < players.Count; i++)
             {
-                string playerName = players[i].Properties.TryGetValue(
-                    SessionManager.Instance.PlayerKeys[PlayerPropertyKeys.PlayerName],
-                    out var nameProp)
+                string playerName = players[i].Properties.TryGetValue(_sessionManager.PlayerNameKey, out var nameProp)
                     ? nameProp.Value : String.Empty;
                 
-                string colorName = players[i].Properties.TryGetValue(
-                    SessionManager.Instance.PlayerKeys[PlayerPropertyKeys.PlayerColor],
-                    out var colorProp)
-                    ? colorProp.Value : String.Empty;
-                
-                colorMap.TryGetValue(colorName, out Color playerColor);
+                Color playerColor = _sessionManager.playerInfo.GetColor(players[i]);
                 
                 playerSlots[i].Setup(playerName, playerColor);
             }
         }
         
-        private void RefreshCharacterSelectionUI(List<IReadOnlyPlayer> players, IReadOnlyDictionary<string, Color> colorMap)
+        private void RefreshCharacterSelectionUI(List<IReadOnlyPlayer> players)
         {
             // Clear all markers
             foreach (var button in characterButtons)
@@ -123,39 +100,37 @@ namespace Code.UserInterface.LobbyUI
 
             foreach (var player in players)
             {
-                if (!player.Properties.TryGetValue(SessionManager.Instance.PlayerKeys[PlayerPropertyKeys.PlayerCharacter], out var charProp) ||
-                    !player.Properties.TryGetValue(SessionManager.Instance.PlayerKeys[PlayerPropertyKeys.PlayerColor], out var colorProp))
+                if (!player.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var charProp))
                     continue;
                 
                 var characterName = charProp.Value;
-                var colorName = colorProp.Value;
                 
                 var btn = characterButtons.FirstOrDefault(b => b.characterName == characterName);
                 if (btn == null) continue;
                 
                 btn.SelectButton.interactable = false;
-                btn.outlineColorImage.color = colorMap[colorName];
+                btn.outlineColorImage.color = _sessionManager.playerInfo.GetColor(player);
             }
         }
-
+        
         private void RefreshStartGameButton()
         {
-            if (SessionManager.Instance.ActiveSession.IsHost && SessionManager.Instance.ActiveSession.PlayerCount > 1)
-                startGameButton.interactable = SessionManager.Instance.AllPlayersHaveSelectedCharacters();
+            if (_sessionManager.ActiveSession.IsHost && _sessionManager.ActiveSession.PlayerCount > 1)
+                startGameButton.interactable = AllPlayersHaveSelectedCharacters();
         }
-
+        
         private void RefreshStatusText()
         {
-            string charName = SessionManager.Instance.ActiveSession.CurrentPlayer.Properties.
-                TryGetValue(SessionManager.Instance.PlayerKeys[PlayerPropertyKeys.PlayerCharacter], out var charProp)
+            string charName = _sessionManager.ActiveSession.CurrentPlayer.Properties.
+                TryGetValue(_sessionManager.PlayerCharacterKey, out var charProp)
                 ? charProp.Value : String.Empty;
             
             if (charName != String.Empty && charName != "None")
             {
-                if (SessionManager.Instance.ActiveSession.PlayerCount > 1)
+                if (_sessionManager.ActiveSession.PlayerCount > 1)
                 {
-                    if (SessionManager.Instance.AllPlayersHaveSelectedCharacters())
-                        statusText.text = SessionManager.Instance.ActiveSession.IsHost ? 
+                    if (AllPlayersHaveSelectedCharacters())
+                        statusText.text = _sessionManager.ActiveSession.IsHost ? 
                             "La partida esta lista para ser iniciada" : "Esperando al anfitrión";
                     else statusText.text = "Esperando a los jugadores";
                 }
@@ -163,14 +138,37 @@ namespace Code.UserInterface.LobbyUI
             }
             else statusText.text = "Elige tu personaje";
         }
+            
+        private bool AllPlayersHaveSelectedCharacters()
+        {
+            foreach (var player in _sessionManager.ActiveSession.Players)
+            {
+                if (!player.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var charProp) || 
+                    string.IsNullOrEmpty(charProp.Value) || charProp.Value == "None")
+                    return false;
+            }
+            return true;
+        }
+        
+        private async Task<bool> TrySelectCharacter(string characterName)
+        {
+            bool isTaken = _sessionManager.ActiveSession.Players.Any(p =>
+                p.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var prop) &&
+                prop.Value == characterName);
+
+            if (isTaken) return false;
+
+            _sessionManager.ActiveSession.CurrentPlayer.SetProperty(_sessionManager.PlayerCharacterKey,
+                new PlayerProperty(characterName, VisibilityPropertyOptions.Member));
+            await _sessionManager.ActiveSession.SaveCurrentPlayerDataAsync();
+            return true;
+        }
         
         public async void OnCharacterSelected(CharacterButtonUI character)
         {
-            bool success = await SessionManager.Instance.TrySelectCharacter(character.characterName);
-            if (!success)
-                Debug.Log("Character already taken");
-            else
-                Debug.Log($"My Character: {character.characterName}");
+            bool success = await TrySelectCharacter(character.characterName);
+            if (!success) Debug.Log("Character already taken");
+            else Debug.Log($"My Character: {character.characterName}");
         }
         
         public void CopyToClipboard() => GUIUtility.systemCopyBuffer = codeText.text;

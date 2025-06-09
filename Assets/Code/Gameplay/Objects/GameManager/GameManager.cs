@@ -1,7 +1,6 @@
 using Unity.Netcode;
 using System.Collections.Generic;
 using System.Linq;
-using Code.Helpers.UI;
 using Code.Networking.Session;
 using Unity.Services.Multiplayer;
 using UnityEngine;
@@ -14,17 +13,31 @@ namespace Code.Gameplay.Objects
         public static GameManager Instance;
 
         public HashSet<ulong> LostPlayers = new();
+        
+        private SessionManager _sessionManager;
 
         private void Awake()
         {
             if (Instance == null) Instance = this;
             else Destroy(gameObject);
 
-            SessionManager.Instance.ActiveSession.Changed += ChangeScene;
+            _sessionManager = SessionManager.Instance;
+        }
+
+        private async void Start()
+        {
+            if (!_sessionManager.ActiveSession.IsHost) return;
+            
+            _sessionManager.ActiveSession.AsHost().SetProperty(
+                _sessionManager.WinnerPropertyKey,
+                new SessionProperty("None", VisibilityPropertyOptions.Member)
+            );
+
+            await _sessionManager.ActiveSession.AsHost().SavePropertiesAsync();
         }
 
         private void OnDisable() => Destroy(gameObject);
-
+        
         public async void ReportPlayerLoss(ulong clientId)
         {
             if (!IsServer) return;
@@ -42,34 +55,28 @@ namespace Code.Gameplay.Objects
                 Debug.Log($"[Server] Winner determined: Client {winnerClientId}");
 
                 // Get PlayerId from mapping
-                var playerIdMap = SessionManager.Instance.PlayerIdToClientId;
+                var playerIdMap = _sessionManager.PlayerIdToClientId;
                 string winnerPlayerId = playerIdMap.FirstOrDefault(p => p.Value == winnerClientId).Key;
 
                 if (!string.IsNullOrEmpty(winnerPlayerId))
                 {
-                    var session = SessionManager.Instance.ActiveSession.AsHost();
+                    var session = _sessionManager.ActiveSession.AsHost();
 
                     session.SetProperty(
-                        SessionManager.Instance.SessionKeys[SessionPropertyKeys.Winner],
+                        _sessionManager.WinnerPropertyKey,
                         new SessionProperty(winnerPlayerId, VisibilityPropertyOptions.Member)
                     );
 
                     await session.SavePropertiesAsync();
+                    
+                    if (_sessionManager.ActiveSession.IsHost)
+                        NetworkManager.Singleton.SceneManager.LoadScene("PostGame", LoadSceneMode.Single);
                 }
                 else
                 {
                     Debug.LogWarning($"[Server] Could not find PlayerId for winner ClientId {winnerClientId}");
                 }
             }
-        }
-
-
-        private void ChangeScene()
-        {
-            if (SceneManager.GetActiveScene().name != "MultiplayerTest") return;
-            UIUtilities.Instance.FadeIn(UIUtilities.Instance.TransitionPanel, UIUtilities.Instance.TransitionDuration);
-            if (SessionManager.Instance.ActiveSession.IsHost)
-                NetworkManager.Singleton.SceneManager.LoadScene("PostGame", LoadSceneMode.Single);
         }
     }
 }
