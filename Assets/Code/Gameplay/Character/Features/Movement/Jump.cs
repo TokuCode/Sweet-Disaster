@@ -59,10 +59,12 @@ namespace Code.Gameplay.Character.Features
         
         private void JumpAction()
         {
+            if(!_dependencies.TryGetFeature(out PhysicsCheck check)) return;
+            
             float compensation = 0;
             if (_invoker.Velocity.Request(out var velocity).success)
             {
-                if(velocity.y < 0) compensation = -velocity.y;
+                if(velocity.y < 0 && !check.OnSlope) compensation = -velocity.y;
             }
             _invoker.AddForce.Perform(new(Vector2.up, _jumpImpulse + compensation, ForceMode2D.Impulse));
         }
@@ -71,7 +73,7 @@ namespace Code.Gameplay.Character.Features
         {
             if (!_dependencies.TryGetFeature(out PhysicsCheck check)) return;
             
-            if (check.IsGrounded && !check.OnSlope) return;
+            if (!_onDeparture) return;
             
             if(!_invoker.Velocity.Request(out Vector2 velocity).success) return;
 

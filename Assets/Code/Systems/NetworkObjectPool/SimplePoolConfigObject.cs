@@ -4,10 +4,9 @@ using UnityEngine;
 namespace Code.Systems.NetworkObjectPool
 {
     [Serializable]
-    public struct PoolConfigObject
+    public struct SimplePoolConfigObject
     {
         public GameObject prefab;
         public int prewarmCount;
-        public SerializableGuid prefabId;
     }
 }

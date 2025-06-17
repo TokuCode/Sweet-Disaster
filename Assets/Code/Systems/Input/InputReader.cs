@@ -13,6 +13,7 @@ namespace Code.Systems.Input
         private Vector3 _playerPosition;
 
         public event Action OnShootPressed;
+        public event Action OnShootReleased;
         
         public float Move => inputActions.Gameplay.Move.ReadValue<float>();
         public bool Jump { get; private set; }
@@ -80,7 +81,10 @@ namespace Code.Systems.Input
                 Shoot = true;
             }
             else if (context.canceled)
+            {
+                OnShootReleased?.Invoke();
                 Shoot = false;
+            }
         }
 
         public void OnReload(InputAction.CallbackContext context)

@@ -74,7 +74,6 @@ namespace Code.Gameplay.Character.Features
             if (!IsOwner && !IsServer) return;
             
             SetActive();
-            UpdateImprecision();
             
             if (_holdToShoot && InputReader.Instance.Shoot && IsOwner)
                 TryShooting();
@@ -118,7 +117,8 @@ namespace Code.Gameplay.Character.Features
         private IEnumerator ShootingSequence()
         {
             _isShooting = true;
-
+            UpdateImprecision();
+            
             for (int i = 0; i < _burstCount; i++)
             {
                 ShootAction();
