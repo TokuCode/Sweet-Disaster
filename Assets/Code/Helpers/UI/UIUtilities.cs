@@ -52,8 +52,7 @@ namespace Code.Helpers.UI
         
         private IEnumerator StartPopDown(GameObject go)
         {
-            go.transform.DOScale(Vector3.zero, tweenDuration);
-            yield return new WaitUntil(() => go.transform.localScale == Vector3.zero);
+            yield return go.transform.DOScale(Vector3.zero, tweenDuration).WaitForCompletion();
             go.SetActive(false);
             go.transform.localScale = Vector3.one;
         }
@@ -69,6 +68,31 @@ namespace Code.Helpers.UI
             FadeIn(canvasGroup, TransitionDuration);
             yield return new WaitForSeconds(TransitionDuration);
             SceneManager.LoadScene(sceneName);
+        }
+
+        public void MoveDown(RectTransform rectTransform)
+        {
+            rectTransform.gameObject.SetActive(false);
+            Vector2 initialPos = rectTransform.anchoredPosition;
+
+            float offsetY = rectTransform.parent.GetComponent<RectTransform>().rect.height * 1f;
+            rectTransform.anchoredPosition = new Vector2(initialPos.x, initialPos.y + offsetY);
+            
+            rectTransform.gameObject.SetActive(true);
+            rectTransform.DOAnchorPosY(initialPos.y, 1f).SetEase(Ease.OutBounce);
+        }
+
+        public void MoveUp(RectTransform rectTransform) => StartCoroutine(StartMoveUp(rectTransform));
+        
+        private IEnumerator StartMoveUp(RectTransform rectTransform)
+        {
+            Vector2 initialPos = rectTransform.anchoredPosition;
+            
+            float offsetY = rectTransform.parent.GetComponent<RectTransform>().rect.height * 1f;
+            yield return rectTransform.DOAnchorPosY(initialPos.y + offsetY, 1f).SetEase(Ease.InBounce).WaitForCompletion();
+            
+            rectTransform.anchoredPosition = initialPos;
+            rectTransform.gameObject.SetActive(false);
         }
         
         public void Quit() => Application.Quit();

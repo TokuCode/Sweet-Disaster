@@ -25,11 +25,14 @@ namespace Code.Networking.PlayerSpawn
         [SerializeField] private List<Transform> _spawnPoints;
         [SerializeField] private List<string> _tags;
         private int _index;
+        
+        private SessionManager _sessionManager;
 
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
             NetworkManager.SceneManager.OnLoadEventCompleted += SpawnAllPlayers;
+            _sessionManager = SessionManager.Instance;
         }
 
         public override void OnNetworkDespawn()
@@ -41,13 +44,13 @@ namespace Code.Networking.PlayerSpawn
         private void SpawnAllPlayers(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
         {
             if (!IsServer) return;
-            if (SessionManager.Instance == null || SessionManager.Instance.ActiveSession == null)
+            if (_sessionManager == null || _sessionManager.ActiveSession == null)
             {
                 Debug.LogError("SessionManager or ActiveSession is missing!");
                 return;
             }
 
-            foreach (var sessionPlayer in SessionManager.Instance.ActiveSession.Players)
+            foreach (var sessionPlayer in _sessionManager.ActiveSession.Players)
             {
                 SpawnPlayer(sessionPlayer);
             }
@@ -63,7 +66,7 @@ namespace Code.Networking.PlayerSpawn
             }
 
             // Get the player's selected character
-            if (!sessionPlayer.Properties.TryGetValue(SessionManager.Instance.PlayerKeys[PlayerPropertyKeys.PlayerCharacter], out var characterProp))
+            if (!sessionPlayer.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var characterProp))
             {
                 Debug.LogError($"Character not selected for player: {sessionPlayer.Id}");
                 return;
@@ -83,12 +86,6 @@ namespace Code.Networking.PlayerSpawn
             GameObject playerObj = Instantiate(character.characterPrefab, spawnPoint.position, spawnPoint.rotation);
             
             playerObj.tag = _tags[_index % _tags.Count];
-            
-            /*string colorName = sessionPlayer.Properties.
-                TryGetValue(SessionManager.Instance.PlayerKeys[PlayerPropertyKeys.PlayerColor], out var colorProp)
-                ? colorProp.Value : String.Empty;
-            playerObj.transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>().color =
-                SessionManager.Instance.PlayerColors[colorName];*/
             
             _index++;
 
