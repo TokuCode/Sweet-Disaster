@@ -26,29 +26,23 @@ namespace Code.Gameplay.Objects
 
         private async void Start()
         {
-            if (!_sessionManager.ActiveSession.IsHost) return;
-            
-            _sessionManager.ActiveSession.AsHost().SetProperty(
-                _sessionManager.WinnerPropertyKey,
-                new SessionProperty("None", VisibilityPropertyOptions.Member)
-            );
-
-            await _sessionManager.ActiveSession.AsHost().SavePropertiesAsync();
+            _sessionManager.ActiveSession.CurrentPlayer.SetProperty(_sessionManager.PlayerReadyToRestart, new PlayerProperty("false", VisibilityPropertyOptions.Member));
+            await _sessionManager.ActiveSession.SaveCurrentPlayerDataAsync();
         }
 
         private void OnDisable() => Destroy(gameObject);
-        
+
         public async void ReportPlayerLoss(ulong clientId)
         {
             if (!IsServer) return;
-    
+
             LostPlayers.Add(clientId);
 
             var alive = NetworkManager.Singleton.ConnectedClientsList
                 .Select(c => c.ClientId)
                 .Except(LostPlayers)
                 .ToList();
-    
+
             if (alive.Count == 1)
             {
                 ulong winnerClientId = alive[0];
@@ -70,7 +64,7 @@ namespace Code.Gameplay.Objects
                     await session.SavePropertiesAsync();
                     
                     if (_sessionManager.ActiveSession.IsHost)
-                        NetworkManager.Singleton.SceneManager.LoadScene("PostGame", LoadSceneMode.Single);
+                        NetworkManager.SceneManager.LoadScene("PostGame", LoadSceneMode.Single);
                 }
                 else
                 {
