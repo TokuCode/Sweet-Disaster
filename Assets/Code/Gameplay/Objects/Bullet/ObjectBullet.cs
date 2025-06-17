@@ -13,7 +13,6 @@ namespace Code.Gameplay.Objects
     public class ObjectBullet : NetworkBehaviour
     {
         private const float maxLatencyMiliseconds = 250;
-        
         [SerializeField] private bool started;
         
         [Header("References")]
@@ -53,7 +52,7 @@ namespace Code.Gameplay.Objects
 
         private void Update()
         {
-            if(!started || !IsServer) return;
+            if(!started) return;
             
             if(_lifeTimeTimer > 0) _lifeTimeTimer -= Time.deltaTime;
             else 

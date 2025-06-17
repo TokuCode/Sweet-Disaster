@@ -100,6 +100,12 @@ namespace Code.Systems.NetworkObjectPool
             if(prefab != null) _pooledObjects[prefab].ReleaseById(noId);
         }
 
+        public NetworkObject GetNetworkObjectReference(SerializableGuid prefabId, int id)
+        {
+            var prefab = GetPrefab(prefabId);
+            return _pooledObjects[prefab].GetReferenceById(id);
+        }
+
         private void RegisterPrefabInternal(GameObject prefab, int prewarmCount, SerializableGuid id)
         {
             NetworkObject CreateFunc()

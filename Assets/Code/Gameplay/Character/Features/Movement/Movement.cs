@@ -75,6 +75,10 @@ namespace Code.Gameplay.Character.Features
         
         public void BlockMovement() => _isMovementBlocked.Value = true;
         public void UnblockMovement() => _isMovementBlocked.Value = false;
+        public void RequestMovement(bool value) => RequestMovementServerRpc(value);
+        
+        [ServerRpc]
+        private void RequestMovementServerRpc(bool value) => _isMovementBlocked.Value = value;
 
         public override void Apply(ref InputPayload @event)
         {

@@ -84,6 +84,17 @@ namespace Code.Systems.NetworkObjectPool
             return no;
         }
 
+        public NetworkObject GetReferenceById(int id = -1)
+        {
+            if (id == -1) return null;
+            
+            NetworkObject no = _pooledObjects[id];
+            
+            if (!_checkActive(no)) return null;
+
+            return no;
+        }
+
         public void ReleaseById(int id = -1)
         {
             if (id == -1) return;
