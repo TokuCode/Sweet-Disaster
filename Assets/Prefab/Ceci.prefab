@@ -112,6 +112,7 @@ GameObject:
   - component: {fileID: 5385415895683851131}
   - component: {fileID: 573164576663406118}
   - component: {fileID: 2602377939322574890}
+  - component: {fileID: 659861731017469850}
   m_Layer: 9
   m_Name: Ceci
   m_TagString: P1
@@ -311,6 +312,7 @@ MonoBehaviour:
   - {fileID: 390764865389147194}
   - {fileID: 5385415895683851131}
   - {fileID: 573164576663406118}
+  - {fileID: 659861731017469850}
   _reconciliationCooldownTime: 1
   _reconciliationThreshold: 2.5
   _extrapolationLimit: 0.5
@@ -509,3 +511,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &659861731017469850
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6295644469921195904}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42d88474ed26e6a4fbfbc8d7dd96247d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  _active: 0
+  _throwChargeTimeSeconds: 0.8
+  _throwChargeTimer: 0
+  _throwMinForce: 5
+  _throwMaxForce: 30
+  _isThrowing: 0
+  _cooldownTimeSeconds: 1.5
+  _cooldownTimer: 0
+  _isOnCooldown: 0
+  _startBombCount: 99
+  _bombPrefab: {fileID: 6612687119068740015, guid: a189366a9cb40e049a06199f5a62fc44, type: 3}

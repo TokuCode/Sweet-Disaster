@@ -35,7 +35,6 @@ namespace Code.Networking.ClientPrediction
         public bool crouch;
         public bool reload;
         //public bool shieldAction;
-        //public bool bombRequested;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
@@ -46,7 +45,6 @@ namespace Code.Networking.ClientPrediction
             serializer.SerializeValue(ref jump);
             serializer.SerializeValue(ref crouch);
             //serializer.SerializeValue(ref shieldAction);
-            //serializer.SerializeValue(ref bombRequested);
             serializer.SerializeValue(ref reload);
         }
     }
