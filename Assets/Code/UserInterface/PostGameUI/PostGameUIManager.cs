@@ -25,8 +25,6 @@ namespace Code.UserInterface.PostGameUI
         [SerializeField] private UnityEngine.UI.Button exitButton;
         
         [SerializeField] private TextMeshProUGUI statusText;
-
-        private event Action PlayersReady;
         
         private SessionManager _sessionManager;
         
@@ -46,12 +44,9 @@ namespace Code.UserInterface.PostGameUI
             _sessionManager = SessionManager.Instance;
         }
 
-        private async void Start()
+        private void Start()
         {
             PopulatePlayers();
-            _sessionManager.ActiveSession.CurrentPlayer.SetProperty(_sessionManager.PlayerReadyToRestart,
-                new PlayerProperty("false", VisibilityPropertyOptions.Member));
-            await _sessionManager.ActiveSession.SaveCurrentPlayerDataAsync();
         }
         
         private void OnDisable()
@@ -62,106 +57,89 @@ namespace Code.UserInterface.PostGameUI
 
         private void PopulatePlayers()
         {
-            if (_sessionManager == null || _sessionManager.ActiveSession == null)
-                return;
-
             var session = _sessionManager.ActiveSession;
-
-            // Prepare winner UI references
+            var winnerPlayerId = session.Properties.TryGetValue(_sessionManager.WinnerPropertyKey, out var winnerPlayer)
+                ? winnerPlayer.Value : String.Empty;
+        
+            if (string.IsNullOrEmpty(winnerPlayerId) || session == null)
+            {
+                Debug.LogWarning("Winner ID not set or session is null.");
+                return;
+            }
+        
+            var winnerMember = session.Players.FirstOrDefault(p => p.Id == winnerPlayerId);
+            if (winnerMember == null)
+            {
+                Debug.LogWarning("Winner player not found in session.");
+                winnerTitle.text = "Ganador desconocido";
+                return;
+            }
+        
+            // Setup winner UI
             var winnerImg = winner.transform.GetChild(0).GetComponent<UnityEngine.UI.Image>();
             var winnerSlot = winner.transform.GetChild(1).GetComponent<PlayerSlotUI>();
-
-            if (session.Properties.TryGetValue(_sessionManager.WinnerPropertyKey, out var winnerProp))
+        
+            string winnerCharacter = winnerMember.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var charProp)
+                ? charProp.Value : null;
+        
+            if (!string.IsNullOrEmpty(winnerCharacter))
             {
-                string winnerPlayerId = winnerProp.Value;
-                var winnerMember = session.Players.FirstOrDefault(p => p.Id == winnerPlayerId);
-
-                if (winnerMember != null)
+                var character = characters.FirstOrDefault(c => c.name == winnerCharacter);
+                if (character.image != null)
+                    winnerImg.sprite = character.image;
+            }
+        
+            string winnerName = winnerMember.Properties.TryGetValue(_sessionManager.PlayerNameKey, out var nameProp)
+                ? nameProp.Value : $"Jugador {winnerPlayerId}";
+        
+            winnerSlot.nameText.text = winnerName;
+            winnerSlot.outlineColor.color = _sessionManager.playerInfo.GetColor(winnerMember);
+            winnerTitle.text = $"Ganador: {winnerName}";
+        
+            // Setup losers
+            var losers = session.Players.Where(p => p.Id != winnerPlayerId).ToList();
+            for (int i = 0; i < loserList.Count; i++)
+            {
+                if (i < losers.Count)
                 {
-                    string characterName =
-                        winnerMember.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var charProp)
-                            ? charProp.Value : null;
-
-                    if (!string.IsNullOrEmpty(characterName))
+                    var slot = loserList[i].transform.GetChild(1).GetComponent<PlayerSlotUI>();
+                    var image = loserList[i].transform.GetChild(0).GetComponent<UnityEngine.UI.Image>();
+        
+                    var loser = losers[i];
+        
+                    string loserCharacter = loser.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var lcharProp)
+                        ? lcharProp.Value : null;
+        
+                    if (!string.IsNullOrEmpty(loserCharacter))
                     {
-                        var character = characters.FirstOrDefault(c => c.name == characterName);
+                        var character = characters.FirstOrDefault(c => c.name == loserCharacter);
                         if (character.image != null)
-                            winnerImg.sprite = character.image;
+                            image.sprite = character.image;
                     }
-                    string name =
-                        winnerMember.Properties.TryGetValue(_sessionManager.PlayerNameKey, out var nameProp)
-                            ? nameProp.Value : $"Jugador {winnerPlayerId}";
-                    
-                    winnerSlot.nameText.text = name;
-                    winnerSlot.outlineColor.color = _sessionManager.playerInfo.GetColor(winnerMember);
-                    winnerTitle.text = $"Ganador: {name}";
-
-                    // Show losers
-                    var losers = session.Players.Where(p => p.Id != winnerPlayerId).ToList();
-                    for (int i = 0; i < loserList.Count; i++)
-                    {
-                        if (i < losers.Count)
-                        {
-                            var slot = loserList[i].transform.GetChild(1).GetComponent<PlayerSlotUI>();
-                            var image = loserList[i].transform.GetChild(0).GetComponent<UnityEngine.UI.Image>();
-
-                            var loser = losers[i];
-                            
-                            string loserCharacter =
-                                loser.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var lcharProp)
-                                    ? lcharProp.Value : null;
-
-                            if (!string.IsNullOrEmpty(loserCharacter))
-                            {
-                                var character = characters.FirstOrDefault(c => c.name == loserCharacter);
-                                if (character.image != null)
-                                    image.sprite = character.image;
-                            }
-                            
-                            string loserName = loser.Properties.TryGetValue(_sessionManager.PlayerNameKey, out var lnameProp)
-                                ? lnameProp.Value : $"Jugador {i + 1}";
-
-                            slot.nameText.text = loserName;
-                            slot.outlineColor.color = _sessionManager.playerInfo.GetColor(loser);
-                        }
-                    }
-                }
-                else
-                {
-                    winnerTitle.text = "Ganador desconocido";
-                    winnerSlot.nameText.text = "???";
-                    winnerSlot.outlineColor.color = Color.gray;
+        
+                    string loserName = loser.Properties.TryGetValue(_sessionManager.PlayerNameKey, out var lnameProp)
+                        ? lnameProp.Value : $"Jugador {i + 1}";
+        
+                    slot.nameText.text = loserName;
+                    slot.outlineColor.color = _sessionManager.playerInfo.GetColor(loser);
                 }
             }
         }
         
         private async void OnPlayAgainPressed()
         {
-            var session = _sessionManager.ActiveSession;
-
-            session.CurrentPlayer.SetProperties(new Dictionary<string, PlayerProperty>
-            {
-                {
-                    _sessionManager.PlayerReadyToRestart,
-                    new PlayerProperty("true", VisibilityPropertyOptions.Member)
-                },
-                /*{
-                    _sessionManager.PlayerCharacterKey,
-                    new PlayerProperty("None", VisibilityPropertyOptions.Member)
-                }*/
-            });
-
-            await session.SaveCurrentPlayerDataAsync();
-
+            _sessionManager.ActiveSession.CurrentPlayer.SetProperty(_sessionManager.PlayerReadyToRestart,
+                new PlayerProperty("true", VisibilityPropertyOptions.Member));
+            await _sessionManager.ActiveSession.SaveCurrentPlayerDataAsync();
+            
             playAgainButton.interactable = false;
             statusText.text = "Esperando a los jugadores...";
-            
             CheckAllReadyToRestart();
         }
-
         
         private async void CheckAllReadyToRestart()
         {
+            Debug.Log("Checking if it should restart...");
             var session = _sessionManager.ActiveSession;
             var readyKey = _sessionManager.PlayerReadyToRestart;
 
@@ -175,7 +153,6 @@ namespace Code.UserInterface.PostGameUI
                 if (allReady && session.PlayerCount > 1)
                 {
                     Debug.Log("All players are ready. Restarting game...");
-                    //UIUtilities.Instance.FadeIn(UIUtilities.Instance.TransitionPanel, UIUtilities.Instance.TransitionDuration);
                     
                     if (_sessionManager.ActiveSession.IsHost)
                     {
@@ -190,7 +167,8 @@ namespace Code.UserInterface.PostGameUI
                     break;
                 }
 
-                await Task.Delay(1000); // Check every second
+                Debug.Log("One of the players is not ready to restart.");
+                await Task.Delay(1000); // check every second
             }
         }
 

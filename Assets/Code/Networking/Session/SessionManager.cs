@@ -32,8 +32,7 @@ namespace Code.Networking.Session
         
         // Session properties keys
         public readonly string MapPropertyKey = "map";
-        public readonly string WinnerPropertyKey = "winner";
-        public readonly string RestartGame = "restartKey";
+		public readonly string WinnerPropertyKey = "winner";
         
         // Player properties keys
         public readonly string PlayerNameKey = "playerName";
@@ -73,8 +72,7 @@ namespace Code.Networking.Session
                 
                     SessionProperties = new Dictionary<string, SessionProperty>
                     {
-                        { RestartGame, new SessionProperty("false", VisibilityPropertyOptions.Member) },
-                        { WinnerPropertyKey, new SessionProperty("None", VisibilityPropertyOptions.Member) },
+						{ WinnerPropertyKey, new SessionProperty("None", VisibilityPropertyOptions.Member) },
                         { MapPropertyKey, new SessionProperty("default", VisibilityPropertyOptions.Member) }
                     },
                     
@@ -138,7 +136,7 @@ namespace Code.Networking.Session
                 { PlayerNameKey, new PlayerProperty(playerInfo.GetRandomName(), VisibilityPropertyOptions.Member) },
                 { PlayerColorKey, new PlayerProperty(playerInfo.GetAvailableColorName(), VisibilityPropertyOptions.Member) },
                 { PlayerCharacterKey, new PlayerProperty("None", VisibilityPropertyOptions.Member) },
-                { PlayerReadyToRestart, new PlayerProperty("false", VisibilityPropertyOptions.Member) }
+                { PlayerReadyToRestart, new PlayerProperty("false",  VisibilityPropertyOptions.Member) }
             };
         }
     }
