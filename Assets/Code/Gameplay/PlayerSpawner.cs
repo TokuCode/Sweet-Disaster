@@ -1,23 +1,13 @@
-using Unity.Netcode;
 using UnityEngine;
 using System.Collections.Generic;
 using Code.Networking.Session;
+using Unity.Netcode;
 using Unity.Services.Multiplayer;
-using UnityEngine.SceneManagement;
+using Code.Gameplay.Character.Visuals;
 
-namespace Code.Networking.PlayerSpawn
+namespace Code.Gameplay
 {
-    [System.Serializable]
-    public class CharacterVisuals
-    {
-        public string characterName;
-        public Animator animator;
-        public Sprite armWithGun;
-        public Sprite armWithBomb;
-        public Sprite armWithShield;
-    }
-    
-    public class SessionPlayerSpawn : NetworkBehaviour
+    public class PlayerSpawner : NetworkBehaviour
     {
         [SerializeField] private GameObject playerPrefab;
 
@@ -44,7 +34,7 @@ namespace Code.Networking.PlayerSpawn
             NetworkManager.SceneManager.OnLoadEventCompleted -= SpawnAllPlayers;
         }
 
-        private void SpawnAllPlayers(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
+        private void SpawnAllPlayers(string sceneName, UnityEngine.SceneManagement.LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
         {
             if (!IsServer) return;
             if (_sessionManager == null || _sessionManager.ActiveSession == null)
@@ -80,14 +70,15 @@ namespace Code.Networking.PlayerSpawn
 
             if (character == null)
             {
-                Debug.LogError($"Character not found: {characterName}, passing default");
-                return;
+                Debug.LogError($"Character not found: {characterName}, assigning first character on list");
+                character = characterVisualsList[0];
             }
 
             // Spawn the player
             Transform spawnPoint = _spawnPoints[_index % _spawnPoints.Count];
             GameObject playerObj = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
             
+            playerObj.GetComponent<AnimationHandler>().SetVisuals(character);
             playerObj.tag = _tags[_index % _tags.Count];
             
             _index++;
@@ -95,5 +86,5 @@ namespace Code.Networking.PlayerSpawn
             NetworkObject networkObject = playerObj.GetComponent<NetworkObject>();
             networkObject.SpawnAsPlayerObject(clientId, true);
         }
-    }   
+    }
 }

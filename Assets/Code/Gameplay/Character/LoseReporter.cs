@@ -1,13 +1,12 @@
 using Unity.Netcode;
 using UnityEngine;
-using Code.Gameplay.Objects;
 
 namespace Code.Gameplay.Character
 {
-    public class LoseTracker : NetworkBehaviour
+    public class LoseReporter : NetworkBehaviour
     {
-        private bool _hasLost = false;
-
+        private bool _hasLost;
+        
         private void OnCollisionEnter2D(Collision2D collision)
         {
             if (!IsOwner) return; // only the local client should detect and report
@@ -26,7 +25,7 @@ namespace Code.Gameplay.Character
         {
             ulong clientId = rpcParams.Receive.SenderClientId;
             Debug.Log($"[Server] Player {clientId} reported that lost.");
-            GameManager.Instance.ReportPlayerLoss(clientId);
+            LoseTracker.Instance.ReportPlayerLoss(clientId);
         }
     }
 }

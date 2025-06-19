@@ -19,6 +19,28 @@ namespace Code.Gameplay.Character.Features
         private bool _cachedJumpInput;
         private float _jumpCooldownTimer;
 
+        public float JumpImpulse
+        {
+            get => _jumpImpulse;
+            set => _jumpImpulse = value;
+        }
+        public float JumpCooldown 
+        {
+            get => _jumpCooldown;
+            set => _jumpCooldown = value;
+        }
+
+        public float FallGravityMultiplier
+        {
+            get => _fallGravityMultiplier;
+            set => _fallGravityMultiplier = value;
+        }
+        public float LowJumpGravityMultiplier
+        {
+            get => _lowJumpGravityMultiplier;
+            set => _lowJumpGravityMultiplier = value;
+        }
+
         public override void UpdateFeature()
         {
             if (!IsOwner && !IsServer) return;

@@ -6,11 +6,11 @@ using Unity.Services.Multiplayer;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Code.Gameplay.Objects
+namespace Code.Gameplay
 {
-    public class GameManager : NetworkBehaviour
+    public class LoseTracker : NetworkBehaviour
     {
-        public static GameManager Instance;
+        public static LoseTracker Instance;
 
         public HashSet<ulong> LostPlayers = new();
         
@@ -26,7 +26,9 @@ namespace Code.Gameplay.Objects
 
         private async void Start()
         {
-            _sessionManager.ActiveSession.CurrentPlayer.SetProperty(_sessionManager.PlayerReadyToRestart, new PlayerProperty("false", VisibilityPropertyOptions.Member));
+            _sessionManager.ActiveSession.CurrentPlayer.SetProperty(
+                _sessionManager.PlayerReadyToRestart,
+                new PlayerProperty("false", VisibilityPropertyOptions.Member));
             await _sessionManager.ActiveSession.SaveCurrentPlayerDataAsync();
         }
 

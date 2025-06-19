@@ -1,11 +1,9 @@
-using System;
-using Code.Gameplay.Character;
 using Code.Helpers.Utils;
 using Code.Systems.Input;
 using Unity.Netcode;
 using UnityEngine;
 
-namespace Code.Gameplay.Anim
+namespace Code.Gameplay.Character.Visuals
 {
     public class AnimationAimingHandler : NetworkBehaviour
     {
