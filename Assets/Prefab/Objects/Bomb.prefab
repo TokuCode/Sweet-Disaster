@@ -260,7 +260,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _bounceCount: 0
   started: 0
-  _initTime: 0.1
+  _initTime: 0.075
   _collider2D: {fileID: 3668608491107497190}
   _rigidbody2D: {fileID: 8133839011960365223}
   _explosionEffectPrefab: {fileID: 6928477528844167981, guid: 9158474330c64654b9e55c6886418bc6, type: 3}
@@ -283,7 +283,3 @@ MonoBehaviour:
   _knockbackUpLevelInCenter: 15
   _knockbackUpLevelInBorder: 5
   _ownerTag: 
-  _syncNextBounce: 0
-  _maxSyncTimeMiliseconds: 0
-  _syncPosition: {x: 0, y: 0, z: 0}
-  _syncVelocity: {x: 0, y: 0}

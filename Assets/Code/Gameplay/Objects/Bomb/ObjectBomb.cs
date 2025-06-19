@@ -4,6 +4,7 @@ using Code.Gameplay.Character.Features;
 using Code.Gameplay.Objects;
 using Code.Helpers;
 using Code.Helpers.Utils;
+using Code.Networking.ClientPrediction;
 using Code.Systems.Attack;
 using Code.Systems.NetworkObjectPool;
 using Unity.Netcode;
@@ -11,7 +12,9 @@ using UnityEngine;
 
 public class ObjectBomb : NetworkBehaviour 
 {
+    private const float serverTickRate = 60f;
     private const float maxLatencyMiliseconds = 250;
+    
     [SerializeField] private int _bounceCount; 
     [SerializeField] private bool started;
     [SerializeField] private float _initTime;
@@ -41,23 +44,62 @@ public class ObjectBomb : NetworkBehaviour
     [Header("Dynamic Settings")]
     [SerializeField] private string _ownerTag;
     
-    [Header("Synchronization")]
-    [SerializeField] private bool _syncNextBounce;
-    [SerializeField] private float _maxSyncTimeMiliseconds;
-    private DateTime _syncTime;
-    [SerializeField] private Vector3 _syncPosition;
-    [SerializeField] private Vector2 _syncVelocity;
+    //Server Side
+    private NetworkTimer _networkTimer;
 
     private void Awake()
     {
+        _networkTimer = new(serverTickRate);
         _initTimer = new(_initTime);
-        _initTimer.OnTimerStop += () => { _collider2D.isTrigger = false; };
+        _initTimer.OnTimerStop += OnDelayedInit;
+    }
+
+    private void OnDelayedInit()
+    {
+        _collider2D.isTrigger = false;
+
+        var collision = Physics2D.OverlapCircle(transform.position, _collider2D.radius);
+        
+        if(collision != null && collision.gameObject != gameObject) Explode();
     }
 
     private void Update()
     {
         if (!started) return;
+        
         _initTimer.Tick(Time.deltaTime);
+        
+        if(!IsServer) return;
+        
+        _networkTimer.Update(Time.deltaTime);
+    }
+
+    private void FixedUpdate()
+    {
+        if (!started || !IsServer) return;
+
+        while (_networkTimer.ShouldTick())
+        {
+            ServerTick();
+        }
+    }
+
+    public void ServerTick()
+    {
+        if (!IsServer) return;
+        
+        NonPooledSync.Singleton.RequestHardSync(GetState());
+    }
+
+    public BombStatePayload GetState()
+    {
+        return new()
+        {
+            objectId = id,
+            velocity = _rigidbody2D.linearVelocity,
+            position = _rigidbody2D.position,
+            timestamp = DateTime.Now
+        };
     }
 
     public void Init(string ownerTag, Vector2 impulse, int id, float latency)
@@ -74,11 +116,11 @@ public class ObjectBomb : NetworkBehaviour
         started = true;
     }
 
-    public void Anticipate(Vector2 impulse, float latency)
+    public void Anticipate(Vector2 initialVelocity, float latency)
     {
         float v0Y, vX, vY, g, t, dX, dY;
-        vX = impulse.x;
-        v0Y = impulse.y;
+        vX = initialVelocity.x;
+        v0Y = initialVelocity.y;
         g = Physics2D.gravity.y;
         t = Mathf.Min(latency, maxLatencyMiliseconds/1000);
         dX = vX * t;
@@ -90,18 +132,31 @@ public class ObjectBomb : NetworkBehaviour
         
         _rigidbody2D.position += dVec;
         AddImpulse(VF);
-
-        if (IsServer)
-        {
-            NonPooledSync.Singleton.RequestHardSync(_rigidbody2D.position, _rigidbody2D.linearVelocity, id);
-        }
     }
 
-
-    public void HardSync(Vector3 position, Vector3 velocity)
+    public void HardSync(Vector3 position, Vector2 velocity, float latency)
     {
+        if (IsHost) return;
+        
         _rigidbody2D.position = position;
-        _rigidbody2D.linearVelocity = velocity;
+        var diff = velocity - _rigidbody2D.linearVelocity;
+        AddImpulse(diff);
+        
+        float v0Y, vX, dVY, g, t, dX, dY;
+        t = Mathf.Min(latency, maxLatencyMiliseconds/1000);
+        if(t <= 0) return;
+        
+        g = Physics2D.gravity.y;
+        vX = velocity.x;
+        v0Y = velocity.y;
+        dX = vX * t;
+        dY = v0Y * t - g / 2 * t * t;
+        dVY = - g * t;
+        
+        Vector2 dVec = new (dX, dY);
+        Vector2 VF = new (0, dVY); 
+        _rigidbody2D.position += dVec;
+        AddImpulse(VF);
     }
     
     public void Reset()
@@ -114,6 +169,8 @@ public class ObjectBomb : NetworkBehaviour
         
         _bounceCount = 0; 
         started = false;
+        
+        _networkTimer.Reset();
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -175,60 +232,10 @@ public class ObjectBomb : NetworkBehaviour
     private void Bounce(Vector2 normal)
     {
         _bounceCount++;
-        
-        if (_syncNextBounce && IsClient && !IsHost)
-        {
-            _syncNextBounce = false;
-            float latency = MilisecondsUtils.CalculateLatency(_syncTime);
-            if (latency <= _maxSyncTimeMiliseconds / 1000)
-            {
-                _rigidbody2D.position = _syncPosition;
-                _rigidbody2D.linearVelocity = _syncVelocity;
-                _syncPosition = Vector3.zero;
-                _syncVelocity = Vector2.zero;
-                return;
-            }
-        }
-        
         var velocity = _rigidbody2D.linearVelocity;
         var reflection = Vector2.Reflect(velocity, normal);
         _rigidbody2D.linearVelocity = reflection * _collisionSimetryCoefficient;
-
-        if (IsServer)
-        {
-            RequestBounceSync(_rigidbody2D.position, velocity, id, _bounceCount);
-        }
     }
 
     public void AddImpulse(Vector2 force) => _rigidbody2D.AddForce(force, ForceMode2D.Impulse);
-
-    public void RequestBounceSync(Vector2 position, Vector2 velocity, int id, int bounceCount)
-    {
-        NonPooledSync.Singleton.RequestBounceSync(position, velocity, id, bounceCount);
-    }
-
-    public void SynchronizeBounce(Vector3 position, Vector2 velocity, int bounceCount)
-    {
-        if (_bounceCount > bounceCount) return;
-
-        if (_bounceCount == bounceCount)
-        {
-            _rigidbody2D.linearVelocity = velocity;
-            return;
-        }
-
-        if (_bounceCount == bounceCount - 1)
-        {
-            _syncNextBounce = true;
-            _syncPosition = position;
-            _syncVelocity = velocity;
-            _syncTime = DateTime.Now;
-        }
-
-        else
-        {
-            _rigidbody2D.position = position;
-            _rigidbody2D.linearVelocity = velocity;
-        }
-    } 
 }

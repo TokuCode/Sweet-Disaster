@@ -1,4 +1,7 @@
-﻿using Code.Systems.NetworkObjectPool;
+﻿using System;
+using Code.Helpers.Utils;
+using Code.Networking.ClientPrediction;
+using Code.Systems.NetworkObjectPool;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -20,41 +23,18 @@ namespace Code.Gameplay.Objects
                 Singleton = this;
             }
         }
-
-        private void HardSyncBomb(Vector3 position, Vector2 velocity, int id)
-        {
-            var analogousGO = NonNetworkObjectPool.Singleton.GetNetworkObjectReference(bombPrefabId, id);
-            var analogous = analogousGO.GetComponent<ObjectBomb>();
-            analogous.HardSync(position, velocity);
-        }
        
         [ClientRpc]
-        private void RequestHardSynchronizationClientRpc(Vector3 position, Vector2 velocity, int id)
+        private void RequestHardSynchronizationClientRpc(BombStatePayload bombState)
         {
-            HardSyncBomb(position, velocity, id);
+            var go = NonNetworkObjectPool.Singleton.GetNetworkObjectReference(bombPrefabId, bombState.objectId);
+            var bomb = go.GetComponent<ObjectBomb>();
+            bomb.HardSync(bombState.position, bombState.velocity, MilisecondsUtils.CalculateLatency(bombState.timestamp));
         }
 
-        public void RequestHardSync(Vector3 position, Vector2 velocity, int id)
+        public void RequestHardSync(BombStatePayload bombState)
         {
-            RequestHardSynchronizationClientRpc(position, velocity, id);
+            RequestHardSynchronizationClientRpc(bombState);
         }
-        
-        private void BounceSyncBomb(Vector3 position, Vector2 velocity, int id, int bounceCount)
-        {
-            var analogousGO = NonNetworkObjectPool.Singleton.GetNetworkObjectReference(bombPrefabId, id);
-            var analogous = analogousGO.GetComponent<ObjectBomb>();
-            analogous.SynchronizeBounce(position, velocity, bounceCount);
-        } 
-        
-        [ClientRpc]
-        private void RequestBounceSynchronizationClientRpc(Vector3 position, Vector2 velocity, int id, int bounceCount)
-        {
-            BounceSyncBomb(position, velocity, id, bounceCount);
-        }  
-        
-        public void RequestBounceSync(Vector3 position, Vector2 velocity, int id, int bounceCount)
-        {
-            RequestBounceSynchronizationClientRpc(position, velocity, id, bounceCount);
-        } 
     }
 }
