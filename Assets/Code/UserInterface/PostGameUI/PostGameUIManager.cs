@@ -3,6 +3,7 @@ using System.Linq;
 using Code.UserInterface.LobbyUI;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Threading;
 using Unity.Services.Multiplayer;
 using Code.Networking.Session;
 using TMPro;
@@ -27,6 +28,7 @@ namespace Code.UserInterface.PostGameUI
         [SerializeField] private TextMeshProUGUI statusText;
         
         private SessionManager _sessionManager;
+        private CancellationTokenSource  _cancellationTokenSource;
         
         [Serializable]
         public struct Characters
@@ -42,6 +44,7 @@ namespace Code.UserInterface.PostGameUI
             exitButton.onClick.AddListener(ReturnToLobby);
             
             _sessionManager = SessionManager.Instance;
+            _cancellationTokenSource = new CancellationTokenSource();
         }
 
         private void Start()
@@ -53,6 +56,9 @@ namespace Code.UserInterface.PostGameUI
         {
             playAgainButton.onClick.RemoveListener(OnPlayAgainPressed);
             exitButton.onClick.RemoveListener(ReturnToLobby);
+            
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
         }
 
         private void PopulatePlayers()
@@ -142,33 +148,41 @@ namespace Code.UserInterface.PostGameUI
             Debug.Log("Checking if it should restart...");
             var session = _sessionManager.ActiveSession;
             var readyKey = _sessionManager.PlayerReadyToRestart;
+            var token = _cancellationTokenSource.Token;
 
-            while (true)
+            try
             {
-                bool allReady = session.Players.All(player =>
-                    player.Properties.TryGetValue(readyKey, out var readyProp) &&
-                    readyProp.Value == "true"
-                );
-
-                if (allReady && session.PlayerCount > 1)
+                while (!token.IsCancellationRequested)
                 {
-                    Debug.Log("All players are ready. Restarting game...");
-                    
-                    if (_sessionManager.ActiveSession.IsHost)
-                    {
-                        session.AsHost().SetProperty(
-                            _sessionManager.WinnerPropertyKey,
-                            new SessionProperty("None", VisibilityPropertyOptions.Member)
-                        );
-                        await session.AsHost().SavePropertiesAsync();
-                        
-                        NetworkManager.Singleton.SceneManager.LoadScene("MultiplayerTest", LoadSceneMode.Single);
-                    }
-                    break;
-                }
+                    bool allReady = session.Players.All(player =>
+                        player.Properties.TryGetValue(readyKey, out var readyProp) &&
+                        readyProp.Value == "true"
+                    );
 
-                Debug.Log("One of the players is not ready to restart.");
-                await Task.Delay(1000); // check every second
+                    if (allReady && session.PlayerCount > 1)
+                    {
+                        Debug.Log("All players are ready. Restarting game...");
+                    
+                        if (_sessionManager.ActiveSession.IsHost)
+                        {
+                            session.AsHost().SetProperty(
+                                _sessionManager.WinnerPropertyKey,
+                                new SessionProperty("None", VisibilityPropertyOptions.Member)
+                            );
+                            await session.AsHost().SavePropertiesAsync();
+                        
+                            NetworkManager.Singleton.SceneManager.LoadScene("MultiplayerTest", LoadSceneMode.Single);
+                        }
+                        break;
+                    }
+
+                    Debug.Log("One of the players is not ready to restart.");
+                    await Task.Delay(1000); // check every second
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                Debug.Log("Restart check cancelled.");
             }
         }
 
