@@ -64,4 +64,19 @@ namespace Code.Networking.ClientPrediction
             serializer.SerializeValue(ref ownerTag);
         }
     }
+
+    public struct BombStatePayload : INetworkSerializable
+    {
+        public int objectId;
+        public DateTime timestamp;
+        public Vector3 position;
+        public Vector2 velocity;
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref objectId);
+            serializer.SerializeValue(ref timestamp);
+            serializer.SerializeValue(ref position);
+            serializer.SerializeValue(ref velocity);
+        }
+    }
 }
