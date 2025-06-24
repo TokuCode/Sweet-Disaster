@@ -12,12 +12,20 @@ namespace Code.Gameplay.Character.Visuals
         void Update()
         {
             if (!IsOwner) return;
+            SetStunBool();
+            SetMoveBool(InputReader.Instance.Move);
+        }
 
-            if (!PlayerController.Singleton.Dependencies.TryGetFeature(out PhysicsCheck physicsCheck)) return;
+        private void SetStunBool()
+        {
             if (!PlayerController.Singleton.Dependencies.TryGetFeature(out Health health)) return;
-            
             animatorController.SetBool("isStunned", health.IsStunned);
-            animatorController.SetBool("isMoving", InputReader.Instance.Move != 0 && physicsCheck.IsGrounded);
+        }
+
+        private void SetMoveBool(float moveInput)
+        {
+            if (!PlayerController.Singleton.Dependencies.TryGetFeature(out PhysicsCheck physicsCheck)) return;
+            animatorController.SetBool("isMoving", moveInput != 0 && physicsCheck.IsGrounded);
         }
         
         public void SetVisuals(CharacterVisuals visuals)
