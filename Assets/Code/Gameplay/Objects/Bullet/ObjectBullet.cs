@@ -12,7 +12,7 @@ namespace Code.Gameplay.Objects
 {
     public class ObjectBullet : NetworkBehaviour
     {
-        private const float maxLatencyMiliseconds = 250;
+        private const float maxLatencyMiliseconds = 300;
         [SerializeField] private bool started;
         
         [Header("References")]

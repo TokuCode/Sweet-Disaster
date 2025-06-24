@@ -12,7 +12,7 @@ using UnityEngine;
 
 public class ObjectBomb : NetworkBehaviour 
 {
-    private const float maxLatencyMiliseconds = 250;
+    private const float maxLatencyMiliseconds = 300;
     
     [SerializeField] private int _bounceCount; 
     [SerializeField] private bool started;
@@ -89,12 +89,13 @@ public class ObjectBomb : NetworkBehaviour
         _ownerTag = ownerTag;
         this.id = id;
         _initTimer.Start();
-        if (latency != 0)
-        {
-            Anticipate(impulse, latency);
-            _initTimer.Tick(latency);
-        }
-        else AddImpulse(impulse);
+        //if (latency != 0)
+        //{
+        //    Anticipate(impulse, latency);
+        //    _initTimer.Tick(latency);
+        //}
+        //else AddImpulse(impulse);
+        AddImpulse(impulse);
         started = true;
     }
 
@@ -128,21 +129,21 @@ public class ObjectBomb : NetworkBehaviour
         _rigidbody2D.position = position;
         _rigidbody2D.linearVelocity = velocity;
         
-        float v0Y, vX, dVY, g, t, dX, dY;
-        t = Mathf.Min(latency, maxLatencyMiliseconds/1000);
-        if(t <= 0) return;
-        
-        g = Physics2D.gravity.y;
-        vX = velocity.x;
-        v0Y = velocity.y;
-        dX = vX * t;
-        dY = v0Y * t - g / 2 * t * t;
-        dVY = - g * t;
-        
-        Vector2 dVec = new (dX, dY);
-        Vector2 VF = new (0, dVY); 
-        _rigidbody2D.position += dVec;
-        AddImpulse(VF);
+        //float v0Y, vX, dVY, g, t, dX, dY;
+        //t = Mathf.Min(latency, maxLatencyMiliseconds/1000);
+        //if(t <= 0) return;
+        //
+        //g = Physics2D.gravity.y;
+        //vX = velocity.x;
+        //v0Y = velocity.y;
+        //dX = vX * t;
+        //dY = v0Y * t - g / 2 * t * t;
+        //dVY = - g * t;
+        //
+        //Vector2 dVec = new (dX, dY);
+        //Vector2 VF = new (0, dVY); 
+        //_rigidbody2D.position += dVec;
+        //AddImpulse(VF);
     }
     
     public void Reset()
@@ -220,7 +221,8 @@ public class ObjectBomb : NetworkBehaviour
         _bounceCount++;
         var velocity = _rigidbody2D.linearVelocity;
         var reflection = Vector2.Reflect(velocity, normal);
-        _rigidbody2D.linearVelocity = reflection * _collisionSimetryCoefficient;
+        var newVelocity = reflection * _collisionSimetryCoefficient;
+        _rigidbody2D.linearVelocity = newVelocity;
     }
 
     public void AddImpulse(Vector2 force) => _rigidbody2D.AddForce(force, ForceMode2D.Impulse);

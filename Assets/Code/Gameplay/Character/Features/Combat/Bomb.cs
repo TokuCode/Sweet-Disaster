@@ -19,6 +19,7 @@ namespace Code.Gameplay.Character.Features
         private Movement move;
         private Crouch crouch;
         private GunBelt belt;
+        private Shield shield;
         
         [Header("Control")] 
         [SerializeField] private bool _active;
@@ -65,6 +66,7 @@ namespace Code.Gameplay.Character.Features
             _dependencies.TryGetFeature(out crouch);
             _dependencies.TryGetFeature(out belt);
             _dependencies.TryGetFeature(out shoot);
+            _dependencies.TryGetFeature(out shield);
         }
     
         public override void UpdateFeature()
@@ -88,9 +90,8 @@ namespace Code.Gameplay.Character.Features
     
         private void StartThrowing()
         {
-            
             bool canThrowInternal = _bombCount.Value > 0 && !_isOnCooldown && !_isThrowing && _active;
-            bool canThrowExternal = !shoot.IsShooting && !crouch.IsCrouching && !shoot.IsReloading && !health.IsStunned; //TODO Shield Check
+            bool canThrowExternal = !shoot.IsShooting && !crouch.IsCrouching && !shoot.IsReloading && !health.IsStunned && !shield.IsShieldActive;
             if (canThrowInternal && canThrowExternal)
             {
                 _isThrowing = true;
