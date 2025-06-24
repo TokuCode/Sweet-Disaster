@@ -111,8 +111,6 @@ namespace Code.Gameplay.Character.Features
         public void ActivateShield()
         {
             SetShieldAtHandleAndActivate();
-            if(IsHost)movement.BlockMovement();
-            else movement.RequestMovement(true);
         }
 
         private void SetShieldAtHandle()
@@ -157,12 +155,6 @@ namespace Code.Gameplay.Character.Features
             
             _shield.SetActive(false);
             ActivateShieldObjectRpc(false);
-            
-            if (!health.IsStunned)
-            {
-                if(IsHost) movement.UnblockMovement();
-                else movement.RequestMovement(false);
-            }
         }
         
         public void StaminaManagement()

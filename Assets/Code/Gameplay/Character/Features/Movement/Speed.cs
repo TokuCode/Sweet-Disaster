@@ -14,13 +14,15 @@ namespace Code.Gameplay.Character.Features
             Sliding,
             Crouching,
             Blocked,
-            Stunned
+            Stunned,
+            Shield
         }
 
         private PhysicsCheck check;
         private Health health;
         private Movement move;
         private Crouch crouch;
+        private Shield shield;
         
         [Header("Settings")]
         [SerializeField] private float _maxSpeedIdle;
@@ -28,6 +30,8 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private float _maxSpeedCrouching;
         [SerializeField] private float _accelerationCrouching;
         [SerializeField] private float _maxSpeedStunned;
+        [SerializeField] private float _maxSpeedShield;
+        [SerializeField] private float _accelerationShield;
         [SerializeField] private float _transitionTime;
         
         [Header("Runtime")]
@@ -46,6 +50,7 @@ namespace Code.Gameplay.Character.Features
             _dependencies.TryGetFeature(out health);
             _dependencies.TryGetFeature(out move);
             _dependencies.TryGetFeature(out crouch);
+            _dependencies.TryGetFeature(out shield);
         }
 
         public override void UpdateFeature()
@@ -66,6 +71,7 @@ namespace Code.Gameplay.Character.Features
             bool isCrouching = crouch.IsCrouching;
             bool isGrounded = check.IsGrounded;
             bool onSlope = check.OnSlope;
+            bool isShielding = shield.IsShieldActive;
 
             if (isStunned)
             {
@@ -75,6 +81,14 @@ namespace Code.Gameplay.Character.Features
             else if (isMovementBlocked)
             {
                 _movementState = MovementState.Blocked;
+            }
+            
+            else if (isShielding)
+            {
+                _movementState = MovementState.Shield;
+                _desiredMaxSpeed = _maxSpeedShield;
+                _acceleration = _accelerationShield;
+                _enableTransition = true;
             }
             
             else if(isCrouching)

@@ -40,7 +40,7 @@ namespace Code.Gameplay.Objects
         {
             if (!IsServer) return;
             
-            _networkTimer.Update(Time.deltaTime);
+            //_networkTimer.Update(Time.deltaTime);
         }
         
         private void FixedUpdate()
@@ -79,6 +79,11 @@ namespace Code.Gameplay.Objects
             HardSynchronizationClientRpc(bombState);
         }
 
+        public void RequestHardSync(BombStatePayload bombState)
+        {
+            RequestHardSyncRpc(bombState);
+        }
+
         [ClientRpc]
         private void HardSynchronizationClientRpc(BombStatePayload bombState)
         {
@@ -88,9 +93,13 @@ namespace Code.Gameplay.Objects
             bomb.HardSync(bombState.position, bombState.velocity, MilisecondsUtils.CalculateLatency(bombState.timestamp));
         }
 
-        public void RequestHardSync(BombStatePayload bombState)
+        [Rpc(SendTo.NotMe)]
+        private void RequestHardSyncRpc(BombStatePayload bombState)
         {
-            HardSynchronizationClientRpc(bombState);
+            var go = NonNetworkObjectPool.Singleton.GetNetworkObjectReference(bombPrefabId, bombState.objectId);
+            if(go == null || go.gameObject == null || !go.gameObject.activeSelf) return;
+            var bomb = go.GetComponent<ObjectBomb>();
+            bomb.HardSync(bombState.position, bombState.velocity, MilisecondsUtils.CalculateLatency(bombState.timestamp));
         }
     }
 }
