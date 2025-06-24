@@ -14,7 +14,9 @@ namespace Code.Gameplay.Character.Visuals
             if (!IsOwner) return;
 
             if (!PlayerController.Singleton.Dependencies.TryGetFeature(out PhysicsCheck physicsCheck)) return;
+            if (!PlayerController.Singleton.Dependencies.TryGetFeature(out Health health)) return;
             
+            animatorController.SetBool("isStunned", health.IsStunned);
             animatorController.SetBool("isMoving", InputReader.Instance.Move != 0 && physicsCheck.IsGrounded);
         }
         
