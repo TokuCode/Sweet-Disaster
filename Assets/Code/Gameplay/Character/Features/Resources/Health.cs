@@ -11,6 +11,8 @@ namespace Code.Gameplay.Character.Features
 {
     public class Health : Feature
     {
+        private Movement move;
+        
         [Header("Health Parameters")]
         [SerializeField] private NetworkVariable<float> _health = new (0, NetworkVariableReadPermission.Owner);
         public float HealthAmount => _health.Value;
@@ -31,6 +33,7 @@ namespace Code.Gameplay.Character.Features
         public override void InitializeFeature(Controller controller)
         {
             base.InitializeFeature(controller);
+            _dependencies.TryGetFeature(out move);
             AttackPipeline = new Pipeline<AttackEvent>();
         }
 
@@ -66,7 +69,6 @@ namespace Code.Gameplay.Character.Features
             
             float stunTime = _stunMinDuration + _stunDurationPerKnockback * knockback;
             if(IsServer) Stun(stunTime);
-            //else RequestStunServerRpc(stunTime);
         }
 
         public void Stun(float duration)
@@ -74,16 +76,12 @@ namespace Code.Gameplay.Character.Features
             _isStunned.Value = true;
             _stunTimer = duration;
                 
-            if(!_dependencies.TryGetFeature(out Movement move)) return;
-                
             move.BlockMovement();
         }
     
         public void UnStun()
         {
             _isStunned.Value = false;
-            
-            if(!_dependencies.TryGetFeature(out Movement move)) return;
             
             move.UnblockMovement();
         }
@@ -95,7 +93,6 @@ namespace Code.Gameplay.Character.Features
             if (attackEvent.Success)
             {
                 if(IsServer)Damage(attackEvent.DamagePercentage);
-                //else DamageServerRpc(attackEvent.DamagePercentage);
                 
                 var direction = transform.position - attackEvent.SourcePosition;
                 Knockback(direction.normalized, KnockbackTable.Instance.GetKnockbackForce(attackEvent.KnockbackLevel));

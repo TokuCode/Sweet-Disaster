@@ -155,6 +155,7 @@ GameObject:
   - component: {fileID: 419103442011533078}
   - component: {fileID: 4264565317164244210}
   - component: {fileID: 7216947521899421422}
+  - component: {fileID: 1990175814712795858}
   m_Layer: 9
   m_Name: Player
   m_TagString: P1
@@ -355,6 +356,7 @@ MonoBehaviour:
   - {fileID: 5385415895683851131}
   - {fileID: 573164576663406118}
   - {fileID: 860409869878252518}
+  - {fileID: 1990175814712795858}
   _reconciliationCooldownTime: 1
   _reconciliationThreshold: 2.5
   _extrapolationLimit: 0.5
@@ -411,7 +413,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   _groundFriction: 5
-  _airFriction: 3
+  _airFriction: 1.5
   _applyingFriction: 0
 --- !u!114 &8255697083224363140
 MonoBehaviour:
@@ -426,11 +428,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _jumpImpulse: 10
+  _jumpImpulse: 9
   _jumpCooldown: 0.4
   _coyoteTime: 0.25
-  _fallGravityMultiplier: 3.5
-  _lowJumpGravityMultiplier: 2.5
+  _fallGravityMultiplier: 2
+  _lowJumpGravityMultiplier: 1.25
   _onDeparture: 0
 --- !u!114 &2026413833703698187
 MonoBehaviour:
@@ -461,8 +463,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _maxSpeedIdle: 10
-  _accelerationIdle: 20
+  _maxSpeedIdle: 12
+  _accelerationIdle: 18
   _maxSpeedCrouching: 5
   _accelerationCrouching: 5
   _maxSpeedStunned: 50
@@ -508,16 +510,16 @@ MonoBehaviour:
   _holdToShoot: 1
   _lastShotTime: 0
   _isShooting: 0
-  _reloadTime: 0.75
+  _reloadTime: 0.95
   _reloadTimer: 0
-  _magazineSize: 12
+  _magazineSize: 24
   _bulletPrefab: {fileID: 3392542828733932666, guid: 164d47ae8f05cd143be5125ce73b26e3, type: 3}
   _baseImprecision: 0
   _imprecision: 0
   _imprecisionToAngleFactor: 15
-  _airImprecision: 2
-  _movementImprecisionPerSpeedUnit: 0.5
-  _recoilForce: 5
+  _airImprecision: 1
+  _movementImprecisionPerSpeedUnit: 0.25
+  _recoilForce: 2.5
   _reloadRequested: 0
 --- !u!114 &573164576663406118
 MonoBehaviour:
@@ -537,8 +539,8 @@ MonoBehaviour:
   _baseHealth: 100
   _isStunned:
     m_InternalValue: 0
-  _stunMinDuration: 0.1
-  _stunDurationPerKnockback: 0.1
+  _stunMinDuration: 0.05
+  _stunDurationPerKnockback: 0.05
   _stunTimer: 0
 --- !u!114 &860409869878252518
 MonoBehaviour:
@@ -554,7 +556,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   _active: 0
-  _throwChargeTimeSeconds: 0.8
+  _throwChargeTimeSeconds: 0.4
   _throwChargeTimer: 0
   _throwMinForce: 5
   _throwMaxForce: 30
@@ -605,6 +607,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   animatorController: {fileID: 5929247552665864318}
+--- !u!114 &1990175814712795858
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6295644469921195904}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ed9dc4fa364ecf45bacd562381577e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  _shieldPrefab: {fileID: 1606914675838258450, guid: 60a2abd427d869040ac6fd6043231d04, type: 3}
+  _shieldAngle: 60
+  _isShieldActive:
+    m_InternalValue: 0
+  _deactivateShieldDelay: 0.4
+  _isDeactivatingShield:
+    m_InternalValue: 0
+  _maxShieldStamina: 100
+  _currentShieldStamina:
+    m_InternalValue: 0
+  _shieldStaminaRegenRate: 15
+  _shieldStaminaSpendRate: 20
+  _isStaminaDepleted: 0
+  _minShieldStaminaForActivation: 15
 --- !u!1 &7921267680419083028
 GameObject:
   m_ObjectHideFlags: 0

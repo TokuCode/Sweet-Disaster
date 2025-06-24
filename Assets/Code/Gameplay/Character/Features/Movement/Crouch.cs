@@ -6,6 +6,10 @@ namespace Code.Gameplay.Character.Features
 {
     public class Crouch : Feature
     {
+        private PhysicsCheck physics;
+        private Jump jump;
+        private Health health;
+        
         [Header("Settings")]
         [SerializeField] private float _crouchHeightMultiplier;
         private float _initialYScale;
@@ -15,13 +19,17 @@ namespace Code.Gameplay.Character.Features
         [Header("Runtime")]
         [SerializeField] private bool _isCrouching;
         public bool IsCrouching => _isCrouching;
-        public bool CanCrouch(PhysicsCheck check, Jump jump, Health health) => check.IsGrounded && !jump.OnDeparture && !health.IsStunned; //TODO Add Stun Check 
+        public bool CanCrouch(PhysicsCheck check, Jump jump, Health health) => check.IsGrounded && !jump.OnDeparture && !health.IsStunned; 
         [SerializeField] private bool _startingCrouch;
         public bool StartingCrouch => _startingCrouch;
 
         public override void InitializeFeature(Controller controller)
         {
             base.InitializeFeature(controller);
+
+            _dependencies.TryGetFeature(out physics);
+            _dependencies.TryGetFeature(out jump);
+            _dependencies.TryGetFeature(out health);
 
             if (!_invoker.LocalScale.Request(out Vector3 localScale).success) return;
             if (!_invoker.Size.Request(out Vector2 size).success) return;
@@ -45,21 +53,17 @@ namespace Code.Gameplay.Character.Features
 
         private void ManageCrouch(bool crouchInput)
         {
-            if (!_dependencies.TryGetFeature(out Jump jump)) return;
-            if (!_dependencies.TryGetFeature(out PhysicsCheck check)) return;
-            if (!_dependencies.TryGetFeature(out Health health)) return;
-            
-            bool canCrouch = CanCrouch(check, jump, health);
+            bool canCrouch = CanCrouch(physics, jump, health);
             
             if (!_isCrouching && crouchInput && canCrouch)
             {
                 CrouchAction();
             }
-            else if(_isCrouching && !crouchInput && !check.HeadBlocked)
+            else if(_isCrouching && !crouchInput && !physics.HeadBlocked)
             {
                 UncrouchAction();
             }
-            else if(_isCrouching && !canCrouch && !_startingCrouch && !check.HeadBlocked)
+            else if(_isCrouching && !canCrouch && !_startingCrouch && !physics.HeadBlocked)
             {
                 UncrouchAction();
             }

@@ -178,6 +178,11 @@ MonoBehaviour:
   _poolConfigObjects:
   - prefab: {fileID: 3392542828733932666, guid: 164d47ae8f05cd143be5125ce73b26e3, type: 3}
     prewarmCount: 12
+    prefabId:
+      Part1: 0
+      Part2: 0
+      Part3: 0
+      Part4: 0
 --- !u!4 &6218748
 Transform:
   m_ObjectHideFlags: 0
@@ -2489,7 +2494,7 @@ MonoBehaviour:
     PlayerPrefab: {fileID: 0}
     Prefabs:
       NetworkPrefabsLists:
-      - {fileID: 11400000, guid: 527fae902300136458c7ace131073421, type: 2}
+      - {fileID: 11400000, guid: 132b70e4ee9e5274eb9bbf777bf55301, type: 2}
     TickRate: 30
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0

@@ -155,7 +155,7 @@ Rigidbody2D:
   m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 1
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!114 &8544494229781702795
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -275,11 +275,16 @@ MonoBehaviour:
   _attackLayer:
     serializedVersion: 2
     m_Bits: 512
-  _explosionRadius: 3
-  _explosionDamageInCenter: 0.25
-  _explosionDamageInBorder: 0.1
-  _knockbackLevelInCenter: 10
-  _knockbackLevelInBorder: 3
+  _bounceLayer:
+    serializedVersion: 2
+    m_Bits: 2176
+  _explosionRadius: 4.5
+  _explosionDamageInCenter: 0.45
+  _explosionDamageInBorder: 0.2
+  _knockbackLevelInCenter: 30
+  _knockbackLevelInBorder: 10
   _knockbackUpLevelInCenter: 15
   _knockbackUpLevelInBorder: 5
   _ownerTag: 
+  _maxPositionError: 0.5
+  _maxVelocityError: 0.5
