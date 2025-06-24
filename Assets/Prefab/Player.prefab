@@ -361,7 +361,7 @@ MonoBehaviour:
   _reconciliationThreshold: 2.5
   _extrapolationLimit: 0.5
   _extrapolationMultiplier: 1.2
-  _extrapolationMinLatency: 0.25
+  _extrapolationMinLatency: 0.3
 --- !u!114 &2005473438425743590
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -413,7 +413,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   _groundFriction: 5
-  _airFriction: 1.5
+  _airFriction: 1
   _applyingFriction: 0
 --- !u!114 &8255697083224363140
 MonoBehaviour:
@@ -428,11 +428,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _jumpImpulse: 9
+  _jumpImpulse: 10
   _jumpCooldown: 0.4
   _coyoteTime: 0.25
-  _fallGravityMultiplier: 2
-  _lowJumpGravityMultiplier: 1.25
+  _fallGravityMultiplier: 3.5
+  _lowJumpGravityMultiplier: 2.5
   _onDeparture: 0
 --- !u!114 &2026413833703698187
 MonoBehaviour:
@@ -468,6 +468,8 @@ MonoBehaviour:
   _maxSpeedCrouching: 5
   _accelerationCrouching: 5
   _maxSpeedStunned: 50
+  _maxSpeedShield: 10
+  _accelerationShield: 14
   _transitionTime: 0.5
   _movementState: 0
   _desiredMaxSpeed: 0
