@@ -86,7 +86,7 @@ namespace Code.Gameplay.Character.Features
             float compensation = 0;
             if (_invoker.Velocity.Request(out var velocity).success)
             {
-                if(velocity.y < 0 && !check.OnSlope) compensation = -velocity.y;
+                if(!check.OnSlope) compensation = -velocity.y;
             }
             _invoker.AddForce.Perform(new(Vector2.up, _jumpImpulse + compensation, ForceMode2D.Impulse));
         }
