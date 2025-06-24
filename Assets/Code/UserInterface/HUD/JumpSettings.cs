@@ -14,7 +14,6 @@ namespace Code.UserInterface.HUD
         [SerializeField] private TMP_InputField fallGravityField;
         [SerializeField] private TMP_InputField lowJumpGravityField;
         
-        
         public void ApplyJumpSettingsFromUI()
         {
             if (PlayerController.Singleton == null) return;

@@ -78,13 +78,13 @@ namespace Code.Gameplay
             Transform spawnPoint = _spawnPoints[_index % _spawnPoints.Count];
             GameObject playerObj = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
             
-            playerObj.GetComponent<AnimationHandler>().SetVisuals(character);
             playerObj.tag = _tags[_index % _tags.Count];
+            playerObj.GetComponent<AnimationHandler>().SetVisuals(character);
             
-            _index++;
-
             NetworkObject networkObject = playerObj.GetComponent<NetworkObject>();
             networkObject.SpawnAsPlayerObject(clientId, true);
+            
+            _index++;
         }
     }
 }
