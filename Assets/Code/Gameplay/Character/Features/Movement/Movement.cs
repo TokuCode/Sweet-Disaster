@@ -1,4 +1,5 @@
-﻿using Code.Networking.ClientPrediction;
+﻿using Code.Gameplay.Character.Framework;
+using Code.Networking.ClientPrediction;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -6,12 +7,24 @@ namespace Code.Gameplay.Character.Features
 {
     public class Movement : Feature
     {
+        private PhysicsCheck check;
+        private Speed speed;
+        private Jump jump;
+        
         [Header("Settings")]
         [SerializeField] private float _airMultiplier;
         
         [Header("Runtime")]
         [SerializeField] private NetworkVariable<bool> _isMovementBlocked = new (false, NetworkVariableReadPermission.Owner);
         public bool IsMovementBlocked => _isMovementBlocked.Value;
+
+        public override void InitializeFeature(Controller controller)
+        {
+            base.InitializeFeature(controller);
+            _dependencies.TryGetFeature(out check);
+            _dependencies.TryGetFeature(out speed);
+            _dependencies.TryGetFeature(out jump);
+        }
 
         public override void UpdateFeature() {}
         
@@ -24,20 +37,13 @@ namespace Code.Gameplay.Character.Features
 
         private void Move(float moveInput)
         {
-            if (!_dependencies.TryGetFeature(out Speed speed)) return;
             float acceleration = speed.Acceleration;
             
             if (_isMovementBlocked.Value) return;
 
             if (Mathf.Abs(moveInput) <= .1f) return;
 
-            if (!_dependencies.TryGetFeature(out PhysicsCheck check)) return;
-            
-            bool onDeparture = false;
-            if (_dependencies.TryGetFeature(out Jump jump))
-            {
-                onDeparture = jump.OnDeparture;
-            }
+            bool onDeparture = jump.OnDeparture;
             
             Vector2 direction = Vector2.right;
              if (check.OnSlope && !onDeparture)
@@ -50,17 +56,11 @@ namespace Code.Gameplay.Character.Features
         
         private void LimitMovement()
         {
-            if (!_dependencies.TryGetFeature(out PhysicsCheck check)) return;
             if (!_invoker.Velocity.Request(out Vector2 velocity).success) return;
-            if (!_dependencies.TryGetFeature(out Speed speed)) return;
 
             float maxSpeed = speed.MaxSpeed;
             
-            bool onDeparture = false;
-            if (_dependencies.TryGetFeature(out Jump jump))
-            {
-                onDeparture = jump.OnDeparture;
-            }
+            bool onDeparture = jump.OnDeparture;
             
             if(check.OnSlope && !onDeparture)
             {

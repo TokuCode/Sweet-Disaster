@@ -12,11 +12,13 @@ namespace Code.Gameplay.Character.Framework
 
         public override void OnNetworkSpawn()
         {
-            if (!IsOwner && !IsServer) return;
-
             foreach (var feature in _features)
             {
                 Dependencies.TryAddFeature(feature);
+            }
+
+            foreach (var feature in _features)
+            {
                 feature.InitializeFeature(this);
             }
         }

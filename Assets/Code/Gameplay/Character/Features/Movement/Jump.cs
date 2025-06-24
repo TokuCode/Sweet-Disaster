@@ -5,6 +5,10 @@ namespace Code.Gameplay.Character.Features
 {
     public class Jump : Feature
     {
+        private Crouch crouch;
+        private Health health;
+        private PhysicsCheck check;
+        
         [Header("Settings")] 
         [SerializeField] private float _jumpImpulse;
         [SerializeField] private float _jumpCooldown;
@@ -45,7 +49,9 @@ namespace Code.Gameplay.Character.Features
         {
             if (!IsOwner && !IsServer) return;
 
-            if (!_dependencies.TryGetFeature(out PhysicsCheck check)) return;
+            _dependencies.TryGetFeature(out check);
+            _dependencies.TryGetFeature(out health);
+            _dependencies.TryGetFeature(out crouch);
             
             if(_jumpCooldownTimer > 0) _jumpCooldownTimer -= Time.deltaTime;
             else if (check.IsGrounded) _onDeparture = false;
@@ -62,14 +68,10 @@ namespace Code.Gameplay.Character.Features
 
         public void TryServerJump()
         {
-            if(!_dependencies.TryGetFeature(out Crouch crouch)) return;
-            if(!_dependencies.TryGetFeature(out Health health)) return;
 
             bool canJump = CanJump(crouch, health);
             
             if(_jumpCooldownTimer > 0 || !canJump) return;
-            
-            if (!_dependencies.TryGetFeature(out PhysicsCheck check)) return;
             
             float timeSinceGrounded = Time.time - check.LastTimeOnGround;
             if (timeSinceGrounded > _coyoteTime) return;
@@ -81,8 +83,6 @@ namespace Code.Gameplay.Character.Features
         
         private void JumpAction()
         {
-            if(!_dependencies.TryGetFeature(out PhysicsCheck check)) return;
-            
             float compensation = 0;
             if (_invoker.Velocity.Request(out var velocity).success)
             {
@@ -93,8 +93,6 @@ namespace Code.Gameplay.Character.Features
 
         private void BetterServerJump()
         {
-            if (!_dependencies.TryGetFeature(out PhysicsCheck check)) return;
-            
             if (!_onDeparture) return;
             
             if(!_invoker.Velocity.Request(out Vector2 velocity).success) return;

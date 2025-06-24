@@ -83,8 +83,16 @@ namespace Code.Gameplay
             
             NetworkObject networkObject = playerObj.GetComponent<NetworkObject>();
             networkObject.SpawnAsPlayerObject(clientId, true);
+
+            SetTagForClientRpc(clientId, _index);
             
             _index++;
+        }
+
+        [ClientRpc]
+        private void SetTagForClientRpc(ulong clientId, int _index)
+        {
+            NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.gameObject.tag = _tags[_index % _tags.Count];
         }
     }
 }

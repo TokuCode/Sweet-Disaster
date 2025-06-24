@@ -51,6 +51,11 @@ namespace Code.Systems.Input
             }
         }
 
+        private void OnDisable()
+        {
+            inputActions.Dispose();
+        }
+
         public void OnJump(InputAction.CallbackContext context)
         {
             if(context.performed)

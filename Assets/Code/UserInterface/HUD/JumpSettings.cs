@@ -9,27 +9,32 @@ namespace Code.UserInterface.HUD
 {
     public class JumpSettings : NetworkBehaviour
     {
+        private Jump _jump;
+        
         [SerializeField] private TMP_InputField impulseField;
         [SerializeField] private TMP_InputField cooldownField;
         [SerializeField] private TMP_InputField fallGravityField;
         [SerializeField] private TMP_InputField lowJumpGravityField;
-        
+
         public void ApplyJumpSettingsFromUI()
         {
-            if (PlayerController.Singleton == null) return;
-            if (!PlayerController.Singleton.Dependencies.TryGetFeature(out Jump jumpFeature)) return;
-
+            if(PlayerController.Singleton == null) return;
+            
+            PlayerController.Singleton.Dependencies.TryGetFeature(out _jump);
+            
+            if(_jump == null) return;
+            
             if (float.TryParse(impulseField.text, out float impulse))
-                jumpFeature.JumpImpulse = impulse;
+                _jump.JumpImpulse = impulse;
 
             if (float.TryParse(cooldownField.text, out float cooldown))
-                jumpFeature.JumpCooldown = cooldown;
+                _jump.JumpCooldown = cooldown;
 
             if (float.TryParse(fallGravityField.text, out float fallGravity))
-                jumpFeature.FallGravityMultiplier = fallGravity;
+                _jump.FallGravityMultiplier = fallGravity;
 
             if (float.TryParse(lowJumpGravityField.text, out float lowJumpGravity))
-                jumpFeature.LowJumpGravityMultiplier = lowJumpGravity;
+                _jump.LowJumpGravityMultiplier = lowJumpGravity;
         }
     }
 }

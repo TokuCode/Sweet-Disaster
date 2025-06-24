@@ -1,5 +1,6 @@
 ﻿using System;
 using Code.Gameplay.Character.Framework;
+using Code.Gameplay.Objects;
 using Code.Helpers.Utils;
 using Code.Networking.ClientPrediction;
 using Code.Systems.Input;
@@ -12,6 +13,12 @@ namespace Code.Gameplay.Character.Features
     public class Bomb : Feature
     {
         private PlayerController _playerController;
+        
+        private Shoot shoot;
+        private Health health;
+        private Movement move;
+        private Crouch crouch;
+        private GunBelt belt;
         
         [Header("Control")] 
         [SerializeField] private bool _active;
@@ -53,6 +60,11 @@ namespace Code.Gameplay.Character.Features
                 InputReader.Instance.OnShootReleased += OnShootReleased;
             }
             base.InitializeFeature(controller);
+            _dependencies.TryGetFeature(out health);
+            _dependencies.TryGetFeature(out move);
+            _dependencies.TryGetFeature(out crouch);
+            _dependencies.TryGetFeature(out belt);
+            _dependencies.TryGetFeature(out shoot);
         }
     
         public override void UpdateFeature()
@@ -71,16 +83,11 @@ namespace Code.Gameplay.Character.Features
 
         private void SetActive()
         {
-            if (!_dependencies.TryGetFeature(out GunBelt belt)) return;
             _active = belt.ActiveWeapon == GunBelt.Weapon.Bomb;
         } 
     
         private void StartThrowing()
         {
-            if (!_dependencies.TryGetFeature(out Crouch crouch)) return;
-            if (!_dependencies.TryGetFeature(out Health health)) return; 
-            if (!_dependencies.TryGetFeature(out Shoot shoot)) return;
-            if (!_dependencies.TryGetFeature(out Movement move)) return;
             
             bool canThrowInternal = _bombCount.Value > 0 && !_isOnCooldown && !_isThrowing && _active;
             bool canThrowExternal = !shoot.IsShooting && !crouch.IsCrouching && !shoot.IsReloading && !health.IsStunned; //TODO Shield Check
@@ -96,7 +103,6 @@ namespace Code.Gameplay.Character.Features
         private void EndThrowing()
         {
             if (!_isThrowing) return;
-            if(!_dependencies.TryGetFeature(out Movement movement)) return;
             BombAction();
             if(IsHost) _bombCount.Value--;
             else RequestBombDepletionToServerRpc();
@@ -105,8 +111,8 @@ namespace Code.Gameplay.Character.Features
             _cooldownTimer = _cooldownTimeSeconds;
             _isOnCooldown = true;
             
-            if(IsServer) movement.UnblockMovement();
-            else movement.RequestMovement(false);
+            if(IsServer) move.UnblockMovement();
+            else move.RequestMovement(false);
         }
     
         private void ResetThrow() => _isOnCooldown = false;
@@ -136,6 +142,7 @@ namespace Code.Gameplay.Character.Features
             _bombNo = NonNetworkObjectPool.Singleton.GetNetworkObject(_bombPrefab, position, rotation, out bombId);
             
             var bomb = _bombNo.gameObject.GetComponent<ObjectBomb>();
+            NonPooledSync.Singleton.AddBomb(bomb);
             bomb.Init(gameObject.tag, throwForce, bombId, 0);
         }
 
@@ -146,6 +153,7 @@ namespace Code.Gameplay.Character.Features
             _bombNo = NonNetworkObjectPool.Singleton.GetNetworkObjectById(_bombPrefab, position, rotation, bombId);
             
             var bomb = _bombNo.gameObject.GetComponent<ObjectBomb>();
+            NonPooledSync.Singleton.AddBomb(bomb);
             bomb.Init(gameObject.tag, throwForce, bombId, latency);
         }
         

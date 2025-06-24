@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class StunIndicator : MonoBehaviour
 {
+    private Health _health;
+    
     [Header("UI Elements")]
     [SerializeField] private Image _stunIndicatorImage;
     
@@ -16,10 +18,12 @@ public class StunIndicator : MonoBehaviour
 
     private void UpdateColor()
     {
-        if(PlayerController.Singleton == null)return;
+        if(PlayerController.Singleton == null) return;
         
-        if(!PlayerController.Singleton.Dependencies.TryGetFeature(out Health healthFeature)) return;
+        PlayerController.Singleton.Dependencies.TryGetFeature(out _health);
         
-        _stunIndicatorImage.color = healthFeature.IsStunned ? _stunColor : _normalColor;
+        if(_health == null) return;
+        
+        _stunIndicatorImage.color = _health.IsStunned ? _stunColor : _normalColor;
     }
 }

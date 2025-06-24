@@ -16,6 +16,11 @@ namespace Code.Gameplay.Character.Features
     {
         private PlayerController _playerController;
         
+        private Crouch crouch;
+        private Health health;
+        private GunBelt belt;
+        private Shield shield;
+        
         [Header("Control")]
         [SerializeField] private bool _active;
         public bool Active => _active;
@@ -67,6 +72,11 @@ namespace Code.Gameplay.Character.Features
             if (IsOwner) InputReader.Instance.OnShootPressed += OnShootPressed;
             
             base.InitializeFeature(controller);
+            
+            _dependencies.TryGetFeature(out crouch);
+            _dependencies.TryGetFeature(out health);
+            _dependencies.TryGetFeature(out belt);
+            _dependencies.TryGetFeature(out shield);
         }
 
         public override void UpdateFeature()
@@ -99,12 +109,9 @@ namespace Code.Gameplay.Character.Features
         
         private void TryShooting()
         {
-            if (!_dependencies.TryGetFeature(out Crouch crouch)) return;
-            if (!_dependencies.TryGetFeature(out Health health)) return;
-            
             bool canShootInternal = _currentAmmo.Value > 0 & Time.time - _lastShotTime > _timeBetweenBursts & !_isShooting &
                 !_isReloading.Value && _active;
-            bool canShootExternal = !crouch.IsCrouching && !health.IsStunned;
+            bool canShootExternal = !crouch.IsCrouching && !health.IsStunned && !shield.IsShieldActive;
             if (canShootInternal && canShootExternal)
                 StartCoroutine(ShootingSequence());
             else if (_currentAmmo.Value <= 0)
@@ -121,29 +128,29 @@ namespace Code.Gameplay.Character.Features
             
             for (int i = 0; i < _burstCount; i++)
             {
-                ShootAction();
+                ShootAction(i);
                 _lastShotTime = Time.time;
                 if(IsHost)_currentAmmo.Value--;
                 else RequestAmmoDepletionToServerRpc();
-                
+
                 if (_currentAmmo.Value == 0)
+                {
+                    _isShooting = false;
+                    if(!IsServer) RequestReloadToServerRpc();
+                    else TryReload();
                     break;
+                }
 
                 yield return new WaitForSeconds(_timeBetweenShots);
             }
             
             _isShooting = false;
-
-            if (_currentAmmo.Value <= 0)
-            {
-                if(!IsServer) RequestReloadToServerRpc();
-                else TryReload();
-            }
         }
 
-        private void ShootAction()
+        private void ShootAction(int burstIndex)
         {
-            var direction = ImprecisionDirection(InputReader.Instance.HandleDirection);
+            var direction = InputReader.Instance.HandleDirection;
+            if(burstIndex > 0) direction = ImprecisionDirection(direction);
             var position = InputReader.Instance.HandlePosition;
             
             FireAction(position, direction, out int id);
@@ -221,7 +228,6 @@ namespace Code.Gameplay.Character.Features
 
         private void SetActive()
         {
-            if (!_dependencies.TryGetFeature(out GunBelt belt)) return;
             _active = belt.ActiveWeapon == GunBelt.Weapon.Gun;
         }
         
