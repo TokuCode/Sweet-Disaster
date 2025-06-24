@@ -85,6 +85,7 @@ namespace Code.Gameplay
             networkObject.SpawnAsPlayerObject(clientId, true);
 
             SetTagForClientRpc(clientId, _index);
+            SetAnimatorClientRpc(clientId, characterName);
             
             _index++;
         }
@@ -93,6 +94,20 @@ namespace Code.Gameplay
         private void SetTagForClientRpc(ulong clientId, int _index)
         {
             NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.gameObject.tag = _tags[_index % _tags.Count];
+        }
+
+        [ClientRpc]
+        private void SetAnimatorClientRpc(ulong clientId, string characterName)
+        {
+            CharacterVisuals character = characterVisualsList.Find(c => c.characterName == characterName);
+
+            if (character == null)
+            {
+                Debug.LogError($"Character not found: {characterName}, assigning first character on list");
+                character = characterVisualsList[0];
+            }
+            
+            NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.gameObject.GetComponent<AnimationHandler>().SetVisuals(character);
         }
     }
 }
