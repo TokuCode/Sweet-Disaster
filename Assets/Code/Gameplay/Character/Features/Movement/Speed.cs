@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Code.Gameplay.Character.Framework;
 using Code.Networking.ClientPrediction;
 using UnityEngine;
 
@@ -15,6 +16,11 @@ namespace Code.Gameplay.Character.Features
             Blocked,
             Stunned
         }
+
+        private PhysicsCheck check;
+        private Health health;
+        private Movement move;
+        private Crouch crouch;
         
         [Header("Settings")]
         [SerializeField] private float _maxSpeedIdle;
@@ -33,6 +39,15 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private float _acceleration;
         public float Acceleration => _acceleration;
 
+        public override void InitializeFeature(Controller controller)
+        {
+            base.InitializeFeature(controller);
+            _dependencies.TryGetFeature(out check);
+            _dependencies.TryGetFeature(out health);
+            _dependencies.TryGetFeature(out move);
+            _dependencies.TryGetFeature(out crouch);
+        }
+
         public override void UpdateFeature()
         {
             if(!IsOwner && !IsServer) return;
@@ -46,31 +61,11 @@ namespace Code.Gameplay.Character.Features
         {
             _enableTransition = false;
 
-            bool isStunned = false;
-            if (_dependencies.TryGetFeature(out Health health))
-            {
-                isStunned = health.IsStunned;
-            }
-            
-            bool isMovementBlocked = false;
-            if (_dependencies.TryGetFeature(out Movement movement))
-            {
-                isMovementBlocked = movement.IsMovementBlocked;
-            }
-            
-            bool isCrouching = false;
-            if (_dependencies.TryGetFeature(out Crouch crouch))
-            {
-                isCrouching = crouch.IsCrouching;
-            }
-
-            bool isGrounded = true;
-            bool onSlope = false;
-            if (_dependencies.TryGetFeature(out PhysicsCheck check))
-            {
-                isGrounded = check.IsGrounded;
-                onSlope = check.OnSlope;
-            }
+            bool isStunned = health.IsStunned;
+            bool isMovementBlocked = move.IsMovementBlocked;
+            bool isCrouching = crouch.IsCrouching;
+            bool isGrounded = check.IsGrounded;
+            bool onSlope = check.OnSlope;
 
             if (isStunned)
             {

@@ -187,7 +187,8 @@ namespace Code.Gameplay.Character
                 move = _input.Move,
                 jump = _input.Jump,
                 crouch = _input.Crouch,
-                reload = _input.Reload
+                reload = _input.Reload,
+                shield = _input.Shield
             };
             
             _clientInputBuffer.Add(inputPayload, bufferIndex);

@@ -1,4 +1,5 @@
-﻿using Code.Networking.ClientPrediction;
+﻿using Code.Gameplay.Character.Framework;
+using Code.Networking.ClientPrediction;
 using UnityEngine;
 
 namespace Code.Gameplay.Character.Features
@@ -11,6 +12,8 @@ namespace Code.Gameplay.Character.Features
 
         private Vector3 _playerPositionCache;
         private Vector2 _playerSizeCache;
+
+        private Crouch crouch;
         
         [Header("Settings")]
         [SerializeField] private LayerMask _groundLayer;
@@ -26,6 +29,12 @@ namespace Code.Gameplay.Character.Features
         public bool OnSlope => _onSlope;
         [SerializeField] private bool _isHeadBlocked;
         public bool HeadBlocked => _isHeadBlocked;
+
+        public override void InitializeFeature(Controller controller)
+        {
+            base.InitializeFeature(controller);
+            _dependencies.TryGetFeature(out crouch);
+        }
 
         public override void UpdateFeature()
         {
@@ -70,13 +79,10 @@ namespace Code.Gameplay.Character.Features
 
         private void HeadBlockCheck()
         {
-            if (_dependencies.TryGetFeature(out Crouch crouch))
+            if (!crouch.IsCrouching)
             {
-                if (!crouch.IsCrouching)
-                {
-                    _isHeadBlocked = false;
-                    return;
-                }
+                _isHeadBlocked = false;
+                return; 
             }
             
             var position = _playerPositionCache;

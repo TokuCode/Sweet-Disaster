@@ -1,10 +1,13 @@
-﻿using Code.Gameplay.Character;
+﻿using System;
+using Code.Gameplay.Character;
 using Code.Gameplay.Character.Features;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ThrowUI : MonoBehaviour
 {
+    private Bomb _bomb;
+    
     [Header("UI Elements")]
     [SerializeField] private Image _chargeFillImage;
     
@@ -15,7 +18,7 @@ public class ThrowUI : MonoBehaviour
     
     [Header("Parameters")]
     [SerializeField] private float _minimumFillValue;
-    
+
     private void Update()
     {
         UpdateFillValue();
@@ -26,12 +29,11 @@ public class ThrowUI : MonoBehaviour
     {
         if(PlayerController.Singleton == null) return;
 
-        if (!PlayerController.Singleton.Dependencies.TryGetFeature(out Bomb bomb))
-        {
-            return;
-        }
+        PlayerController.Singleton.Dependencies.TryGetFeature(out _bomb);
         
-        if (bomb.IsThrowing) _chargeFillImage.fillAmount = Mathf.Max(Mathf.Clamp01(bomb.ThrowChargeTimer / bomb.ThrowChargeTimeSeconds), _minimumFillValue);
+        if (_bomb == null) return;
+        
+        if (_bomb.IsThrowing) _chargeFillImage.fillAmount = Mathf.Max(Mathf.Clamp01(_bomb.ThrowChargeTimer / _bomb.ThrowChargeTimeSeconds), _minimumFillValue);
         else _chargeFillImage.fillAmount = 1;
     }
 
@@ -39,12 +41,11 @@ public class ThrowUI : MonoBehaviour
     {
         if(PlayerController.Singleton == null) return;
 
-        if (!PlayerController.Singleton.Dependencies.TryGetFeature(out Bomb bomb))
-        {
-            return;
-        }
+        PlayerController.Singleton.Dependencies.TryGetFeature(out _bomb);
+
+        if (_bomb == null) return;
         
-        if (bomb.IsThrowing) _chargeFillImage.color = _throwing;
-        else if (bomb.IsOnCooldown) _chargeFillImage.color = _throwOnCooldown;else _chargeFillImage.color = _throwReady;
+        if (_bomb.IsThrowing) _chargeFillImage.color = _throwing;
+        else if (_bomb.IsOnCooldown) _chargeFillImage.color = _throwOnCooldown;else _chargeFillImage.color = _throwReady;
     }
 }

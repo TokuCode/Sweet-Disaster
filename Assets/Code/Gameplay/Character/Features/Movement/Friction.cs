@@ -1,10 +1,14 @@
-﻿using Code.Networking.ClientPrediction;
+﻿using Code.Gameplay.Character.Framework;
+using Code.Networking.ClientPrediction;
 using UnityEngine;
 
 namespace Code.Gameplay.Character.Features
 {
     public class Friction : Feature
     {
+        private PhysicsCheck physics;
+        private Health health;
+        
         [Header("Settings")]
         [SerializeField] private float _groundFriction;
         [SerializeField] private float _airFriction;
@@ -15,6 +19,13 @@ namespace Code.Gameplay.Character.Features
         private float _cachedMoveDirection;
         public bool IsTurning(Vector2 velocity) => _cachedMoveDirection > 0 && velocity.x < 0 ||
                                   _cachedMoveDirection < 0 && velocity.x > 0;
+
+        public override void InitializeFeature(Controller controller)
+        {
+            base.InitializeFeature(controller);
+            _dependencies.TryGetFeature(out physics);
+            _dependencies.TryGetFeature(out health);
+        }
 
         public override void UpdateFeature() { }
 
@@ -29,13 +40,11 @@ namespace Code.Gameplay.Character.Features
         {
             _applyingFriction = false;
 
-            if(!_dependencies.TryGetFeature(out PhysicsCheck check)) return;
             if(!_invoker.Velocity.Request(out Vector2 velocity).success) return;
 
-            if(!_dependencies.TryGetFeature(out Health health)) return;
             if(health.IsStunned) return;
             
-            if(!check.IsGrounded)
+            if(!physics.IsGrounded)
                 ApplyFriction(_airFriction, velocity);
             else if(IsTurning(velocity) || _cachedMoveDirection == 0)
                 ApplyFriction(_groundFriction, velocity);

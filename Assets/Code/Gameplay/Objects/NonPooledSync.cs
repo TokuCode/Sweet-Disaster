@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using Code.Helpers.Utils;
 using Code.Networking.ClientPrediction;
 using Code.Systems.NetworkObjectPool;
@@ -10,9 +10,21 @@ namespace Code.Gameplay.Objects
     public class NonPooledSync : NetworkBehaviour
     {
         public static NonPooledSync Singleton { get; private set; }
+        
+        private const float serverTickRate = 60f;
         [SerializeField] private SerializableGuid bombPrefabId;
+
+        [Header("Runtime")]
+        [SerializeField] private List<ObjectBomb> _bombsToSync = new();
+        private NetworkTimer _networkTimer;
         
         private void Awake()
+        {
+            SetSingleton();
+            _networkTimer = new(serverTickRate);
+        }
+
+        private void SetSingleton()
         {
             if(Singleton != null && Singleton != this)
             {
@@ -23,18 +35,62 @@ namespace Code.Gameplay.Objects
                 Singleton = this;
             }
         }
-       
+
+        private void Update()
+        {
+            if (!IsServer) return;
+            
+            _networkTimer.Update(Time.deltaTime);
+        }
+        
+        private void FixedUpdate()
+        {
+            if (!IsServer) return;
+
+            while (_networkTimer.ShouldTick())
+            {
+                HandleServerTick();
+            }
+        }
+
+        private void HandleServerTick()
+        {
+            if(!IsServer) return;
+
+            foreach (var bomb in _bombsToSync)
+            {
+                SyncBombById(bomb);
+            }
+        }
+
+        public void AddBomb(ObjectBomb bomb)
+        {
+            _bombsToSync.Add(bomb);
+        }
+
+        public void RemoveBomb(ObjectBomb bomb)
+        {
+            _bombsToSync.Remove(bomb); 
+        }
+
+        private void SyncBombById(ObjectBomb bomb)
+        {
+            var bombState = bomb.GetState();
+            HardSynchronizationClientRpc(bombState);
+        }
+
         [ClientRpc]
-        private void RequestHardSynchronizationClientRpc(BombStatePayload bombState)
+        private void HardSynchronizationClientRpc(BombStatePayload bombState)
         {
             var go = NonNetworkObjectPool.Singleton.GetNetworkObjectReference(bombPrefabId, bombState.objectId);
+            if(go == null || go.gameObject == null || !go.gameObject.activeSelf) return;
             var bomb = go.GetComponent<ObjectBomb>();
             bomb.HardSync(bombState.position, bombState.velocity, MilisecondsUtils.CalculateLatency(bombState.timestamp));
         }
 
         public void RequestHardSync(BombStatePayload bombState)
         {
-            RequestHardSynchronizationClientRpc(bombState);
+            HardSynchronizationClientRpc(bombState);
         }
     }
 }

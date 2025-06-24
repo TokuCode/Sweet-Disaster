@@ -12,7 +12,6 @@ using UnityEngine;
 
 public class ObjectBomb : NetworkBehaviour 
 {
-    private const float serverTickRate = 60f;
     private const float maxLatencyMiliseconds = 250;
     
     [SerializeField] private int _bounceCount; 
@@ -31,6 +30,7 @@ public class ObjectBomb : NetworkBehaviour
     [SerializeField] private float _maxSlopeAngle;
     [SerializeField] private float _collisionSimetryCoefficient;
     [SerializeField] private LayerMask _attackLayer;
+    [SerializeField] private LayerMask _bounceLayer;
     
     [Header("Static Settings")]
     [SerializeField] private float _explosionRadius;
@@ -44,12 +44,12 @@ public class ObjectBomb : NetworkBehaviour
     [Header("Dynamic Settings")]
     [SerializeField] private string _ownerTag;
     
-    //Server Side
-    private NetworkTimer _networkTimer;
-
+    [Header("Sync Settings")]
+    [SerializeField] private float _maxPositionError;
+    [SerializeField] private float _maxVelocityError;
+    
     private void Awake()
     {
-        _networkTimer = new(serverTickRate);
         _initTimer = new(_initTime);
         _initTimer.OnTimerStop += OnDelayedInit;
     }
@@ -58,9 +58,12 @@ public class ObjectBomb : NetworkBehaviour
     {
         _collider2D.isTrigger = false;
 
-        var collision = Physics2D.OverlapCircle(transform.position, _collider2D.radius);
-        
-        if(collision != null && collision.gameObject != gameObject) Explode();
+        var collision = Physics2D.OverlapCircleAll(transform.position, _collider2D.radius);
+
+        foreach (var collider2D in collision)
+        {
+            if(collider2D != null && collider2D.gameObject != gameObject) Explode();
+        }
     }
 
     private void Update()
@@ -68,27 +71,6 @@ public class ObjectBomb : NetworkBehaviour
         if (!started) return;
         
         _initTimer.Tick(Time.deltaTime);
-        
-        if(!IsServer) return;
-        
-        _networkTimer.Update(Time.deltaTime);
-    }
-
-    private void FixedUpdate()
-    {
-        if (!started || !IsServer) return;
-
-        while (_networkTimer.ShouldTick())
-        {
-            ServerTick();
-        }
-    }
-
-    public void ServerTick()
-    {
-        if (!IsServer) return;
-        
-        NonPooledSync.Singleton.RequestHardSync(GetState());
     }
 
     public BombStatePayload GetState()
@@ -118,29 +100,33 @@ public class ObjectBomb : NetworkBehaviour
 
     public void Anticipate(Vector2 initialVelocity, float latency)
     {
-        float v0Y, vX, vY, g, t, dX, dY;
+        float v0Y, vX, dVY, g, t, dX, dY;
         vX = initialVelocity.x;
         v0Y = initialVelocity.y;
         g = Physics2D.gravity.y;
         t = Mathf.Min(latency, maxLatencyMiliseconds/1000);
         dX = vX * t;
         dY = v0Y * t - g / 2 * t * t;
-        vY = v0Y - g * t;
+        dVY = - g * t;
         
         Vector2 dVec = new (dX, dY);
-        Vector2 VF = new (vX, vY);
+        Vector2 dVF = new (0, dVY);
         
         _rigidbody2D.position += dVec;
-        AddImpulse(VF);
+        AddImpulse(initialVelocity + dVF);
     }
 
     public void HardSync(Vector3 position, Vector2 velocity, float latency)
     {
         if (IsHost) return;
         
-        _rigidbody2D.position = position;
+        var distance = Vector2.Distance(position, transform.position);
         var diff = velocity - _rigidbody2D.linearVelocity;
-        AddImpulse(diff);
+        
+        if(distance <= _maxPositionError || diff.magnitude <= _maxVelocityError) return;
+        
+        _rigidbody2D.position = position;
+        _rigidbody2D.linearVelocity = velocity;
         
         float v0Y, vX, dVY, g, t, dX, dY;
         t = Mathf.Min(latency, maxLatencyMiliseconds/1000);
@@ -170,7 +156,7 @@ public class ObjectBomb : NetworkBehaviour
         _bounceCount = 0; 
         started = false;
         
-        _networkTimer.Reset();
+        NonPooledSync.Singleton.RemoveBomb(this);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -183,7 +169,7 @@ public class ObjectBomb : NetworkBehaviour
 
         if (collision.gameObject.CompareTag(_ownerTag) && _bounceCount == 0) return;
         
-        if(LayerMaskUtils.CompareGameObjectLayerMask(collision.gameObject, _attackLayer) || horizontal) Explode(); 
+        if(LayerMaskUtils.CompareGameObjectLayerMask(collision.gameObject, _attackLayer) || (horizontal && !LayerMaskUtils.CompareGameObjectLayerMask(collision.gameObject, _bounceLayer))) Explode(); 
         else Bounce(surfaceNormal);
     }
 

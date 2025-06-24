@@ -8,6 +8,8 @@ namespace Code.UserInterface.HUD
 {
     public class ActiveWeaponIndicator : NetworkBehaviour
     {
+        private GunBelt _belt;
+        
         [Header("UI Elements")]
         [SerializeField] private TextMeshProUGUI _indicator;
 
@@ -17,13 +19,15 @@ namespace Code.UserInterface.HUD
         {
             if (PlayerController.Singleton == null) return;
             
-            if (!PlayerController.Singleton.Dependencies.TryGetFeature(out GunBelt belt))
+            PlayerController.Singleton.Dependencies.TryGetFeature(out _belt);
+            
+            if (_belt == null)
             {
                 _indicator.text = string.Empty;
                 return;
             }
 
-            _indicator.text = belt.ActiveWeapon.ToString();
+            _indicator.text = _belt.ActiveWeapon.ToString();
         }
     }
 }

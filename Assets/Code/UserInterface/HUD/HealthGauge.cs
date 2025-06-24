@@ -1,10 +1,13 @@
-﻿using Code.Gameplay.Character;
+﻿using System;
+using Code.Gameplay.Character;
 using Code.Gameplay.Character.Features;
 using TMPro;
 using UnityEngine;
 
 public class HealthGauge : MonoBehaviour
 {
+    private Health _health;
+    
     [Header("UI Elements")]
     [SerializeField] private TextMeshProUGUI _healthText;
     
@@ -17,11 +20,13 @@ public class HealthGauge : MonoBehaviour
     private void UpdateText()
     {
         if (PlayerController.Singleton == null) return;
-
-        if (!PlayerController.Singleton.Dependencies.TryGetFeature(out Health healthFeature)) return;
         
-        var health = healthFeature.HealthAmount;
-        var baseHealth = healthFeature.BaseHealth;
+        PlayerController.Singleton.Dependencies.TryGetFeature(out _health);
+        
+        if (_health == null) return;
+        
+        var health = _health.HealthAmount;
+        var baseHealth = _health.BaseHealth;
         
         _healthText.text = $"{health:N0}%";
         _healthText.color = health < baseHealth ? _idleColor : _overshootColor;

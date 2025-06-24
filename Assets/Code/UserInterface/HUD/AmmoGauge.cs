@@ -1,4 +1,5 @@
-﻿using Code.Gameplay.Character;
+﻿using System;
+using Code.Gameplay.Character;
 using Code.Gameplay.Character.Features;
 using TMPro;
 using Unity.Netcode;
@@ -8,6 +9,8 @@ namespace Code.UserInterface.HUD
 {
     public class AmmoGauge : NetworkBehaviour
     {
+        private Shoot _shoot;
+        
         [Header("UI Elements")]
         [SerializeField] private TextMeshProUGUI _ammoText;
 
@@ -16,20 +19,22 @@ namespace Code.UserInterface.HUD
         private void Text()
         {
             if (PlayerController.Singleton == null) return;
+
+            PlayerController.Singleton.Dependencies.TryGetFeature(out _shoot);
             
-            if (!PlayerController.Singleton.Dependencies.TryGetFeature(out Shoot shoot))
+            if (_shoot == null)
             {
                 _ammoText.text = string.Empty;
                 return;
             }
 
-            if (shoot.IsReloading)
+            if (_shoot.IsReloading)
             {
                 _ammoText.text = "Reloading";
                 return;
             }
             
-            _ammoText.text = $"{shoot.CurrentAmmo}/{shoot.MagazineSize}";
+            _ammoText.text = $"{_shoot.CurrentAmmo}/{_shoot.MagazineSize}";
         }
     }
 }
