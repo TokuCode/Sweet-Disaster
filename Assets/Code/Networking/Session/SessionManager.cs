@@ -29,6 +29,7 @@ namespace Code.Networking.Session
         }
 
         public PlayerInfo playerInfo;
+        public bool IsPracticeMode { get; set; }
         
         // Session properties keys
         public readonly string MapPropertyKey = "map";
@@ -59,12 +60,16 @@ namespace Code.Networking.Session
             }
         }
         
-        public async void StartSessionAsHost()
+        public async void StartSessionAsHost(bool isPracticeMode)
         {
+            IsPracticeMode = isPracticeMode;
+            
             try
             {
                 UIUtilities.Instance.MessagePopUp("Creando la sesión...", false);
 
+                maxPlayers = !IsPracticeMode ? maxPlayers : 1;
+                
                 var options = new SessionOptions
                 {
                     MaxPlayers = maxPlayers,
@@ -73,7 +78,7 @@ namespace Code.Networking.Session
                     SessionProperties = new Dictionary<string, SessionProperty>
                     {
 						{ WinnerPropertyKey, new SessionProperty("None", VisibilityPropertyOptions.Member) },
-                        { MapPropertyKey, new SessionProperty("default", VisibilityPropertyOptions.Member) }
+                        { MapPropertyKey, new SessionProperty("classic", VisibilityPropertyOptions.Member) }
                     },
                     
                     PlayerProperties = GetPlayerProperties()
