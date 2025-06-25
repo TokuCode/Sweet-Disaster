@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 5656740845927550779}
   - component: {fileID: 8364876116749319099}
   - component: {fileID: 1156062910544818618}
-  m_Layer: 12
+  m_Layer: 13
   m_Name: Bomb
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -274,7 +274,7 @@ MonoBehaviour:
   _collisionSimetryCoefficient: 1.05
   _attackLayer:
     serializedVersion: 2
-    m_Bits: 512
+    m_Bits: 12800
   _bounceLayer:
     serializedVersion: 2
     m_Bits: 2176

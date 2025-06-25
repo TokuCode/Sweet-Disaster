@@ -1,4 +1,5 @@
 ﻿using Code.Helpers.Singleton;
+using Unity.Cinemachine;
 using UnityEngine;
 
 namespace Code.Gameplay.Character
@@ -6,20 +7,20 @@ namespace Code.Gameplay.Character
     public class CameraTarget : Singleton<CameraTarget>
     {
         [Header("Settings")] 
-        [SerializeField] private float _height;
-        [SerializeField] private GameObject _cameraTarget;
+        private CinemachineTargetGroup _cameraTargetGroup;
+        [SerializeField] private float _playerRadius;
+        [SerializeField] private float _mainPlayerWeight;
+        [SerializeField] private float _otherPlayerWeight;
 
-        private void Update()
+        protected override void Awake()
         {
-            if (_cameraTarget != null)
-            {
-                transform.position = _cameraTarget.transform.position + Vector3.up * _height;
-            }
+            base.Awake();
+            _cameraTargetGroup = GetComponent<CinemachineTargetGroup>();
         }
 
-        public void SetTarget(GameObject target)
+        public void AddTarget(Transform target, bool isMainPlayer)
         {
-            _cameraTarget = target;
+            _cameraTargetGroup.AddMember(target, isMainPlayer ? _mainPlayerWeight : _otherPlayerWeight, _playerRadius);
         }
     }
 }

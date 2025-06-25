@@ -22,6 +22,9 @@ namespace Code.Gameplay.Character
         public Rigidbody2D rigidbody { get; private set; }
         public CapsuleCollider2D collider { get; private set; }
         
+        [Header("Camera Components")]
+        [SerializeField] private Transform _followTarget;
+        
         //Network general
         private NetworkTimer _networkTimer;
         private const float serverTickRate = 60f;
@@ -96,9 +99,7 @@ namespace Code.Gameplay.Character
         public override void OnNetworkSpawn()
         {
             SetSingleton();
-
-            if (IsOwner) CameraTarget.Instance.SetTarget(gameObject);
-            
+            CameraTarget.Instance.AddTarget(_followTarget, IsOwner); 
             base.OnNetworkSpawn();
         }
 
