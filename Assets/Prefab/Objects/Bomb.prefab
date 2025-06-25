@@ -274,10 +274,13 @@ MonoBehaviour:
   _collisionSimetryCoefficient: 1.05
   _attackLayer:
     serializedVersion: 2
-    m_Bits: 12800
+    m_Bits: 8704
   _bounceLayer:
     serializedVersion: 2
     m_Bits: 2176
+  _specialAttackLayer:
+    serializedVersion: 2
+    m_Bits: 4096
   _explosionRadius: 4.5
   _explosionDamageInCenter: 0.45
   _explosionDamageInBorder: 0.2
