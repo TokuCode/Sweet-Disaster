@@ -4,12 +4,14 @@ using Code.Networking.Session;
 using Unity.Netcode;
 using Unity.Services.Multiplayer;
 using Code.Gameplay.Character.Visuals;
+using Code.Networking;
 
 namespace Code.Gameplay
 {
     public class PlayerSpawner : NetworkBehaviour
     {
         [SerializeField] private GameObject playerPrefab;
+        [SerializeField] private List<MapInfo> maps;
 
         [Header("Character Prefabs")]
         [SerializeField] private List<CharacterVisuals> characterVisualsList;
@@ -42,10 +44,27 @@ namespace Code.Gameplay
                 Debug.LogError("SessionManager or ActiveSession is missing!");
                 return;
             }
+            
+            if(_sessionManager.ActiveSession.Properties.TryGetValue(_sessionManager.MapPropertyKey, out SessionProperty mapProperty))
+            {
+                SelectMap(mapProperty.Value);
+            }
 
             foreach (var sessionPlayer in _sessionManager.ActiveSession.Players)
             {
                 SpawnPlayer(sessionPlayer);
+            }
+        }
+
+        private void SelectMap(string mapName)
+        {
+            foreach (var map in maps)
+            {
+                if (!map.MapName.Equals(mapName))
+                {
+                    map.MapObject.SetActive(false);
+                }
+                else map.MapObject.SetActive(true);
             }
         }
 		

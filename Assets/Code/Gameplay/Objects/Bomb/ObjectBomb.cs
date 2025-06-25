@@ -174,6 +174,13 @@ public class ObjectBomb : NetworkBehaviour
         else Bounce(surfaceNormal);
     }
 
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if(!started) return; 
+        
+        if(LayerMaskUtils.CompareGameObjectLayerMask(collision.gameObject, _attackLayer)) Explode(); 
+    }
+
     private void Explode()
     {
         _rigidbody2D.linearVelocity = Vector2.zero;
