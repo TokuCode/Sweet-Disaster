@@ -31,6 +31,7 @@ public class ObjectBomb : NetworkBehaviour
     [SerializeField] private float _collisionSimetryCoefficient;
     [SerializeField] private LayerMask _attackLayer;
     [SerializeField] private LayerMask _bounceLayer;
+    [SerializeField] private LayerMask _specialAttackLayer;
     
     [Header("Static Settings")]
     [SerializeField] private float _explosionRadius;
@@ -178,7 +179,7 @@ public class ObjectBomb : NetworkBehaviour
     {
         if(!started) return; 
         
-        if(LayerMaskUtils.CompareGameObjectLayerMask(collision.gameObject, _attackLayer)) Explode(); 
+        if(LayerMaskUtils.CompareGameObjectLayerMask(collision.gameObject, _specialAttackLayer)) Explode(); 
     }
 
     private void Explode()

@@ -6036,7 +6036,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 10
+  orthographic size: 1
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -6159,6 +6159,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 557548776}
+  - component: {fileID: 557548777}
   - component: {fileID: 557548775}
   m_Layer: 0
   m_Name: CameraTarget
@@ -6179,9 +6180,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9aa810fa720e4202bbc545477872baca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playerRadius: 0
-  _mainPlayerWeight: 0
-  _otherPlayerWeight: 0
+  _playerRadius: 5
+  _mainPlayerWeight: 1
+  _otherPlayerWeight: 1
 --- !u!4 &557548776
 Transform:
   m_ObjectHideFlags: 0
@@ -6197,6 +6198,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &557548777
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 557548774}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5eb80d8e62d9d145bb50fb783c0f731, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PositionMode: 0
+  RotationMode: 0
+  UpdateMethod: 2
+  Targets: []
+  m_LegacyTargets: []
 --- !u!1 &559203682
 GameObject:
   m_ObjectHideFlags: 0
@@ -13499,6 +13517,7 @@ GameObject:
   - component: {fileID: 1438334644}
   - component: {fileID: 1438334643}
   - component: {fileID: 1438334642}
+  - component: {fileID: 1438334645}
   m_Layer: 0
   m_Name: 2DCinemachineCamera
   m_TagString: Untagged
@@ -13595,6 +13614,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1438334645
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1438334641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4eb4843bae7d24943842ea23130dcd55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  FramingMode: 2
+  FramingSize: 0.8
+  CenterOffset: {x: 0, y: 0}
+  Damping: 2
+  SizeAdjustment: 2
+  LateralAdjustment: 0
+  FovRange: {x: 1, y: 100}
+  DollyRange: {x: -100, y: 100}
+  OrthoSizeRange: {x: 1, y: 1000}
 --- !u!1001 &1447031060
 PrefabInstance:
   m_ObjectHideFlags: 0
