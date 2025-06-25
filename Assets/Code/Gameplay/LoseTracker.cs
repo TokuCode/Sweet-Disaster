@@ -44,6 +44,8 @@ namespace Code.Gameplay
                 .Select(c => c.ClientId)
                 .Except(LostPlayers)
                 .ToList();
+            
+            if (_sessionManager.IsPracticeMode) alive.Add(clientId);
 
             if (alive.Count == 1)
             {
@@ -65,8 +67,10 @@ namespace Code.Gameplay
 
                     await session.SavePropertiesAsync();
                     
-                    if (_sessionManager.ActiveSession.IsHost)
+                    if (_sessionManager.ActiveSession.IsHost && !_sessionManager.IsPracticeMode)
                         NetworkManager.SceneManager.LoadScene("PostGame", LoadSceneMode.Single);
+                    else if (_sessionManager.ActiveSession.IsHost && _sessionManager.IsPracticeMode)
+                        NetworkManager.SceneManager.LoadScene("MultiplayerTest", LoadSceneMode.Single);
                 }
                 else
                 {

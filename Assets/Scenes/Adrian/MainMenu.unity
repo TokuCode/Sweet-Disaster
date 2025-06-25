@@ -3056,23 +3056,11 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 0
+  m_Interactable: 1
   m_TargetGraphic: {fileID: 1269792495}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 6799793532173843837}
-        m_TargetAssemblyTypeName: Code.Helpers.UI.UIUtilities, SweetDisaster.Helpers
-        m_MethodName: LoadScene
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: Anims
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1269792495
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4370,6 +4358,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   createSessionButton: {fileID: 601915922}
   joinSessionButton: {fileID: 1114374127}
+  practiceModeSessionButton: {fileID: 1269792494}
   codeInputField: {fileID: 682145763}
 --- !u!4 &1880352329
 Transform:

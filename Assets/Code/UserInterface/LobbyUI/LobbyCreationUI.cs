@@ -11,12 +11,14 @@ namespace Code.UserInterface.LobbyUI
         [Header("Buttons")]
         [SerializeField] private Button createSessionButton;
         [SerializeField] private Button joinSessionButton;
+        [SerializeField] private Button practiceModeSessionButton;
 
         [SerializeField] private TMP_InputField codeInputField;
         
         private void Awake()
         {
-            createSessionButton.onClick.AddListener(SessionManager.Instance.StartSessionAsHost);
+            practiceModeSessionButton.onClick.AddListener(() => SessionManager.Instance.StartSessionAsHost(true));
+            createSessionButton.onClick.AddListener(() => SessionManager.Instance.StartSessionAsHost(false));
             joinSessionButton.onClick.AddListener(() => SessionManager.Instance.JoinSessionByCode(codeInputField.text));
         }
 

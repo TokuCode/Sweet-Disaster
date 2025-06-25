@@ -26,6 +26,14 @@ namespace Code.UserInterface.LobbyUI
         [SerializeField] private Button startGameButton;
         [SerializeField] private Button backButton;
 
+        [Header("Maps")] 
+        [SerializeField] private List<string> mapNames;
+        [SerializeField] private Button nextMapButton;
+        [SerializeField] private Button prevMapButton;
+        [SerializeField] private TextMeshProUGUI mapNameText;
+        [SerializeField] private Image mapImage;
+        private int _currentMapIndex;
+
         private SessionManager _sessionManager;
 
         private async void Awake()
@@ -37,6 +45,11 @@ namespace Code.UserInterface.LobbyUI
             startGameButton.onClick.AddListener(StartGame);
             backButton.onClick.AddListener(_sessionManager.LeaveSession);
             backButton.onClick.AddListener(() => UIUtilities.Instance.LoadScene("MainMenu"));
+            nextMapButton.onClick.AddListener(() => ChangeMap(1));
+            prevMapButton.onClick.AddListener(() => ChangeMap(-1));
+
+            nextMapButton.interactable = _sessionManager.ActiveSession.IsHost;
+            prevMapButton.interactable = _sessionManager.ActiveSession.IsHost;
         }
 
         private void Start()
@@ -70,6 +83,31 @@ namespace Code.UserInterface.LobbyUI
             RefreshCharacterSelectionUI(_sessionManager.ActiveSession.Players.ToList());
             RefreshStartGameButton();
             RefreshStatusText();
+            RefreshMap();
+        }
+
+        private void RefreshMap()
+        {
+            string mapName = _sessionManager.ActiveSession.Properties.TryGetValue(_sessionManager.MapPropertyKey, out var mapNameProp)
+                ? mapNameProp.Value : String.Empty;
+
+            mapNameText.text = $"Mapa: {mapName}";
+        }
+
+        private void ChangeMap(float buttonDir)
+        {
+            if (!_sessionManager.ActiveSession.IsHost) return;
+            
+            if (buttonDir == 0) return;
+
+            buttonDir = Mathf.Sign(buttonDir);
+
+            _currentMapIndex = (_currentMapIndex + (int)buttonDir + mapNames.Count) % mapNames.Count;
+            
+            _sessionManager.ActiveSession.AsHost().SetProperty(_sessionManager.MapPropertyKey, 
+                new SessionProperty(mapNames[_currentMapIndex], VisibilityPropertyOptions.Member));
+
+            _sessionManager.ActiveSession.AsHost().SavePropertiesAsync();
         }
 
         private void RefreshPlayerList(List<IReadOnlyPlayer> players)
@@ -115,7 +153,8 @@ namespace Code.UserInterface.LobbyUI
         
         private void RefreshStartGameButton()
         {
-            if (_sessionManager.ActiveSession.IsHost && _sessionManager.ActiveSession.PlayerCount > 1)
+            if ((_sessionManager.ActiveSession.IsHost && _sessionManager.ActiveSession.PlayerCount > 1) ||
+                (_sessionManager.ActiveSession.IsHost && _sessionManager.ActiveSession.PlayerCount == 1 && _sessionManager.IsPracticeMode))
                 startGameButton.interactable = AllPlayersHaveSelectedCharacters();
         }
         
@@ -127,7 +166,7 @@ namespace Code.UserInterface.LobbyUI
             
             if (charName != String.Empty && charName != "None")
             {
-                if (_sessionManager.ActiveSession.PlayerCount > 1)
+                if (_sessionManager.ActiveSession.PlayerCount > 1 || (_sessionManager.ActiveSession.PlayerCount == 1 && _sessionManager.IsPracticeMode))
                 {
                     if (AllPlayersHaveSelectedCharacters())
                         statusText.text = _sessionManager.ActiveSession.IsHost ? 
