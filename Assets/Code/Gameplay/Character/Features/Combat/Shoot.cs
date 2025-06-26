@@ -15,18 +15,18 @@ namespace Code.Gameplay.Character.Features
     public class Shoot : Feature
     {
         private PlayerController _playerController;
-        
+
         private Crouch crouch;
         private Health health;
         private GunBelt belt;
         private Shield shield;
-        
-        [Header("Control")]
-        [SerializeField] private bool _active;
+
+        [Header("Control")] [SerializeField] private bool _active;
         public bool Active => _active;
-        
-        [Header("Shooting Settings")]
-        [SerializeField] private float _timeBetweenShots;
+
+        [Header("Shooting Settings")] [SerializeField]
+        private float _timeBetweenShots;
+
         [SerializeField] private int _burstCount;
         [SerializeField] private float _timeBetweenBursts;
         [SerializeField] private bool _holdToShoot;
@@ -37,34 +37,48 @@ namespace Code.Gameplay.Character.Features
         private Vector3 cachedHandlePosition;
         private Vector3 cachedHandleDirection;
         private bool lastShootInput;
-        
-        [Header("Reloading Settings")]
-        [SerializeField] private float _reloadTime;
+
+        [Header("Reloading Settings")] [SerializeField]
+        private float _reloadTime;
+
         [SerializeField] private float _reloadTimer;
         [SerializeField] private int _magazineSize;
         public int MagazineSize => _magazineSize;
-        private NetworkVariable<int> _currentAmmo = new (0, NetworkVariableReadPermission.Owner);
+        private NetworkVariable<int> _currentAmmo = new(0, NetworkVariableReadPermission.Owner);
         public int CurrentAmmo => _currentAmmo.Value;
-        private NetworkVariable<bool> _isReloading = new (false, NetworkVariableReadPermission.Owner);
+        private NetworkVariable<bool> _isReloading = new(false, NetworkVariableReadPermission.Owner);
         public bool IsReloading => _isReloading.Value;
-        
-        [Header("Projectile Settings")]
-        [SerializeField] private GameObject _bulletPrefab;
+
+        [Header("Projectile Settings")] [SerializeField]
+        private GameObject _bulletPrefab;
+
         private NetworkObject _bulletNetworkObject;
-        
-        [Header("Trajectory Settings")]
-        [SerializeField] private float _baseImprecision;
+
+        [Header("Trajectory Settings")] [SerializeField]
+        private float _baseImprecision;
+
         [SerializeField] private float _imprecision;
         [SerializeField] private float _imprecisionToAngleFactor;
         [SerializeField] private float _airImprecision;
         [SerializeField] private float _movementImprecisionPerSpeedUnit;
+
+        [Header("Recoil Settings")] [SerializeField]
+        private float _recoilForce;
+
+        [Header("Server Side")] [SerializeField]
+        private bool _reloadRequested;
+
+        public float MovementImprecisionPerSpeedUnit
+        {
+            get => _movementImprecisionPerSpeedUnit;
+            set => _movementImprecisionPerSpeedUnit = value;
+        }
+        public float AirImprecision
+        {
+            get => _airImprecision;
+            set => _airImprecision = value;
+        }
         
-        [Header("Recoil Settings")]
-        [SerializeField] private float _recoilForce;
-
-        [Header("Server Side")] 
-        [SerializeField] private bool _reloadRequested;
-
         public override void InitializeFeature(Controller controller)
         {
             if(IsServer) _currentAmmo.Value = _magazineSize;

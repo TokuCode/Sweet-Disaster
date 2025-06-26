@@ -14,6 +14,7 @@ namespace Code.Networking.Session
             if (_hasPressedEscape) return;
             if (Input.GetKeyDown(KeyCode.Escape))
             {
+                Time.timeScale = 1;
                 _hasPressedEscape = true;
                 SessionManager.Instance.LeaveSession();
                 UIUtilities.Instance.LoadScene("MainMenu");
