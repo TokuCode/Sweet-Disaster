@@ -8,7 +8,7 @@ namespace Code.Gameplay.Character.Features
     {
         private const float ExtraDistanceGround = .01f;
         private const float ExtraDistanceHead = .1f;
-        private const float ExtraDistanceSlope = 1f;
+        private const float ExtraDistanceSlope = .25f;
 
         private Vector3 _playerPositionCache;
         private Vector2 _playerSizeCache;

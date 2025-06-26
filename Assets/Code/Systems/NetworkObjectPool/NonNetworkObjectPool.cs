@@ -136,6 +136,13 @@ namespace Code.Systems.NetworkObjectPool
             _prefabs.Add(id, prefab);
             
             _pooledObjects[prefab] = new ObjectPoolWithId(CreateFunc, ActionOnGet, ActionOnRelease, ActionOnDestroy, ActionCheck, prewarmCount);
-        } 
+
+            NetworkManager.Singleton.PrefabHandler.AddHandler(prefab, new NonNetPooledPrefabInstanceHandler(prefab, this));
+        }
+
+        public List<NetworkObject> GetAllNetworkObjects(GameObject prefab)
+        {
+            return _pooledObjects[prefab].GetAll();
+        }
     }
 }

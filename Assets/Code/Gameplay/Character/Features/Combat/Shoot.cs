@@ -233,8 +233,11 @@ namespace Code.Gameplay.Character.Features
         
         public override void Apply(ref InputPayload @event)
         {
-            if(@event.reload)
-                RequestReloadToServerRpc();
+            if (@event.reload && belt.ActiveWeapon == GunBelt.Weapon.Gun)
+            {
+                if(!IsServer) RequestReloadToServerRpc();
+                else TryReload();
+            }
         }
 
         [ServerRpc]

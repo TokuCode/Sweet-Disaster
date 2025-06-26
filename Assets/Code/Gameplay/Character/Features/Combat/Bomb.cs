@@ -67,6 +67,8 @@ namespace Code.Gameplay.Character.Features
             _dependencies.TryGetFeature(out belt);
             _dependencies.TryGetFeature(out shoot);
             _dependencies.TryGetFeature(out shield);
+            health.OnStun += EndThrowing;
+            RequestBombsAuthority();
         }
     
         public override void UpdateFeature()
@@ -171,6 +173,17 @@ namespace Code.Gameplay.Character.Features
             ReplicateThrowAction(position, direction, throwForce, objectId, latency);
         } 
         
-        public override void Apply(ref InputPayload @event) { } 
+        public override void Apply(ref InputPayload @event) { }
+
+        private void RequestBombsAuthority()
+        {
+            if(!IsOwner) return;
+
+            var allBombs = NonNetworkObjectPool.Singleton.GetAllNetworkObjects(_bombPrefab);
+            foreach (var bombNo in allBombs)
+            {
+                bombNo.RequestOwnership();
+            }
+        }
     }
 }

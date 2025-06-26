@@ -360,7 +360,7 @@ MonoBehaviour:
   - {fileID: 1990175814712795858}
   _followTarget: {fileID: 6022316762160544414}
   _reconciliationCooldownTime: 1
-  _reconciliationThreshold: 2.5
+  _reconciliationThreshold: 5
   _extrapolationLimit: 0.5
   _extrapolationMultiplier: 1.2
   _extrapolationMinLatency: 0.3

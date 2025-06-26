@@ -1,4 +1,5 @@
 ﻿using System;
+using Code.Gameplay.Character.Framework;
 using Code.Networking.ClientPrediction;
 using Code.Systems.Input;
 using Unity.Netcode;
@@ -14,6 +15,8 @@ namespace Code.Gameplay.Character.Features
             Gun,
             Bomb
         }
+
+        private Bomb bomb;
         
         [Header("Settings")]
         [SerializeField] private float _cooldown;
@@ -22,13 +25,19 @@ namespace Code.Gameplay.Character.Features
         [Header("Runtime")]
         [SerializeField] private NetworkVariable<Weapon> _activeWeapon = new(Weapon.Gun, NetworkVariableReadPermission.Owner, NetworkVariableWritePermission.Owner);
         public Weapon ActiveWeapon => _activeWeapon.Value;
-        
+
+        public override void InitializeFeature(Controller controller)
+        {
+            base.InitializeFeature(controller);
+            _dependencies.TryGetFeature(out bomb);
+        }
+
         public override void UpdateFeature()
         {
             if (!IsOwner) return;
             
             if(_timer > 0) _timer -= Time.deltaTime;
-            else if (InputReader.Instance.Switch)
+            else if (InputReader.Instance.Switch && !bomb.IsThrowing)
             {
                 SwitchWeapon();
                 _timer = _cooldown;
