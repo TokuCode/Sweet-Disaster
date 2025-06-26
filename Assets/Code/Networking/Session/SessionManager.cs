@@ -67,12 +67,10 @@ namespace Code.Networking.Session
             try
             {
                 UIUtilities.Instance.MessagePopUp("Creando la sesión...", false);
-
-                maxPlayers = !IsPracticeMode ? maxPlayers : 1;
                 
                 var options = new SessionOptions
                 {
-                    MaxPlayers = maxPlayers,
+                    MaxPlayers = !isPracticeMode ? maxPlayers : 1,
                     IsPrivate = true,
                 
                     SessionProperties = new Dictionary<string, SessionProperty>
