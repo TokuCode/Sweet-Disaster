@@ -1,3 +1,4 @@
+using System;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -6,18 +7,18 @@ namespace Code.Gameplay.Character
     public class LoseReporter : NetworkBehaviour
     {
         private bool _hasLost;
-        
-        private void OnCollisionEnter2D(Collision2D collision)
+
+        private void OnTriggerEnter2D(Collider2D other)
         {
             if (!IsOwner) return; // only the local client should detect and report
 
-            if (collision.gameObject.CompareTag("Deathbox") && !_hasLost)
+            if (other.gameObject.CompareTag("Deathbox") && !_hasLost)
             {
                 _hasLost = true;
 
                 Debug.Log($"[Client] Detected Deathbox hit, reporting to server...");
                 ReportLossToServerRpc();
-            }
+            } 
         }
 
         [Rpc(SendTo.Server)]
