@@ -115,5 +115,7 @@ namespace Code.Systems.NetworkObjectPool
             
             _pooledObjects.Clear();
         }
+        
+        public List<NetworkObject> GetAll() => _pooledObjects;
     }
 }

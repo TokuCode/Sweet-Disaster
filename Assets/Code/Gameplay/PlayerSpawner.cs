@@ -48,6 +48,7 @@ namespace Code.Gameplay
             if(_sessionManager.ActiveSession.Properties.TryGetValue(_sessionManager.MapPropertyKey, out SessionProperty mapProperty))
             {
                 SelectMap(mapProperty.Value);
+                SetMapClientRpc(mapProperty.Value);
             }
 
             foreach (var sessionPlayer in _sessionManager.ActiveSession.Players)
@@ -127,6 +128,12 @@ namespace Code.Gameplay
             }
             
             NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.gameObject.GetComponent<AnimationHandler>().SetVisuals(character);
+        }
+
+        [ClientRpc]
+        private void SetMapClientRpc(string mapName)
+        {
+            SelectMap(mapName);
         }
     }
 }

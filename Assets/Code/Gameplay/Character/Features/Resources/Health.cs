@@ -28,6 +28,7 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private float _stunTimer;
         
         public event EventHandler<OnHealthChangedEventArgs> OnHealthChanged;
+        public event Action OnStun;
         public Pipeline<AttackEvent> AttackPipeline { get; private set; }
     
         public override void InitializeFeature(Controller controller)
@@ -51,6 +52,7 @@ namespace Code.Gameplay.Character.Features
     
         private void Damage(float percentage)
         {
+            if (!IsServer) return;
             _health.Value += percentage * _baseHealth;
             OnHealthChangedEventArgs args = new ()
             {
@@ -61,28 +63,40 @@ namespace Code.Gameplay.Character.Features
             OnHealthChanged?.Invoke(this, args);
         }
     
-        private void Knockback(Vector3 direction, float knockbackForce)
+        private void Knockback(Vector3 direction, float knockbackForce, float knockbackUpForce, float damagePercentage)
         {
-            float knockback = knockbackForce * HealthRatio * 10f;
-            
-            _invoker.AddForce.Perform(new(direction, knockback, ForceMode2D.Impulse));
-            
+            float newHealthValue = _health.Value + damagePercentage * _baseHealth;
+            float healthRatio = newHealthValue / _baseHealth;
+            float knockback = knockbackForce * healthRatio * 10f;
+            float knockbackUp = knockbackUpForce * healthRatio * 10f;
+            Vector3 force = direction * knockback + Vector3.up * knockbackUp;
+
+            if (IsOwner)
+            {
+                _invoker.AddForce.Perform(new(force, ForceMode2D.Impulse));
+                Debug.Log("Explosion!!!");
+            }
+            //else AddKnockbackToClientRpc(force);
+
             float stunTime = _stunMinDuration + _stunDurationPerKnockback * knockback;
-            if(IsServer) Stun(stunTime);
+            Stun(stunTime);
         }
 
         public void Stun(float duration)
         {
+            if(!IsServer) return;
+            
             _isStunned.Value = true;
             _stunTimer = duration;
-                
+            
             move.BlockMovement();
+            
+            OnStun?.Invoke();
         }
     
         public void UnStun()
         {
             _isStunned.Value = false;
-            
             move.UnblockMovement();
         }
         
@@ -92,11 +106,10 @@ namespace Code.Gameplay.Character.Features
             
             if (attackEvent.Success)
             {
-                if(IsServer)Damage(attackEvent.DamagePercentage);
-                
                 var direction = transform.position - attackEvent.SourcePosition;
-                Knockback(direction.normalized, KnockbackTable.Instance.GetKnockbackForce(attackEvent.KnockbackLevel));
-                Knockback(Vector3.up, KnockbackTable.Instance.GetKnockbackForce(attackEvent.KnockbackUpLevel));
+                Knockback(direction.normalized, KnockbackTable.Instance.GetKnockbackForce(attackEvent.KnockbackLevel), KnockbackTable.Instance.GetKnockbackForce(attackEvent.KnockbackUpLevel), attackEvent.DamagePercentage);
+                
+                Damage(attackEvent.DamagePercentage);
             }
         }
 
@@ -110,6 +123,13 @@ namespace Code.Gameplay.Character.Features
         private void RequestStunServerRpc(float stunDuration)
         {
             Stun(stunDuration);
+        }
+
+        [ClientRpc]
+        private void AddKnockbackToClientRpc(Vector3 force)
+        {
+            if (!IsOwner) return;
+            _invoker.AddForce.Perform(new(force, ForceMode2D.Impulse));
         }
     }
 }
