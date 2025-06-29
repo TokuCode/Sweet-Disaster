@@ -13,6 +13,9 @@ EditorBuildSettings:
     guid: 0b4cea79e3306d74cb42166cf2fc740c
   - enabled: 1
     path: Assets/Scenes/MultiplayerTest.unity
+    guid: c8dc507f0d57b3c458ae9942eacd0c4e
+  - enabled: 1
+    path: Assets/Scenes/MultiplayerTest1.unity
     guid: 7236e96b6f386be47942413b9f759f2f
   - enabled: 1
     path: Assets/Scenes/PostGame.unity
