@@ -6,8 +6,8 @@ namespace Code.Systems.Attack
     {
         public Vector3 SourcePosition;
         public float DamagePercentage;
-        public int KnockbackLevel;
-        public int KnockbackUpLevel;
+        public float KnockbackForce;
+        public float KnockbackUpForce;
         public bool Success;
     }
 }

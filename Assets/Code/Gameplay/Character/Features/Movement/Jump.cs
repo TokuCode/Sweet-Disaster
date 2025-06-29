@@ -1,4 +1,6 @@
-﻿using Code.Networking.ClientPrediction;
+﻿using Code.Gameplay.Character.Framework;
+using Code.Helpers;
+using Code.Networking.ClientPrediction;
 using UnityEngine;
 
 namespace Code.Gameplay.Character.Features
@@ -15,12 +17,14 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private float _coyoteTime;
         [SerializeField] private float _fallGravityMultiplier; 
         [SerializeField] private float _lowJumpGravityMultiplier;
+        [SerializeField] private float _maxFallSpeed;
         
         [Header("Runtime")]
         [SerializeField] private bool _onDeparture;
         public bool OnDeparture => _onDeparture;
         public bool CanJump(Crouch crouch, Health health) => !crouch.IsCrouching && !health.IsStunned;
         private bool _cachedJumpInput;
+        private bool _cachedCrouchInput;
         private float _jumpCooldownTimer;
 
         public float JumpImpulse
@@ -34,14 +38,18 @@ namespace Code.Gameplay.Character.Features
             set => _fallGravityMultiplier = value;
         }
 
+        public override void InitializeFeature(Controller controller)
+        {
+            base.InitializeFeature(controller);
+            _dependencies.TryGetFeature(out check);
+            _dependencies.TryGetFeature(out health);
+            _dependencies.TryGetFeature(out crouch);
+        }
+
         public override void UpdateFeature()
         {
             if (!IsOwner && !IsServer) return;
 
-            _dependencies.TryGetFeature(out check);
-            _dependencies.TryGetFeature(out health);
-            _dependencies.TryGetFeature(out crouch);
-            
             if(_jumpCooldownTimer > 0) _jumpCooldownTimer -= Time.deltaTime;
             else if (check.IsGrounded) _onDeparture = false;
             
@@ -52,12 +60,13 @@ namespace Code.Gameplay.Character.Features
         {
             if (!IsOwner && !IsServer) return;
             
-            BetterServerJump();
+            VariableJumpGravity();
+            FastFall();
+            LimitFallSpeed();
         }
 
         public void TryServerJump()
         {
-
             bool canJump = CanJump(crouch, health);
             
             if(_jumpCooldownTimer > 0 || !canJump) return;
@@ -80,16 +89,37 @@ namespace Code.Gameplay.Character.Features
             _invoker.AddForce.Perform(new(Vector2.up, _jumpImpulse + compensation, ForceMode2D.Impulse));
         }
 
-        private void BetterServerJump()
+        private void VariableJumpGravity()
         {
-            if (!_onDeparture) return;
+            if(!OnDeparture) return;
+            
+            if (check.OnSlope || health.IsStunned) return;
             
             if(!_invoker.Velocity.Request(out Vector2 velocity).success) return;
 
-            if (velocity.y < 0)
+            if (velocity.y < 0 || (_cachedCrouchInput && !_cachedJumpInput))
                 _invoker.AddForce.Perform(new(Vector2.up, Physics2D.gravity.y * (_fallGravityMultiplier - 1) * Time.fixedDeltaTime, ForceMode2D.Impulse));
             else if (velocity.y > 0 && !_cachedJumpInput)
                 _invoker.AddForce.Perform(new(Vector2.up, Physics2D.gravity.y * (_lowJumpGravityMultiplier - 1) * Time.fixedDeltaTime, ForceMode2D.Impulse));
+        }
+
+        private void FastFall()
+        {
+            if(OnDeparture) return;
+            
+            if(check.IsGrounded || check.OnSlope) return;
+            
+            if(_cachedCrouchInput && !_cachedJumpInput) 
+                _invoker.AddForce.Perform(new(Vector2.up, Physics2D.gravity.y * (_fallGravityMultiplier - 1) * Time.fixedDeltaTime, ForceMode2D.Impulse));
+        }
+
+        private void LimitFallSpeed()
+        { 
+            if(!_invoker.Velocity.Request(out Vector2 velocity).success) return;
+
+            if (Mathf.Abs(velocity.y) <= _maxFallSpeed) return;
+            
+            _invoker.Velocity.Perform(velocity.With(y: Mathf.Sign(velocity.y) * _maxFallSpeed));
         }
 
         public override void Apply(ref InputPayload @event)
@@ -98,6 +128,7 @@ namespace Code.Gameplay.Character.Features
             if (jumpRequested) TryServerJump();
                 
             _cachedJumpInput = @event.jump;
+            _cachedCrouchInput = @event.crouch;
         }
     }
 }

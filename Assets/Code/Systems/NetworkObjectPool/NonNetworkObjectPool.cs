@@ -125,7 +125,7 @@ namespace Code.Systems.NetworkObjectPool
             
             void ActionOnDestroy(NetworkObject networkObject)
             {
-                if(IsServer) Destroy(networkObject.gameObject);
+                //if(IsServer) Destroy(networkObject.gameObject);
             }
 
             bool ActionCheck(NetworkObject networkObject)

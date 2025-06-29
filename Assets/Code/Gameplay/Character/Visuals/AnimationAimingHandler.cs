@@ -1,3 +1,4 @@
+using System;
 using Code.Helpers.Utils;
 using Code.Systems.Input;
 using Unity.Netcode;
@@ -7,8 +8,16 @@ namespace Code.Gameplay.Character.Visuals
 {
     public class AnimationAimingHandler : NetworkBehaviour
     {
+        [SerializeField] private Transform _gunTip;
         [SerializeField] private Transform arm;
         private Vector3 _mouseWorldPos;
+        private float offsetAngle;
+
+        private void Start()
+        {
+            var direction = (_gunTip.position - arm.position).normalized;
+            offsetAngle = Vector3.Angle(direction, arm.right);
+        }
 
         void Update()
         {
@@ -25,7 +34,7 @@ namespace Code.Gameplay.Character.Visuals
             if (isFacingLeft)
                 angle += 180f;
 
-            arm.rotation = Quaternion.Euler(0, 0, angle);
+            arm.rotation = Quaternion.Euler(0, 0, angle + (isFacingLeft ? +1 : -1) * offsetAngle);
         }
     }
 }

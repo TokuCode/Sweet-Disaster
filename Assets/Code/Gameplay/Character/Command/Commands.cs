@@ -26,6 +26,22 @@ namespace Code.Gameplay.Character.Command
         }
     }
 
+    public class RequestPosition : IRequest<Vector3>
+    {
+        private Transform transform;
+
+        public RequestPosition(Transform transform)
+        {
+            this.transform = transform;
+        }
+
+        public Result Request(out Vector3 output)
+        {
+            output = transform.position;
+            return new Result { success = true };
+        }
+    }
+
     public class LocalScaleHandler : IRequest<Vector3>, ICommand<Vector3>
     {
         private Transform transform;
@@ -174,6 +190,22 @@ namespace Code.Gameplay.Character.Command
         public Result Perform(AddForceParams input)
         {
             rigidbody.AddForce(input.force, input.forceMode);
+            return new Result { success = true };
+        }
+    }
+
+    public class KnockbackRawCommand : ICommand<Vector2>
+    {
+        private Rigidbody2D rigidbody;
+
+        public KnockbackRawCommand(Rigidbody2D rigidbody)
+        {
+            this.rigidbody = rigidbody;
+        }
+
+        public Result Perform(Vector2 input)
+        {
+            rigidbody.linearVelocity = input;
             return new Result { success = true };
         }
     }

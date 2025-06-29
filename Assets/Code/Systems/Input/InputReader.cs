@@ -9,7 +9,9 @@ namespace Code.Systems.Input
     public class InputReader: Singleton<InputReader>, IControl
     {
         [SerializeField] private float _handleHeight;
+        public float HandleHeight => _handleHeight;
         [SerializeField] private float _handleDistance;
+        public float HandleDistance => _handleDistance;
         private Vector3 _playerPosition;
 
         public event Action OnShootPressed;

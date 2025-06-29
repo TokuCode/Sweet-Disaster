@@ -1,10 +1,11 @@
 ﻿using System;
 using Code.Gameplay.Character.Framework;
+using Code.Helpers;
 using UnityEngine;
 using Code.Helpers.Pipeline;
 using Code.Networking.ClientPrediction;
 using Code.Systems.Attack;
-using Code.Systems.Knockback;
+using Code.Systems.Input;
 using Unity.Netcode;
 
 namespace Code.Gameplay.Character.Features
@@ -28,7 +29,12 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private float _stunTimer;
         
         public event EventHandler<OnHealthChangedEventArgs> OnHealthChanged;
-        public event Action OnStun;
+        public event Action<float, float> OnStun;
+        public event Action OnUnStun;
+
+        [Header("Directional Influence")] 
+        [SerializeField] private float _directionalInfluence;
+        
         public Pipeline<AttackEvent> AttackPipeline { get; private set; }
     
         public override void InitializeFeature(Controller controller)
@@ -63,26 +69,24 @@ namespace Code.Gameplay.Character.Features
             OnHealthChanged?.Invoke(this, args);
         }
     
-        private void Knockback(Vector3 direction, float knockbackForce, float knockbackUpForce, float damagePercentage)
+        private void Knockback(Vector3 direction, float knockbackForce, float knockbackUpForce, float healthRatio)
         {
-            float newHealthValue = _health.Value + damagePercentage * _baseHealth;
-            float healthRatio = newHealthValue / _baseHealth;
             float knockback = knockbackForce * healthRatio * 10f;
             float knockbackUp = knockbackUpForce * healthRatio * 10f;
+            Vector3 handleDirection = InputReader.Instance.HandleDirection;
+            handleDirection.x = Mathf.Abs(handleDirection.x) * Mathf.Sign(direction.x);
             Vector3 force = direction * knockback + Vector3.up * knockbackUp;
-
+            var forceDirection = Vector3.Slerp(force.normalized, handleDirection, _directionalInfluence);
+            force = forceDirection * force.magnitude;
+            
             if (IsOwner)
-            {
-                _invoker.AddForce.Perform(new(force, ForceMode2D.Impulse));
-                Debug.Log("Explosion!!!");
-            }
-            //else AddKnockbackToClientRpc(force);
+                _invoker.Knockback.Perform(force);
 
-            float stunTime = _stunMinDuration + _stunDurationPerKnockback * knockback;
-            Stun(stunTime);
+            float stunTime = _stunMinDuration + _stunDurationPerKnockback * (knockback + knockbackUp);
+            Stun(stunTime, healthRatio);
         }
 
-        public void Stun(float duration)
+        public void Stun(float duration, float healthRatio)
         {
             if(!IsServer) return;
             
@@ -91,13 +95,27 @@ namespace Code.Gameplay.Character.Features
             
             move.BlockMovement();
             
-            OnStun?.Invoke();
+            OnStun?.Invoke(duration, healthRatio);
+        }
+
+        public void AccelerateStun(float duration)
+        {
+            if(!_isStunned.Value) return;
+
+            _stunTimer = Mathf.Max(0, _stunTimer - duration);
+            if (_stunTimer <= 0)
+            {
+                if(IsServer) UnStun();
+                else RequestUnStunToServerRpc();
+            }
         }
     
         public void UnStun()
         {
             _isStunned.Value = false;
             move.UnblockMovement();
+            
+            OnUnStun?.Invoke();
         }
         
         public void Attack(AttackEvent attackEvent)
@@ -106,30 +124,17 @@ namespace Code.Gameplay.Character.Features
             
             if (attackEvent.Success)
             {
-                var direction = transform.position - attackEvent.SourcePosition;
-                Knockback(direction.normalized, KnockbackTable.Instance.GetKnockbackForce(attackEvent.KnockbackLevel), KnockbackTable.Instance.GetKnockbackForce(attackEvent.KnockbackUpLevel), attackEvent.DamagePercentage);
-                
+                var direction = (transform.position - attackEvent.SourcePosition).With(y : 0).normalized;
+                float newHealthRatio = _health.Value / _baseHealth + attackEvent.DamagePercentage;
                 Damage(attackEvent.DamagePercentage);
+                Knockback(direction, attackEvent.KnockbackForce, attackEvent.KnockbackUpForce, newHealthRatio);
             }
         }
 
         [ServerRpc]
-        private void DamageServerRpc(float damagePercentage)
+        private void RequestUnStunToServerRpc()
         {
-            Damage(damagePercentage);
-        }
-
-        [ServerRpc]
-        private void RequestStunServerRpc(float stunDuration)
-        {
-            Stun(stunDuration);
-        }
-
-        [ClientRpc]
-        private void AddKnockbackToClientRpc(Vector3 force)
-        {
-            if (!IsOwner) return;
-            _invoker.AddForce.Perform(new(force, ForceMode2D.Impulse));
+            UnStun();
         }
     }
 }

@@ -115,7 +115,7 @@ namespace Code.Gameplay.Character.Features
 
         private void SetShieldAtHandle()
         {
-            var handlePosition = InputReader.Instance.HandlePosition;
+            _invoker.GunTipPosition.Request(out var handlePosition);
             var handleDirection = InputReader.Instance.HandleDirection;
             
             _shield.transform.position = handlePosition;
@@ -131,7 +131,7 @@ namespace Code.Gameplay.Character.Features
         {
             _shield.SetActive(true);
             
-            var handlePosition = InputReader.Instance.HandlePosition;
+            _invoker.GunTipPosition.Request(out var handlePosition);
             var handleDirection = InputReader.Instance.HandleDirection;
             
             _shield.transform.position = handlePosition;

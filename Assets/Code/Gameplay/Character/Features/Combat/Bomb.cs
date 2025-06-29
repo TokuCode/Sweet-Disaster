@@ -67,7 +67,7 @@ namespace Code.Gameplay.Character.Features
             _dependencies.TryGetFeature(out belt);
             _dependencies.TryGetFeature(out shoot);
             _dependencies.TryGetFeature(out shield);
-            health.OnStun += EndThrowing;
+            health.OnStun += OnStun;
             RequestBombsAuthority();
         }
     
@@ -102,7 +102,12 @@ namespace Code.Gameplay.Character.Features
                 else move.RequestMovement(true);
             }
         }
-    
+
+        public void OnStun(float duration, float healthRatio)
+        {
+            EndThrowing();
+        }
+        
         private void EndThrowing()
         {
             if (!_isThrowing) return;
@@ -131,7 +136,7 @@ namespace Code.Gameplay.Character.Features
         private void BombAction()
         {
             var direction = InputReader.Instance.HandleDirection;
-            var position = InputReader.Instance.HandlePosition;
+            _invoker.GunTipPosition.Request(out var position);
             var throwForce = direction.normalized * Mathf.Lerp(_throwMinForce, _throwMaxForce, Mathf.Clamp01(_throwChargeTimer / _throwChargeTimeSeconds));
             
             ThrowAction(position, direction, throwForce, out int id);
