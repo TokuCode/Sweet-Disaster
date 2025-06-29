@@ -30,6 +30,7 @@ namespace Code.Networking.Session
 
         public PlayerInfo playerInfo;
         public bool IsPracticeMode { get; set; }
+        public bool ShouldRetrievePing { get; private set; } = true;
         
         // Session properties keys
         public readonly string MapPropertyKey = "map";
@@ -120,6 +121,7 @@ namespace Code.Networking.Session
             if (ActiveSession == null) return;
             try
             {
+                ShouldRetrievePing = false;
                 await ActiveSession.LeaveAsync();
             }
             catch

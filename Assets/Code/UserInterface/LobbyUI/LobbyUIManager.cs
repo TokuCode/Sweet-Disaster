@@ -66,9 +66,11 @@ namespace Code.UserInterface.LobbyUI
 
         private void OnDisable()
         {
-            _sessionManager.ActiveSession.Changed -= RefreshLobby;
             startGameButton.onClick.RemoveAllListeners();
             backButton.onClick.RemoveAllListeners();
+
+            if (_sessionManager.ActiveSession == null) return;
+            _sessionManager.ActiveSession.Changed -= RefreshLobby;
         }
 
         public void StartGame()

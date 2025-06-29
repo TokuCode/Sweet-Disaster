@@ -18,14 +18,17 @@ namespace Code.UserInterface.Network_UI
 
         void Update()
         {
-            if (SessionManager.Instance != null && SessionManager.Instance.ActiveSession != null)
-            {
-                _text.text = $"Ping: {NetworkManager.Singleton.NetworkConfig.NetworkTransport.GetCurrentRtt(NetworkManager.Singleton.CurrentSessionOwner)}ms";
-                if (NetworkManager.Singleton.NetworkConfig.NetworkTransport.GetCurrentRtt(NetworkManager.Singleton.CurrentSessionOwner) >= 150)
-                    highPingObject.SetActive(true);
-                else highPingObject.SetActive(false);
-            }
-            else _text.text = String.Empty;
+            if (SessionManager.Instance == null ||
+                !SessionManager.Instance.ShouldRetrievePing ||
+                SessionManager.Instance.ActiveSession == null ||
+                NetworkManager.Singleton == null ||
+                NetworkManager.Singleton.NetworkConfig == null ||
+                NetworkManager.Singleton.NetworkConfig.NetworkTransport == null)
+                return;
+            
+            _text.text = $"Ping: {NetworkManager.Singleton.NetworkConfig.NetworkTransport.GetCurrentRtt(NetworkManager.Singleton.CurrentSessionOwner)}ms";
+            highPingObject.SetActive(NetworkManager.Singleton.NetworkConfig.NetworkTransport.
+                GetCurrentRtt(NetworkManager.Singleton.CurrentSessionOwner) >= 180);
         }
     }
 }

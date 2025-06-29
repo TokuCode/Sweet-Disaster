@@ -113,7 +113,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: brazoy arma_0
+      name: Huevera
       rect:
         serializedVersion: 2
         x: 202
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      brazoy arma_0: -829961613945574920
+      Huevera: -829961613945574920
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

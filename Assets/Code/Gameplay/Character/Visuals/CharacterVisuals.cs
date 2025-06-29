@@ -7,8 +7,8 @@ namespace Code.Gameplay.Character.Visuals
     {
         public string characterName;
         public RuntimeAnimatorController runtimeAnimator;
-        //public Sprite armWithGun;
-        //public Sprite armWithBomb;
-        //public Sprite armWithShield;
+        public Sprite armWithGun;
+        public Sprite armWithBomb;
+        public Sprite armWithShield;
     }
 }
