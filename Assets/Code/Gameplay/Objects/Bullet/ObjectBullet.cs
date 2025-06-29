@@ -24,8 +24,8 @@ namespace Code.Gameplay.Objects
         [SerializeField] private float _lifeTime;
         private float _lifeTimeTimer;
         [SerializeField] private float _damage;
-        [SerializeField] private int _knockbackLevel;
-        [SerializeField] private int _knockbackUpLevel;
+        [SerializeField] private float _knockbackLevel;
+        [SerializeField] private float _knockbackUpLevel;
         [SerializeField] private float _speed;
         
         [Header("Dynamic Settings")]
@@ -83,13 +83,27 @@ namespace Code.Gameplay.Objects
                         health.Attack(new ()
                         {
                             DamagePercentage = _damage,
-                            KnockbackLevel = _knockbackLevel,
-                            KnockbackUpLevel = _knockbackUpLevel,
+                            KnockbackForce = _knockbackLevel,
+                            KnockbackUpForce = _knockbackUpLevel,
                             SourcePosition = transform.position,
                             Success = true
                         });
                     }
                 }
+                
+                Dummy dummy = other.gameObject.GetComponent<Dummy>();
+                if (dummy != null)
+                {
+                    dummy.Attack(new ()
+                    {
+                        DamagePercentage = _damage,
+                        KnockbackForce = _knockbackLevel,
+                        KnockbackUpForce = _knockbackUpLevel,
+                        SourcePosition = transform.position,
+                        Success = true
+                    });
+                    
+                } 
             }
             
             if (LayerMaskUtils.CompareGameObjectLayerMask(other.gameObject, _solidLayer) || (LayerMaskUtils.CompareGameObjectLayerMask(other.gameObject, _characterLayer) && !other.gameObject.CompareTag(_ownerTag)))

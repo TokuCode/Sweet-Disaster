@@ -177,4 +177,20 @@ namespace Code.Gameplay.Character.Command
             return new Result { success = true };
         }
     }
+
+    public class KnockbackRawCommand : ICommand<Vector2>
+    {
+        private Rigidbody2D rigidbody;
+
+        public KnockbackRawCommand(Rigidbody2D rigidbody)
+        {
+            this.rigidbody = rigidbody;
+        }
+
+        public Result Perform(Vector2 input)
+        {
+            rigidbody.linearVelocity = input;
+            return new Result { success = true };
+        }
+    }
 }

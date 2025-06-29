@@ -1,5 +1,6 @@
 ﻿using System;
 using Code.Gameplay.Character.Framework;
+using Code.Helpers;
 using UnityEngine;
 using Code.Helpers.Pipeline;
 using Code.Networking.ClientPrediction;
@@ -63,22 +64,15 @@ namespace Code.Gameplay.Character.Features
             OnHealthChanged?.Invoke(this, args);
         }
     
-        private void Knockback(Vector3 direction, float knockbackForce, float knockbackUpForce, float damagePercentage)
+        private void Knockback(Vector3 direction, float knockbackForce, float knockbackUpForce, float healthRatio)
         {
-            float newHealthValue = _health.Value + damagePercentage * _baseHealth;
-            float healthRatio = newHealthValue / _baseHealth;
             float knockback = knockbackForce * healthRatio * 10f;
             float knockbackUp = knockbackUpForce * healthRatio * 10f;
             Vector3 force = direction * knockback + Vector3.up * knockbackUp;
 
-            if (IsOwner)
-            {
-                _invoker.AddForce.Perform(new(force, ForceMode2D.Impulse));
-                Debug.Log("Explosion!!!");
-            }
-            //else AddKnockbackToClientRpc(force);
+            _invoker.Knockback.Perform(force);
 
-            float stunTime = _stunMinDuration + _stunDurationPerKnockback * knockback;
+            float stunTime = _stunMinDuration + _stunDurationPerKnockback * (knockback + knockbackUp);
             Stun(stunTime);
         }
 
@@ -106,10 +100,10 @@ namespace Code.Gameplay.Character.Features
             
             if (attackEvent.Success)
             {
-                var direction = transform.position - attackEvent.SourcePosition;
-                Knockback(direction.normalized, KnockbackTable.Instance.GetKnockbackForce(attackEvent.KnockbackLevel), KnockbackTable.Instance.GetKnockbackForce(attackEvent.KnockbackUpLevel), attackEvent.DamagePercentage);
-                
+                var direction = (transform.position - attackEvent.SourcePosition).With(y : 0).normalized;
+                float newHealthRatio = _health.Value / _baseHealth + attackEvent.DamagePercentage;
                 Damage(attackEvent.DamagePercentage);
+                Knockback(direction, attackEvent.KnockbackForce, attackEvent.KnockbackUpForce, newHealthRatio);
             }
         }
 

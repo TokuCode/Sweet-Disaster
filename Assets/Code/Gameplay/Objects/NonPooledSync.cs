@@ -76,21 +76,12 @@ namespace Code.Gameplay.Objects
         private void SyncBombById(ObjectBomb bomb)
         {
             var bombState = bomb.GetState();
-            HardSynchronizationClientRpc(bombState);
+            RequestHardSyncRpc(bombState);
         }
 
         public void RequestHardSync(BombStatePayload bombState)
         {
             RequestHardSyncRpc(bombState);
-        }
-
-        [ClientRpc]
-        private void HardSynchronizationClientRpc(BombStatePayload bombState)
-        {
-            var go = NonNetworkObjectPool.Singleton.GetNetworkObjectReference(bombPrefabId, bombState.objectId);
-            if(go == null || go.gameObject == null || !go.gameObject.activeSelf) return;
-            var bomb = go.GetComponent<ObjectBomb>();
-            bomb.HardSync(bombState.position, bombState.velocity, MilisecondsUtils.CalculateLatency(bombState.timestamp));
         }
 
         [Rpc(SendTo.NotMe)]
@@ -100,6 +91,21 @@ namespace Code.Gameplay.Objects
             if(go == null || go.gameObject == null || !go.gameObject.activeSelf) return;
             var bomb = go.GetComponent<ObjectBomb>();
             bomb.HardSync(bombState.position, bombState.velocity, MilisecondsUtils.CalculateLatency(bombState.timestamp));
+        }
+
+        [Rpc(SendTo.NotMe)]
+        private void RequestBombRemoveRpc(int bombId)
+        {
+            var go = NonNetworkObjectPool.Singleton.GetNetworkObjectReference(bombPrefabId, bombId);
+            if(go == null || go.gameObject == null || !go.gameObject.activeSelf) return;
+            var bomb = go.GetComponent<ObjectBomb>();
+            RemoveBomb(bomb);
+            bomb.ResetNonNotify();
+        }
+
+        public void RequestBombRemoval(int bombId)
+        {
+            RequestBombRemoveRpc(bombId);
         }
     }
 }

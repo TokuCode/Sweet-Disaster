@@ -16,6 +16,7 @@ namespace Code.Gameplay.Character.Command
         public VelocityHandlder Velocity { get; }
         public GravityScaleHanlder GravityScale { get; }
         public AddForceCommand AddForce { get; }
+        public KnockbackRawCommand Knockback { get; }
 
         public PlayerCommandInvoker(PlayerController player)
         {
@@ -31,6 +32,7 @@ namespace Code.Gameplay.Character.Command
             Velocity = new(_rigidbody);
             GravityScale = new(_rigidbody);
             AddForce = new(_rigidbody);
+            Knockback = new(_rigidbody);
         }
     }
 }
