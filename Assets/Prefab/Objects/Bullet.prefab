@@ -300,8 +300,8 @@ MonoBehaviour:
     Part4: 2102966229
   _lifeTime: 4
   _damage: 0.05
-  _knockbackLevel: 12
-  _knockbackUpLevel: 15
+  _knockbackLevel: 2
+  _knockbackUpLevel: 5
   _speed: 25
   _ownerTag: 
   _direction: {x: 0, y: 0}

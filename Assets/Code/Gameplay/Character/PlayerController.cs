@@ -24,6 +24,9 @@ namespace Code.Gameplay.Character
         
         [Header("Camera Components")]
         [SerializeField] private Transform _followTarget;
+
+        [SerializeField] private Transform _gunTip;
+        public Transform GunTip => _gunTip;
         
         //Network general
         private NetworkTimer _networkTimer;
@@ -189,7 +192,8 @@ namespace Code.Gameplay.Character
                 jump = _input.Jump,
                 crouch = _input.Crouch,
                 reload = _input.Reload,
-                shield = _input.Shield
+                shield = _input.Shield,
+                shoot = _input.Shoot
             };
             
             _clientInputBuffer.Add(inputPayload, bufferIndex);

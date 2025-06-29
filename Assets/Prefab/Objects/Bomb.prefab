@@ -284,8 +284,8 @@ MonoBehaviour:
   _explosionRadius: 4.5
   _explosionDamageInCenter: 0.45
   _explosionDamageInBorder: 0.2
-  _knockbackLevelInCenter: 30
-  _knockbackLevelInBorder: 10
+  _knockbackLevelInCenter: 10
+  _knockbackLevelInBorder: 5
   _knockbackUpLevelInCenter: 15
   _knockbackUpLevelInBorder: 5
   _ownerTag: 

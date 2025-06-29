@@ -37,10 +37,10 @@ public class ObjectBomb : NetworkBehaviour
     [SerializeField] private float _explosionRadius;
     [SerializeField] private float _explosionDamageInCenter;
     [SerializeField] private float _explosionDamageInBorder;
-    [SerializeField] private int _knockbackLevelInCenter;
-    [SerializeField] private int _knockbackLevelInBorder;
-    [SerializeField] private int _knockbackUpLevelInCenter;
-    [SerializeField] private int _knockbackUpLevelInBorder;
+    [SerializeField] private float _knockbackLevelInCenter;
+    [SerializeField] private float _knockbackLevelInBorder;
+    [SerializeField] private float _knockbackUpLevelInCenter;
+    [SerializeField] private float _knockbackUpLevelInBorder;
 
     [Header("Dynamic Settings")]
     [SerializeField] private string _ownerTag;
@@ -95,8 +95,8 @@ public class ObjectBomb : NetworkBehaviour
         //    Anticipate(impulse, latency);
         //    _initTimer.Tick(latency);
         //}
-        //else AddImpulse(impulse);
-        AddImpulse(impulse);
+        //else _rigidbody2D.linearVelocity = impulse;
+        _rigidbody2D.linearVelocity = impulse;
         started = true;
     }
 
@@ -111,44 +111,48 @@ public class ObjectBomb : NetworkBehaviour
         dY = v0Y * t - g / 2 * t * t;
         dVY = - g * t;
         
-        Vector2 dVec = new (dX, dY);
-        Vector2 dVF = new (0, dVY);
+        Vector2 dPos = new (dX, dY);
+        Vector2 dV = new (0, dVY);
         
-        _rigidbody2D.position += dVec;
-        AddImpulse(initialVelocity + dVF);
+        _rigidbody2D.position += dPos;
+        _rigidbody2D.linearVelocity = initialVelocity + dV;
     }
 
     public void HardSync(Vector3 position, Vector2 velocity, float latency)
     {
         if (IsHost) return;
         
-        var distance = Vector2.Distance(position, transform.position);
-        var diff = velocity - _rigidbody2D.linearVelocity;
-        
-        if(distance <= _maxPositionError || diff.magnitude <= _maxVelocityError) return;
-        
         _rigidbody2D.position = position;
         _rigidbody2D.linearVelocity = velocity;
         
-        //float v0Y, vX, dVY, g, t, dX, dY;
-        //t = Mathf.Min(latency, maxLatencyMiliseconds/1000);
-        //if(t <= 0) return;
-        //
-        //g = Physics2D.gravity.y;
-        //vX = velocity.x;
-        //v0Y = velocity.y;
-        //dX = vX * t;
-        //dY = v0Y * t - g / 2 * t * t;
-        //dVY = - g * t;
-        //
-        //Vector2 dVec = new (dX, dY);
-        //Vector2 VF = new (0, dVY); 
-        //_rigidbody2D.position += dVec;
-        //AddImpulse(VF);
+        float v0Y, vX, dVY, g, t, dX, dY;
+        t = Mathf.Min(latency, maxLatencyMiliseconds/1000);
+        if(t <= 0) return;
+        
+        g = Physics2D.gravity.y;
+        vX = velocity.x;
+        v0Y = velocity.y;
+        dX = vX * t;
+        dY = v0Y * t - g / 2 * t * t;
+        dVY = - g * t;
+        
+        Vector2 dPos = new (dX, dY);
+        Vector2 dV = new (0, dVY); 
+        _rigidbody2D.position += dPos;
+        _rigidbody2D.linearVelocity += dV;
     }
     
     public void Reset()
     {
+        ResetNonNotify();
+        
+        NonPooledSync.Singleton.RemoveBomb(this);
+        NonPooledSync.Singleton.RequestBombRemoval(id);
+    }
+
+    public void ResetNonNotify()
+    {
+        ExplosionFX();
         gameObject.SetActive(false);
         
         _ownerTag = string.Empty;
@@ -157,8 +161,6 @@ public class ObjectBomb : NetworkBehaviour
         
         _bounceCount = 0; 
         started = false;
-        
-        NonPooledSync.Singleton.RemoveBomb(this);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -186,8 +188,6 @@ public class ObjectBomb : NetworkBehaviour
     {
         _rigidbody2D.linearVelocity = Vector2.zero;
 
-        ExplosionFX();
-        
         var colliders = Physics2D.OverlapCircleAll(transform.position, _explosionRadius, _attackLayer);
         foreach (var collider in colliders)
         {
@@ -197,20 +197,39 @@ public class ObjectBomb : NetworkBehaviour
                 float distance = Vector2.Distance(transform.position, player.transform.position);
                 float ratio = 1 - Mathf.Clamp01(distance / _explosionRadius);
                 float damagePercentage = Mathf.Lerp(_explosionDamageInBorder, _explosionDamageInCenter, ratio);
-                int knockbackLevel = Mathf.RoundToInt(Mathf.Lerp(_knockbackLevelInBorder, _knockbackLevelInCenter, ratio));
-                int knockbackUpLevel = Mathf.RoundToInt(Mathf.Lerp(_knockbackUpLevelInBorder, _knockbackUpLevelInCenter, ratio));
+                float knockbackLevel = Mathf.Lerp(_knockbackLevelInBorder, _knockbackLevelInCenter, ratio);
+                float knockbackUpLevel = Mathf.Lerp(_knockbackUpLevelInBorder, _knockbackUpLevelInCenter, ratio);
 
                 if (player.Dependencies.TryGetFeature(out Health health))
                 {
                     health.Attack(new AttackEvent
                     {
                         DamagePercentage = damagePercentage,
-                        KnockbackLevel = knockbackLevel,
-                        KnockbackUpLevel = knockbackUpLevel,
+                        KnockbackForce = knockbackLevel,
+                        KnockbackUpForce = knockbackUpLevel,
                         SourcePosition = transform.position,
                         Success = true
                     });
                 }
+            }
+            
+            Dummy dummy = collider.gameObject.GetComponent<Dummy>();
+            if (dummy != null)
+            {
+                float distance = Vector2.Distance(transform.position, dummy.transform.position);
+                float ratio = 1 - Mathf.Clamp01(distance / _explosionRadius);
+                float damagePercentage = Mathf.Lerp(_explosionDamageInBorder, _explosionDamageInCenter, ratio);
+                float knockbackLevel = Mathf.Lerp(_knockbackLevelInBorder, _knockbackLevelInCenter, ratio);
+                float knockbackUpLevel = Mathf.Lerp(_knockbackUpLevelInBorder, _knockbackUpLevelInCenter, ratio); 
+                
+                dummy.Attack(new AttackEvent
+                {
+                    DamagePercentage = damagePercentage,
+                    KnockbackForce = knockbackLevel,
+                    KnockbackUpForce = knockbackUpLevel,
+                    SourcePosition = transform.position,
+                    Success = true
+                }); 
             }
         }
         
@@ -231,6 +250,13 @@ public class ObjectBomb : NetworkBehaviour
         var reflection = Vector2.Reflect(velocity, normal);
         var newVelocity = reflection * _collisionSimetryCoefficient;
         _rigidbody2D.linearVelocity = newVelocity;
+        //NonPooledSync.Singleton.RequestHardSync(new BombStatePayload
+        //{
+        //    objectId = id,
+        //    position = _rigidbody2D.position,
+        //    velocity = newVelocity,
+        //    timestamp = DateTime.Now
+        //});
     }
 
     public void AddImpulse(Vector2 force) => _rigidbody2D.AddForce(force, ForceMode2D.Impulse);
