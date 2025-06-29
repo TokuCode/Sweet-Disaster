@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using Code.Helpers.Utils;
 using Code.Networking.ClientPrediction;
 using Code.Systems.NetworkObjectPool;
@@ -12,6 +14,7 @@ namespace Code.Gameplay.Objects
         public static NonPooledSync Singleton { get; private set; }
         
         private const float serverTickRate = 60f;
+        private const int extraFramesToDefferedDespawn = 5;
         [SerializeField] private SerializableGuid bombPrefabId;
 
         [Header("Runtime")]
@@ -94,18 +97,28 @@ namespace Code.Gameplay.Objects
         }
 
         [Rpc(SendTo.NotMe)]
-        private void RequestBombRemoveRpc(int bombId)
+        private void RequestBombRemoveRpc(int bombId, DateTime timestamp)
         {
-            var go = NonNetworkObjectPool.Singleton.GetNetworkObjectReference(bombPrefabId, bombId);
-            if(go == null || go.gameObject == null || !go.gameObject.activeSelf) return;
-            var bomb = go.GetComponent<ObjectBomb>();
-            RemoveBomb(bomb);
-            bomb.ResetNonNotify();
+            StartCoroutine(RequestBombRemoveSequence(bombId, MilisecondsUtils.CalculateLatency(timestamp)));
         }
 
         public void RequestBombRemoval(int bombId)
         {
-            RequestBombRemoveRpc(bombId);
+            RequestBombRemoveRpc(bombId, DateTime.Now);
+        }
+
+        public IEnumerator RequestBombRemoveSequence(int bombId, float latency)
+        {
+            var go = NonNetworkObjectPool.Singleton.GetNetworkObjectReference(bombPrefabId, bombId);
+            
+            if(go == null || go.gameObject == null || !go.gameObject.activeSelf) yield break;
+            var bomb = go.GetComponent<ObjectBomb>();
+            
+            yield return new WaitForSeconds(latency);
+            for(int i = 0; i < extraFramesToDefferedDespawn; i++) yield return null;
+            
+            RemoveBomb(bomb);
+            bomb.ResetNonNotify();
         }
     }
 }

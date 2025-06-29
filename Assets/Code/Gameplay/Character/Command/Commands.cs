@@ -26,6 +26,22 @@ namespace Code.Gameplay.Character.Command
         }
     }
 
+    public class RequestPosition : IRequest<Vector3>
+    {
+        private Transform transform;
+
+        public RequestPosition(Transform transform)
+        {
+            this.transform = transform;
+        }
+
+        public Result Request(out Vector3 output)
+        {
+            output = transform.position;
+            return new Result { success = true };
+        }
+    }
+
     public class LocalScaleHandler : IRequest<Vector3>, ICommand<Vector3>
     {
         private Transform transform;

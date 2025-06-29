@@ -70,7 +70,7 @@ namespace Code.Gameplay.Character.Features
             }
             
             if(Mathf.Abs(velocity.x) > maxSpeed)
-                _invoker.Velocity.Perform(new (Mathf.Sign(velocity.x) *maxSpeed, velocity.y));
+                _invoker.Velocity.Perform(new (Mathf.Sign(velocity.x) * maxSpeed, velocity.y));
         }
         
         public void BlockMovement() => _isMovementBlocked.Value = true;

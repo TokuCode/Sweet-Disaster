@@ -2,6 +2,7 @@
 using System.Collections;
 using Code.Gameplay.Character.Framework;
 using Code.Gameplay.Objects;
+using Code.Helpers;
 using Code.Helpers.Utils;
 using Code.Networking.ClientPrediction;
 using Code.Systems.Input;
@@ -21,11 +22,12 @@ namespace Code.Gameplay.Character.Features
         private GunBelt belt;
         private Shield shield;
 
-        [Header("Control")] [SerializeField] private bool _active;
+        [Header("Control")]
+        [SerializeField] private bool _active;
         public bool Active => _active;
 
-        [Header("Shooting Settings")] [SerializeField]
-        private float _timeBetweenShots;
+        [Header("Shooting Settings")]
+        [SerializeField] private float _timeBetweenShots;
 
         [SerializeField] private int _burstCount;
         [SerializeField] private float _timeBetweenBursts;
@@ -38,8 +40,8 @@ namespace Code.Gameplay.Character.Features
         private Vector3 cachedHandleDirection;
         private bool lastShootInput;
 
-        [Header("Reloading Settings")] [SerializeField]
-        private float _reloadTime;
+        [Header("Reloading Settings")]
+        [SerializeField] private float _reloadTime;
 
         [SerializeField] private float _reloadTimer;
         [SerializeField] private int _magazineSize;
@@ -49,24 +51,25 @@ namespace Code.Gameplay.Character.Features
         private NetworkVariable<bool> _isReloading = new(false, NetworkVariableReadPermission.Owner);
         public bool IsReloading => _isReloading.Value;
 
-        [Header("Projectile Settings")] [SerializeField]
-        private GameObject _bulletPrefab;
+        [Header("Projectile Settings")] 
+        [SerializeField] private GameObject _bulletPrefab;
 
         private NetworkObject _bulletNetworkObject;
 
-        [Header("Trajectory Settings")] [SerializeField]
-        private float _baseImprecision;
+        [Header("Trajectory Settings")]
+        [SerializeField] private float _baseImprecision;
 
         [SerializeField] private float _imprecision;
         [SerializeField] private float _imprecisionToAngleFactor;
         [SerializeField] private float _airImprecision;
         [SerializeField] private float _movementImprecisionPerSpeedUnit;
 
-        [Header("Recoil Settings")] [SerializeField]
-        private float _recoilForce;
+        [Header("Recoil Settings")]
+        [SerializeField] private float _recoilForce;
+        [SerializeField] private float _recoilImpulseAngle;
 
-        [Header("Server Side")] [SerializeField]
-        private bool _reloadRequested;
+        [Header("Server Side")] 
+        [SerializeField] private bool _reloadRequested;
 
         public float MovementImprecisionPerSpeedUnit
         {
@@ -144,18 +147,20 @@ namespace Code.Gameplay.Character.Features
             {
                 ShootAction(i);
                 _lastShotTime = Time.time;
-                if(IsHost)_currentAmmo.Value--;
+                if (IsHost)
+                {
+                    _currentAmmo.Value--;
+                    if (_currentAmmo.Value <= 0)
+                    {
+                        TryReload();
+                        break;
+                    }
+                }
                 else RequestAmmoDepletionToServerRpc();
 
-                if (_currentAmmo.Value == 0)
-                {
-                    _isShooting = false;
-                    if(!IsServer) RequestReloadToServerRpc();
-                    else TryReload();
-                    break;
-                }
-
                 yield return new WaitForSeconds(_timeBetweenShots);
+                
+                if (_currentAmmo.Value <= 0) break;
             }
             
             _isShooting = false;
@@ -165,7 +170,7 @@ namespace Code.Gameplay.Character.Features
         {
             var direction = InputReader.Instance.HandleDirection;
             if(burstIndex > 0) direction = ImprecisionDirection(direction);
-            var position = InputReader.Instance.HandlePosition;
+            _invoker.GunTipPosition.Request(out var position);
             
             FireAction(position, direction, out int id);
             ReplicateFireGunRpc(position, direction, id, DateTime.Now);
@@ -195,6 +200,12 @@ namespace Code.Gameplay.Character.Features
 
         private void Recoil(Vector3 direction)
         {
+            float minY = -Mathf.Cos(_recoilImpulseAngle * Mathf.Deg2Rad);
+            if (_invoker.Velocity.Request(out var velocity).success)
+            { 
+                if (direction.y <= minY && velocity.y < 0)
+                    _invoker.Velocity.Perform(velocity.With(y: 0));
+            }
             _invoker.AddForce.Perform(new(-direction, _recoilForce, ForceMode2D.Impulse));
         }
 
@@ -222,7 +233,7 @@ namespace Code.Gameplay.Character.Features
 
         private void TryReload()
         {
-            if(!_isShooting && _currentAmmo.Value < _magazineSize && !_isReloading.Value)
+            if(_currentAmmo.Value < _magazineSize && !_isReloading.Value)
             {
                 _isReloading.Value = true;
                 _reloadTimer = _reloadTime;
@@ -247,7 +258,7 @@ namespace Code.Gameplay.Character.Features
         
         public override void Apply(ref InputPayload @event)
         {
-            if (@event.reload && belt.ActiveWeapon == GunBelt.Weapon.Gun)
+            if (@event.reload && belt.ActiveWeapon == GunBelt.Weapon.Gun && !_isShooting)
             {
                 if(!IsServer) RequestReloadToServerRpc();
                 else TryReload();
@@ -264,6 +275,8 @@ namespace Code.Gameplay.Character.Features
         private void RequestAmmoDepletionToServerRpc()
         {
             _currentAmmo.Value--;
+            if (_currentAmmo.Value <= 0)
+                TryReload();
         }
 
         [Rpc(SendTo.NotMe)]
