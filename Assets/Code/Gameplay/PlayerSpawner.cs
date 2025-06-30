@@ -99,7 +99,8 @@ namespace Code.Gameplay
             GameObject playerObj = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
             
             playerObj.tag = _tags[_index % _tags.Count];
-            playerObj.GetComponent<AnimationHandler>().SetVisuals(character);
+            playerObj.GetComponent<AnimationHandler>().SetAnimator(character);
+            playerObj.GetComponent<ArmSpriteChanger>().SetSprites(character);
             
             NetworkObject networkObject = playerObj.GetComponent<NetworkObject>();
             networkObject.SpawnAsPlayerObject(clientId, true);
@@ -127,7 +128,8 @@ namespace Code.Gameplay
                 character = characterVisualsList[0];
             }
             
-            NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.gameObject.GetComponent<AnimationHandler>().SetVisuals(character);
+            NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.gameObject.GetComponent<AnimationHandler>().SetAnimator(character);
+            NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.gameObject.GetComponent<ArmSpriteChanger>().SetSprites(character);
         }
 
         [ClientRpc]

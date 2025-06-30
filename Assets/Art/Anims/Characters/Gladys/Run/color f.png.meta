@@ -1,16 +1,10 @@
 fileFormatVersion: 2
-guid: 8160f326c731fc744b0a9635bc8b8c6a
+guid: c2426e0d8371d6249ac7a9118c9f6914
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 3465286685962602723
-    second: 6_0
-  - first:
-      213: 6653994858678897968
-    second: 6_1
-  - first:
-      213: -9091539399625358973
-    second: 6_2
+      213: -4424883528129820452
+    second: color f_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -119,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 6_0
+      name: color f_0
       rect:
         serializedVersion: 2
-        x: 46
-        y: 8
-        width: 218
-        height: 320
+        x: 23
+        y: 14
+        width: 216
+        height: 338
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -134,52 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 3e801b981eb271030800000000000000
-      internalID: 3465286685962602723
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 6_1
-      rect:
-        serializedVersion: 2
-        x: 279
-        y: 265
-        width: 50
-        height: 53
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 03dc4d0d11db75c50800000000000000
-      internalID: 6653994858678897968
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 6_2
-      rect:
-        serializedVersion: 2
-        x: 24
-        y: 147
-        width: 46
-        height: 51
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 381ccd7c51d54d180800000000000000
-      internalID: -9091539399625358973
+      spriteID: cd8485d00e7a792c0800000000000000
+      internalID: -4424883528129820452
       vertices: []
       indices: 
       edges: []
@@ -198,9 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      6_0: 3465286685962602723
-      6_1: 6653994858678897968
-      6_2: -9091539399625358973
+      color f_0: -4424883528129820452
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

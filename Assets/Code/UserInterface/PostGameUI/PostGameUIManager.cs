@@ -70,6 +70,7 @@ namespace Code.UserInterface.PostGameUI
             if (string.IsNullOrEmpty(winnerPlayerId) || session == null)
             {
                 Debug.LogWarning("Winner ID not set or session is null.");
+                UIUtilities.Instance.MessagePopUp("Hubo un error al cargar los datos.", true);
                 return;
             }
         
@@ -77,7 +78,8 @@ namespace Code.UserInterface.PostGameUI
             if (winnerMember == null)
             {
                 Debug.LogWarning("Winner player not found in session.");
-                winnerTitle.text = "Ganador desconocido";
+                winnerTitle.text = "Ganador ...";
+                UIUtilities.Instance.MessagePopUp("Hubo un error al cargar los datos.", true);
                 return;
             }
         
@@ -136,7 +138,16 @@ namespace Code.UserInterface.PostGameUI
         {
             _sessionManager.ActiveSession.CurrentPlayer.SetProperty(_sessionManager.PlayerReadyToRestart,
                 new PlayerProperty("true", VisibilityPropertyOptions.Member));
-            await _sessionManager.ActiveSession.SaveCurrentPlayerDataAsync();
+
+            try
+            {
+                await _sessionManager.ActiveSession.SaveCurrentPlayerDataAsync();
+            }
+            catch (Exception e)
+            {
+                UIUtilities.Instance.MessagePopUp("Ha ocurrido un error de conexión.", false);
+                ReturnToLobby();
+            }
             
             playAgainButton.interactable = false;
             statusText.text = "Esperando a los jugadores...";
@@ -169,7 +180,16 @@ namespace Code.UserInterface.PostGameUI
                                 _sessionManager.WinnerPropertyKey,
                                 new SessionProperty("None", VisibilityPropertyOptions.Member)
                             );
-                            await session.AsHost().SavePropertiesAsync();
+
+                            try
+                            {
+                                await session.AsHost().SavePropertiesAsync();
+                            }
+                            catch (Exception e)
+                            {
+                                UIUtilities.Instance.MessagePopUp("Ha ocurrido un error de conexión.", false);
+                                ReturnToLobby();
+                            }
                         
                             NetworkManager.Singleton.SceneManager.LoadScene("MultiplayerTest", LoadSceneMode.Single);
                         }
