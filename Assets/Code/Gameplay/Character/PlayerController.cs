@@ -193,7 +193,8 @@ namespace Code.Gameplay.Character
                 crouch = _input.Crouch,
                 reload = _input.Reload,
                 shield = _input.Shield,
-                shoot = _input.Shoot
+                shoot = _input.Shoot,
+                free = _input.Free
             };
             
             _clientInputBuffer.Add(inputPayload, bufferIndex);

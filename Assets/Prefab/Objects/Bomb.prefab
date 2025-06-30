@@ -260,7 +260,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _bounceCount: 0
   started: 0
-  _initTime: 0.075
+  _initTime: 0.15
   _collider2D: {fileID: 3668608491107497190}
   _rigidbody2D: {fileID: 8133839011960365223}
   _explosionEffectPrefab: {fileID: 6928477528844167981, guid: 9158474330c64654b9e55c6886418bc6, type: 3}
@@ -281,13 +281,13 @@ MonoBehaviour:
   _specialAttackLayer:
     serializedVersion: 2
     m_Bits: 4096
-  _explosionRadius: 4.5
+  _explosionRadius: 2.5
   _explosionDamageInCenter: 0.45
   _explosionDamageInBorder: 0.2
-  _knockbackLevelInCenter: 10
-  _knockbackLevelInBorder: 5
-  _knockbackUpLevelInCenter: 15
-  _knockbackUpLevelInBorder: 5
+  _knockbackLevelInCenter: 5
+  _knockbackLevelInBorder: 2.5
+  _knockbackUpLevelInCenter: 5
+  _knockbackUpLevelInBorder: 2
   _ownerTag: 
   _maxPositionError: 0.5
   _maxVelocityError: 0.5
