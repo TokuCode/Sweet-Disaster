@@ -88,7 +88,7 @@ namespace Code.Gameplay.Objects
         }
 
         [Rpc(SendTo.NotMe)]
-        private void RequestHardSyncRpc(BombStatePayload bombState)
+        private void RequestHardSyncRpc(BombStatePayload bombState, RpcParams rpcParams = default)
         {
             var go = NonNetworkObjectPool.Singleton.GetNetworkObjectReference(bombPrefabId, bombState.objectId);
             if(go == null || go.gameObject == null || !go.gameObject.activeSelf) return;
