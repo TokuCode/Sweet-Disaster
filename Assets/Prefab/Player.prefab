@@ -399,7 +399,7 @@ MonoBehaviour:
   _followTarget: {fileID: 6022316762160544414}
   _gunTip: {fileID: 8692099931127174155}
   _reconciliationCooldownTime: 1
-  _reconciliationThreshold: 5
+  _reconciliationThreshold: 2.5
   _extrapolationLimit: 0.5
   _extrapolationMultiplier: 1.2
   _extrapolationMinLatency: 0.3

@@ -272,7 +272,7 @@ namespace Code.Gameplay.Character
             if (rewindState.Equals(_lastServerState)) return;
             
             _clientStateBuffer.Add(rewindState, rewindState.tick);
-            int tickToReplay = _lastServerState.tick;
+            int tickToReplay = rewindState.tick;
 
             while (tickToReplay < _networkTimer.CurrentTick)
             {
