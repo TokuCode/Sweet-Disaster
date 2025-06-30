@@ -67,9 +67,9 @@ namespace Code.Systems.NetworkObjectPool
             return go;
         }
 
-        public NetworkObject GetNetworkObjectById(GameObject prefab, Vector3 position, Quaternion rotation, int id)
+        public NetworkObject GetNetworkObjectById(GameObject prefab, Vector3 position, Quaternion rotation, int id, int senderId = -1)
         {
-            var go = _pooledObjects[prefab].GetById(id);
+            var go = _pooledObjects[prefab].GetById(id, senderId);
             
             var goTransform = go.gameObject.transform;
             goTransform.position = position;
@@ -81,6 +81,11 @@ namespace Code.Systems.NetworkObjectPool
         public GameObject GetPrefab(SerializableGuid Id)
         {
             return _prefabs.GetValueOrDefault(Id);
+        }
+
+        public int GetAbsoluteId(GameObject prefab, int id, int senderId = -1)
+        {
+            return _pooledObjects[prefab].GetAbsoluteId(id, senderId);
         }
 
         public void ReturnNetworkObject(NetworkObject networkObject, GameObject prefab)
@@ -135,7 +140,7 @@ namespace Code.Systems.NetworkObjectPool
 
             _prefabs.Add(id, prefab);
             
-            _pooledObjects[prefab] = new ObjectPoolWithId(CreateFunc, ActionOnGet, ActionOnRelease, ActionOnDestroy, ActionCheck, prewarmCount, NetworkManager.CurrentSessionOwner);
+            _pooledObjects[prefab] = new ObjectPoolWithId(CreateFunc, ActionOnGet, ActionOnRelease, ActionOnDestroy, ActionCheck, prewarmCount, NetworkManager.LocalClient.ClientId);
 
             NetworkManager.Singleton.PrefabHandler.AddHandler(prefab, new NonNetPooledPrefabInstanceHandler(prefab, this));
         }

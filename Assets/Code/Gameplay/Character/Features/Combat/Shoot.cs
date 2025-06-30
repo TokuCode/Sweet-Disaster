@@ -170,7 +170,7 @@ namespace Code.Gameplay.Character.Features
             _invoker.GunTipPosition.Request(out var position);
             
             FireAction(position, direction, out int id);
-            ReplicateFireGunRpc(position, direction, id, DateTime.Now);
+            ReplicateFireGunRpc(position, direction, id, DateTime.Now, (int)NetworkManager.LocalClient.ClientId);
             
             Recoil(direction);
         }
@@ -185,11 +185,11 @@ namespace Code.Gameplay.Character.Features
             bullet.Initialize(direction, gameObject.tag, 0);
         }
 
-        private void ReplicateFireAction(Vector3 position, Vector3 direction, int bulletId, float latency)
+        private void ReplicateFireAction(Vector3 position, Vector3 direction, int bulletId, float latency, int senderId)
         {
             var rotation = DirectionToRotation.GetRotation(direction);
             
-            _bulletNetworkObject = NonNetworkObjectPool.Singleton.GetNetworkObjectById(_bulletPrefab, position, rotation, bulletId);
+            _bulletNetworkObject = NonNetworkObjectPool.Singleton.GetNetworkObjectById(_bulletPrefab, position, rotation, bulletId, senderId);
             
             var bullet = _bulletNetworkObject.gameObject.GetComponent<ObjectBullet>();
             bullet.Initialize(direction, gameObject.tag, latency); 
@@ -272,10 +272,10 @@ namespace Code.Gameplay.Character.Features
         }
 
         [Rpc(SendTo.NotMe)]
-        private void ReplicateFireGunRpc(Vector3 position, Vector3 direction, int objectId, DateTime timestamp)
+        private void ReplicateFireGunRpc(Vector3 position, Vector3 direction, int objectId, DateTime timestamp, int clientId)
         {
             float latency = MilisecondsUtils.CalculateLatency(timestamp);
-            ReplicateFireAction(position, direction, objectId, latency);
+            ReplicateFireAction(position, direction, objectId, latency, clientId);
         }
     }
 }

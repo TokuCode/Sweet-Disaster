@@ -677,8 +677,8 @@ MonoBehaviour:
   _maxShieldStamina: 100
   _currentShieldStamina:
     m_InternalValue: 0
-  _shieldStaminaRegenRate: 15
-  _shieldStaminaSpendRate: 20
+  _shieldStaminaRegenRate: 25
+  _shieldStaminaSpendRate: 40
   _isStaminaDepleted: 0
   _minShieldStaminaForActivation: 15
 --- !u!114 &1027848877173910424

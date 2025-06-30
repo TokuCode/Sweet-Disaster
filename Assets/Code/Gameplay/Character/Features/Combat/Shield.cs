@@ -81,8 +81,7 @@ namespace Code.Gameplay.Character.Features
         public void TryActivateShield()
         {
             bool canShieldInternal = !_isStaminaDepleted && !_isShieldActive.Value && _currentShieldStamina.Value > _minShieldStaminaForActivation && !_isDeactivatingShield.Value;
-            bool canShieldExternal = !shoot.IsShooting && !shoot.IsReloading &&
-                                     !crouch.IsCrouching && !bomb.IsThrowing &&
+            bool canShieldExternal = !shoot.IsShooting && !shoot.IsReloading && !bomb.IsThrowing &&
                                      !health.IsStunned && !melee.IsAttacking;
             
             if (canShieldInternal && canShieldExternal)

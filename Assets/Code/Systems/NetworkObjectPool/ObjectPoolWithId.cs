@@ -78,11 +78,12 @@ namespace Code.Systems.NetworkObjectPool
             return no;
         }
 
-        public NetworkObject GetById(int id = -1)
+        public NetworkObject GetById(int id = -1, int senderId = -1)
         {
             if (id == -1) return null;
 
-            NetworkObject no = _pooledObjects[id + _offset];
+            var offset = senderId == -1 ? _offset : senderId * _prewarm;
+            NetworkObject no = _pooledObjects[id + offset];
             _onGet?.Invoke(no);
             
             return no;
@@ -92,18 +93,19 @@ namespace Code.Systems.NetworkObjectPool
         {
             if (id == -1) return null;
             
-            NetworkObject no = _pooledObjects[id + _offset];
+            NetworkObject no = _pooledObjects[id];
             
             if (!_checkActive(no)) return null;
 
             return no;
         }
 
-        public void ReleaseById(int id = -1)
+        public void ReleaseById(int id = -1, int senderId = -1)
         {
             if (id == -1) return;
             
-            NetworkObject no = _pooledObjects[id + _offset];
+            var offset = senderId == -1 ? _offset : senderId * _prewarm;
+            NetworkObject no = _pooledObjects[id + offset];
             _onRelease?.Invoke(no);
         }
 
@@ -121,5 +123,11 @@ namespace Code.Systems.NetworkObjectPool
         }
         
         public List<NetworkObject> GetAll() => _pooledObjects;
+
+        public int GetAbsoluteId(int id, int senderId = -1)
+        {
+            int offset = senderId == -1 ? _offset : senderId * _prewarm;
+            return id + offset;
+        }
     }
 }

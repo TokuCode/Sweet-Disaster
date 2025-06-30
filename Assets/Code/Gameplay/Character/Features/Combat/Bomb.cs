@@ -129,7 +129,7 @@ namespace Code.Gameplay.Character.Features
             var throwForce = direction.normalized * Mathf.Lerp(_throwMinForce, _throwMaxForce, Mathf.Clamp01(_throwChargeTimer / _throwChargeTimeSeconds));
             
             ThrowAction(position, direction, throwForce, out int id);
-            ReplicateThrowBombRpc(position, direction, throwForce, id, DateTime.Now);
+            ReplicateThrowBombRpc(position, direction, throwForce, id, DateTime.Now, (int)NetworkManager.LocalClient.ClientId);
         } 
         
         private void ThrowAction(Vector3 position, Vector3 direction, Vector3 throwForce, out int bombId)
@@ -137,21 +137,23 @@ namespace Code.Gameplay.Character.Features
             var rotation = DirectionToRotation.GetRotation(direction);
             
             _bombNo = NonNetworkObjectPool.Singleton.GetNetworkObject(_bombPrefab, position, rotation, out bombId);
+            int absBombId = NonNetworkObjectPool.Singleton.GetAbsoluteId(_bombPrefab, bombId);
             
             var bomb = _bombNo.gameObject.GetComponent<ObjectBomb>();
             NonPooledSync.Singleton.AddBomb(bomb);
-            bomb.Init(gameObject.tag, throwForce, bombId, 0);
+            bomb.Init(gameObject.tag, throwForce, absBombId, 0);
         }
 
-        private void ReplicateThrowAction(Vector3 position, Vector3 direction, Vector3 throwForce, int bombId, float latency)
+        private void ReplicateThrowAction(Vector3 position, Vector3 direction, Vector3 throwForce, int bombId, float latency, int senderId)
         {
             var rotation = DirectionToRotation.GetRotation(direction);
             
-            _bombNo = NonNetworkObjectPool.Singleton.GetNetworkObjectById(_bombPrefab, position, rotation, bombId);
+            _bombNo = NonNetworkObjectPool.Singleton.GetNetworkObjectById(_bombPrefab, position, rotation, bombId, senderId);
+            int absBombId = NonNetworkObjectPool.Singleton.GetAbsoluteId(_bombPrefab, bombId, senderId);
             
             var bomb = _bombNo.gameObject.GetComponent<ObjectBomb>();
             NonPooledSync.Singleton.AddBomb(bomb);
-            bomb.Init(gameObject.tag, throwForce, bombId, latency);
+            bomb.Init(gameObject.tag, throwForce, absBombId, latency);
         }
         
         [ServerRpc]
@@ -161,10 +163,10 @@ namespace Code.Gameplay.Character.Features
         } 
         
         [Rpc(SendTo.NotMe)]
-        private void ReplicateThrowBombRpc(Vector3 position, Vector3 direction, Vector3 throwForce, int objectId, DateTime timestamp)
+        private void ReplicateThrowBombRpc(Vector3 position, Vector3 direction, Vector3 throwForce, int objectId, DateTime timestamp, int cliendId)
         {
             float latency = MilisecondsUtils.CalculateLatency(timestamp);
-            ReplicateThrowAction(position, direction, throwForce, objectId, latency);
+            ReplicateThrowAction(position, direction, throwForce, objectId, latency, cliendId);
         } 
         
         public override void Apply(ref InputPayload @event) { }
