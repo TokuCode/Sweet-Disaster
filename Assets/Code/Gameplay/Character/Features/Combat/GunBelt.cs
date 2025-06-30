@@ -90,18 +90,17 @@ namespace Code.Gameplay.Character.Features
                 _activeWeapon.Value = Weapon.NoWeapon;
             }
 
+            if (_activeWeapon.Value != _lastActiveWeapon)
+            {
+                int index = (int)_activeWeapon.Value;
+                WeaponChanged?.Invoke(index);
+            }
+            
             if (_activeWeapon.Value != _lastActiveWeapon && overwriteActiveLastWeapon)
             {
                 _lastActiveTime = Time.time;
                 _lastActiveWeapon = _activeWeapon.Value;
             }
-            
-            var weapons = Enum.GetValues(typeof(Weapon));
-            int index = (int)_activeWeapon.Value;
-            index = (index + 1) % weapons.Length;
-            _activeWeapon.Value = (Weapon)index;
-            
-            WeaponChanged?.Invoke(index);
         }
 
         public override void FixedUpdateFeature() { }
