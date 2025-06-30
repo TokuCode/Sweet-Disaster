@@ -93,6 +93,8 @@ namespace Code.Gameplay.Character.Features
             _dependencies.TryGetFeature(out shield);
             _dependencies.TryGetFeature(out bomb);
             _dependencies.TryGetFeature(out melee);
+
+            health.OnStun += OnStun;
         }
 
         public override void UpdateFeature()
@@ -240,6 +242,18 @@ namespace Code.Gameplay.Character.Features
         private void StopReloading()
         {
             ReloadAction();
+            _isReloading.Value = false;
+        }
+
+        private void OnStun(float stunDuration, float healthRatio)
+        {
+            CancelReloading();
+        }
+
+        private void CancelReloading()
+        {
+            if (!_isReloading.Value) return;
+            
             _isReloading.Value = false;
         }
 

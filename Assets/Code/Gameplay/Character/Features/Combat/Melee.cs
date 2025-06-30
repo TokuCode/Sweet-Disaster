@@ -6,6 +6,7 @@ using Code.Helpers;
 using Code.Networking.ClientPrediction;
 using Code.Systems.Input;
 using Code.Systems.NetworkObjectPool;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace Code.Gameplay.Character.Features
@@ -80,6 +81,7 @@ namespace Code.Gameplay.Character.Features
             position += InputReader.Instance.HandleDirection * _extraDistance;
             
             AttackVFX(position);
+            ReplicateVFXRpc(position);
 
             var colliders = Physics2D.OverlapCircleAll(position, _radius, _attackLayer);
             foreach (var collider in colliders)
@@ -134,6 +136,12 @@ namespace Code.Gameplay.Character.Features
             var go = ObjectPoolManager.Instance.Get(_vfxPrefab, position, Quaternion.identity);
             go.SetActive(true);
             go.GetComponent<AttackVFX>().Init();
+        }
+
+        [Rpc(SendTo.NotMe)]
+        private void ReplicateVFXRpc(Vector3 position)
+        {
+            AttackVFX(position);
         }
 
         public override void FixedUpdateFeature() { }
