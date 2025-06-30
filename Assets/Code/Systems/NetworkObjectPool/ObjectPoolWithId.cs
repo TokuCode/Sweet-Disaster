@@ -63,12 +63,12 @@ namespace Code.Systems.NetworkObjectPool
             if (ActiveCount >= Count) no = Create(out id);
             else
             {
-                for (int i = 0; i >= _offset && i < _offset + _prewarm; i++)
+                for (int i = _offset; i < _offset + _prewarm; i++)
                 {
                     no = _pooledObjects[i + _offset];
                     if (!_checkActive(no))
                     {
-                        id = i;
+                        id = i - _offset;
                         break;
                     }
                 }
