@@ -6,8 +6,9 @@ using UnityEngine.InputSystem;
 
 namespace Code.Systems.Input
 {
-    public class InputReader: Singleton<InputReader>, IControl
+    public class InputReader: Singleton<InputReader>, IControl, PlayerControls.IGameplayActions
     {
+        private PlayerInput _playerInput;
         [SerializeField] private float _handleHeight;
         public float HandleHeight => _handleHeight;
         [SerializeField] private float _handleDistance;
@@ -17,45 +18,62 @@ namespace Code.Systems.Input
         public event Action OnShootPressed;
         public event Action OnShootReleased;
         
-        public float Move => inputActions.Gameplay.Move.ReadValue<float>();
+        public event Action OnThrowPressed;
+        public event Action OnThrowReleased;
+        
+        public event Action OnMeleePressed;
+        public event Action OnMeleeReleased;
+
+        [SerializeField] private bool _onGamepad;
+        public bool OnGamepad => _onGamepad;
+        
+        public float Move { get; private set; }
         public bool Jump { get; private set; }
         public bool Crouch { get; private set; }
         public bool Shoot { get; private set; }
         public bool Reload { get; private set; }
         public bool Shield { get; private set; }
-        public bool Switch => inputActions.Gameplay.Switch.ReadValue<Vector2>().y != 0;
+        public bool Free { get; private set; }
+        public bool Throw { get; private set; }
+        public bool Melee { get; private set; }
         public Vector3 HandlePosition { get; private set; }
         public Vector3 HandleDirection { get; private set; }
-        private Vector3 mousePosition;
+        private Vector3 pointerPosition;
         
         
         PlayerControls inputActions;
 
-        private void OnEnable()
+        protected override void Awake()
         {
-            if (inputActions == null)
-            {
-                inputActions = new PlayerControls();
-                inputActions.Enable();
-                
-                inputActions.Gameplay.Jump.performed += OnJump;
-                inputActions.Gameplay.Jump.canceled += OnJump;
-                inputActions.Gameplay.Crouch.performed += OnCrouch;
-                inputActions.Gameplay.Crouch.canceled += OnCrouch;
-                inputActions.Gameplay.Shoot.performed += OnShoot;
-                inputActions.Gameplay.Shoot.canceled += OnShoot;
-                inputActions.Gameplay.Reload.performed += OnReload;
-                inputActions.Gameplay.Reload.canceled += OnReload;
-                inputActions.Gameplay.Shield.performed += OnShield;
-                inputActions.Gameplay.Shield.canceled += OnShield;
-                inputActions.Gameplay.Aim.performed += OnAim;
-                inputActions.Gameplay.Aim.canceled += OnAim;
-            }
+            base.Awake();
+            _playerInput = GetComponent<PlayerInput>();
         }
 
+        private void OnEnable()
+        {
+            inputActions = new();
+            inputActions.Enable();
+            inputActions.Gameplay.SetCallbacks(this);
+        }
+        
         private void OnDisable()
         {
             inputActions.Dispose();
+        }
+
+        public void CheckControlScheme()
+        {
+            _onGamepad = _playerInput.currentControlScheme == inputActions.GamepadScheme.name;
+        }
+
+        private void Update()
+        {
+            CheckControlScheme();
+        }
+
+        public void OnMove(InputAction.CallbackContext context)
+        {
+            Move = context.ReadValue<float>();
         }
 
         public void OnJump(InputAction.CallbackContext context)
@@ -74,10 +92,20 @@ namespace Code.Systems.Input
                 Crouch = false;
         }
 
-        public void OnAim(InputAction.CallbackContext context)
+        public void OnAimPC(InputAction.CallbackContext context)
         {
-            mousePosition = context.ReadValue<Vector2>();
-            CalculateHandle();
+            if(_onGamepad) return;
+            
+            pointerPosition = context.ReadValue<Vector2>();
+            CalculateHandleKeyboard();
+        }
+
+        public void OnAimGamepad(InputAction.CallbackContext context)
+        {
+            if(!_onGamepad) return;
+            
+            pointerPosition = context.ReadValue<Vector2>();
+            CalculateHandleGamepad();
         }
 
         public void OnShoot(InputAction.CallbackContext context)
@@ -102,6 +130,34 @@ namespace Code.Systems.Input
                 Reload = false;
         }
 
+        public void OnThrow(InputAction.CallbackContext context)
+        {
+            if (context.performed)
+            {
+                OnThrowPressed?.Invoke(); 
+                Throw = true;
+            }
+            else if (context.canceled)
+            {
+                OnThrowReleased?.Invoke();
+                Throw = false;
+            }        
+        }
+
+        public void OnMelee(InputAction.CallbackContext context)
+        {
+            if (context.performed)
+            {
+                OnMeleePressed?.Invoke(); 
+                Melee = true;
+            }
+            else if (context.canceled)
+            {
+                OnMeleeReleased?.Invoke();
+                Melee = false;
+            }        
+        }
+
         public void OnShield(InputAction.CallbackContext context)
         {
             if(context.performed)
@@ -110,18 +166,45 @@ namespace Code.Systems.Input
                 Shield = false;
         }
 
+        public void OnFreePlayer(InputAction.CallbackContext context)
+        {
+            if(context.performed)
+                Free = true;
+            else if (context.canceled)
+                Free = false;
+        }
+
         public void CachePlayerPosition(Vector3 playerPosition)
         {
             _playerPosition = playerPosition;
             CalculateHandle();
         }
-        
+
         void CalculateHandle()
         {
+            if(OnGamepad) CalculateHandleGamepad();
+            else CalculateHandleKeyboard();
+        }
+        
+        void CalculateHandleKeyboard()
+        {
+            if(OnGamepad) return;
+            
             var playerAimPosition = _playerPosition + Vector3.up * _handleHeight;
-            var mousePositionWorld = CameraUtils.ScreenToWorldPoint(mousePosition);
+            var mousePositionWorld = CameraUtils.ScreenToWorldPoint(pointerPosition);
             
             HandleDirection = (mousePositionWorld - playerAimPosition).normalized;
+            if(HandleDirection == Vector3.zero) HandleDirection = Vector3.right;
+            HandlePosition = HandleDirection * _handleDistance + playerAimPosition;
+        }
+
+        void CalculateHandleGamepad()
+        {
+            if(!OnGamepad) return;
+            
+            var playerAimPosition = _playerPosition + Vector3.up * _handleHeight;
+            HandleDirection = pointerPosition.normalized;
+            if(HandleDirection == Vector3.zero) HandleDirection = Vector3.right;
             HandlePosition = HandleDirection * _handleDistance + playerAimPosition;
         }
     }

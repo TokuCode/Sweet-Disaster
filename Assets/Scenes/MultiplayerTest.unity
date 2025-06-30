@@ -149,7 +149,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 777584100
+  GlobalObjectIdHash: 1876564396
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -307,7 +307,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2620835542
+  GlobalObjectIdHash: 2621517487
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -6769,7 +6769,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2099754008
+  GlobalObjectIdHash: 3579918601
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -9677,6 +9677,7 @@ GameObject:
   m_Component:
   - component: {fileID: 699155144}
   - component: {fileID: 699155145}
+  - component: {fileID: 699155146}
   m_Layer: 0
   m_Name: Input Reader
   m_TagString: Untagged
@@ -9711,8 +9712,75 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f88d9a4e6d04d489953e63702b846e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _handleHeight: 0.2
+  _handleHeight: -0.13
   _handleDistance: 1.5
+  _onGamepad: 0
+--- !u!114 &699155146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 699155142}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Actions: {fileID: -944628639613478452, guid: 46a5ab5e38d044b45b486861118287c0, type: 3}
+  m_NotificationBehavior: 3
+  m_UIInputModule: {fileID: 0}
+  m_DeviceLostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_DeviceRegainedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ControlsChangedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ActionEvents:
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: a0c9e72a-a519-4402-b796-859b0a276408
+    m_ActionName: 'Gameplay/Move[/Keyboard/a,/Keyboard/d]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: ed35969c-617e-48cf-a187-5f933d23fc73
+    m_ActionName: 'Gameplay/Jump[/Keyboard/w,/Keyboard/space]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 84689500-c64e-4bc9-83d0-3939877a202d
+    m_ActionName: 'Gameplay/Crouch[/Keyboard/s]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 60301b45-e73f-4ac5-9f72-5473c67f4c6d
+    m_ActionName: 'Gameplay/Aim[/Mouse/position]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 8f2267ac-fa8a-479b-b626-e6e600d85caa
+    m_ActionName: 'Gameplay/Shoot[/Mouse/leftButton]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 5acb6f7b-bbd7-4f1d-9571-47a9fcb69563
+    m_ActionName: 'Gameplay/Reload[/Keyboard/r]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: b37bff63-0388-4f77-9e65-5e5982b7c682
+    m_ActionName: 'Gameplay/Throw[/Mouse/rightButton]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 1b75352a-05c7-4539-8fee-0f64a121fb04
+    m_ActionName: 'Gameplay/Melee[/Keyboard/v]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 566e0b34-4688-4592-9824-659b9f892afb
+    m_ActionName: 'Gameplay/Shield[/Keyboard/leftShift]'
+  m_NeverAutoSwitchControlSchemes: 0
+  m_DefaultControlScheme: PC
+  m_DefaultActionMap: Gameplay
+  m_SplitScreenIndex: -1
+  m_Camera: {fileID: 0}
 --- !u!1 &726976173
 GameObject:
   m_ObjectHideFlags: 0
@@ -10996,7 +11064,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1504603445
+  GlobalObjectIdHash: 2172731408
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -11435,7 +11503,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2405321913
+  GlobalObjectIdHash: 1315019532
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 8
@@ -11487,8 +11555,14 @@ MonoBehaviour:
   characterVisualsList:
   - characterName: Ceci
     runtimeAnimator: {fileID: 22100000, guid: 4f3a363299f97054c81c289ad2792fc3, type: 2}
+    armWithGun: {fileID: 0}
+    armWithBomb: {fileID: 0}
+    armWithShield: {fileID: 0}
   - characterName: Gladys
     runtimeAnimator: {fileID: 22100000, guid: 4743623638bd47147b2da1cd1dd47b46, type: 2}
+    armWithGun: {fileID: 0}
+    armWithBomb: {fileID: 0}
+    armWithShield: {fileID: 0}
   _spawnPoints:
   - {fileID: 2122397754}
   - {fileID: 1526050918}
@@ -11527,7 +11601,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 930541443
+  GlobalObjectIdHash: 2908897855
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -15246,8 +15320,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _box: {fileID: 1485472892}
-  _left: 7.5
-  _right: 7.5
+  _left: 15
+  _right: 15
   _top: 7.5
   _bottom: 7.5
 --- !u!61 &1485472892
@@ -15497,7 +15571,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3512549348
+  GlobalObjectIdHash: 1724713482
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -17678,7 +17752,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2430306284
+  GlobalObjectIdHash: 138651700
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -19139,7 +19213,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 130851280
+  GlobalObjectIdHash: 1990343151
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -19183,6 +19257,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PooledPrefabsList:
   - prefab: {fileID: 6928477528844167981, guid: 9158474330c64654b9e55c6886418bc6, type: 3}
+    prewarmCount: 12
+  - prefab: {fileID: 6928477528844167981, guid: bec6567e9bde3ad458da93c48b407884, type: 3}
     prewarmCount: 12
 --- !u!4 &1763634306
 Transform:
@@ -21492,7 +21568,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1053604561
+  GlobalObjectIdHash: 3395698177
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1

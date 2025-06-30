@@ -19,12 +19,10 @@ namespace Code.Gameplay.Character.Features
 
         private Crouch crouch;
         private Health health;
-        private GunBelt belt;
         private Shield shield;
-
-        [Header("Control")]
-        [SerializeField] private bool _active;
-        public bool Active => _active;
+        private Bomb bomb;
+        private Melee melee;
+        
 
         [Header("Shooting Settings")]
         [SerializeField] private float _timeBetweenShots;
@@ -92,15 +90,14 @@ namespace Code.Gameplay.Character.Features
             
             _dependencies.TryGetFeature(out crouch);
             _dependencies.TryGetFeature(out health);
-            _dependencies.TryGetFeature(out belt);
             _dependencies.TryGetFeature(out shield);
+            _dependencies.TryGetFeature(out bomb);
+            _dependencies.TryGetFeature(out melee);
         }
 
         public override void UpdateFeature()
         {
             if (!IsOwner && !IsServer) return;
-            
-            SetActive();
             
             if (_holdToShoot && InputReader.Instance.Shoot && IsOwner)
                 TryShooting();
@@ -127,8 +124,8 @@ namespace Code.Gameplay.Character.Features
         private void TryShooting()
         {
             bool canShootInternal = _currentAmmo.Value > 0 & Time.time - _lastShotTime > _timeBetweenBursts & !_isShooting &
-                !_isReloading.Value && _active;
-            bool canShootExternal = !crouch.IsCrouching && !health.IsStunned && !shield.IsShieldActive;
+                !_isReloading.Value;
+            bool canShootExternal = !crouch.IsCrouching && !health.IsStunned && !shield.IsShieldActive && !bomb.IsThrowing && !melee.IsAttacking;
             if (canShootInternal && canShootExternal)
                 StartCoroutine(ShootingSequence());
             else if (_currentAmmo.Value <= 0)
@@ -250,15 +247,10 @@ namespace Code.Gameplay.Character.Features
         { 
             _currentAmmo.Value = _magazineSize;   
         }
-
-        private void SetActive()
-        {
-            _active = belt.ActiveWeapon == GunBelt.Weapon.Gun;
-        }
         
         public override void Apply(ref InputPayload @event)
         {
-            if (@event.reload && belt.ActiveWeapon == GunBelt.Weapon.Gun && !_isShooting)
+            if (@event.reload && !_isShooting && !bomb.IsThrowing && !shield.IsShieldActive && !melee.IsAttacking) 
             {
                 if(!IsServer) RequestReloadToServerRpc();
                 else TryReload();

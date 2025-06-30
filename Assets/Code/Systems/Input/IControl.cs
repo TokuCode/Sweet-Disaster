@@ -9,8 +9,10 @@ namespace Code.Systems.Input
         bool Crouch { get; }
         bool Shoot { get; }
         bool Reload { get; }
-        bool Switch { get; }
+        bool Throw { get; }
+        bool Melee { get; }
         bool Shield { get; }
+        bool Free { get; }
         Vector3 HandlePosition { get; }
         Vector3 HandleDirection { get; }
     }

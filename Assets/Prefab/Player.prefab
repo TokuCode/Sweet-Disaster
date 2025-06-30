@@ -189,6 +189,7 @@ GameObject:
   - component: {fileID: 1990175814712795858}
   - component: {fileID: 1027848877173910424}
   - component: {fileID: 4303144466517633692}
+  - component: {fileID: 3296703527897574207}
   m_Layer: 9
   m_Name: Player
   m_TagString: P1
@@ -393,6 +394,7 @@ MonoBehaviour:
   - {fileID: 1990175814712795858}
   - {fileID: 1027848877173910424}
   - {fileID: 4303144466517633692}
+  - {fileID: 3296703527897574207}
   _followTarget: {fileID: 6022316762160544414}
   _gunTip: {fileID: 8692099931127174155}
   _reconciliationCooldownTime: 1
@@ -450,7 +452,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _groundFriction: 5
+  _groundFriction: 7.5
   _airFriction: 1
   _applyingFriction: 0
 --- !u!114 &8255697083224363140
@@ -529,6 +531,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   _cooldown: 0.5
+  _maxActiveWeaponTime: 0
   _activeWeapon:
     m_InternalValue: 0
 --- !u!114 &5385415895683851131
@@ -544,7 +547,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _active: 0
   _timeBetweenShots: 0.05
   _burstCount: 3
   _timeBetweenBursts: 0.5
@@ -558,7 +560,7 @@ MonoBehaviour:
   _baseImprecision: 0
   _imprecision: 0
   _imprecisionToAngleFactor: 15
-  _airImprecision: 1
+  _airImprecision: 0.5
   _movementImprecisionPerSpeedUnit: 0.25
   _recoilForce: 2.5
   _recoilImpulseAngle: 45
@@ -581,8 +583,8 @@ MonoBehaviour:
   _baseHealth: 100
   _isStunned:
     m_InternalValue: 0
-  _stunMinDuration: 0.05
-  _stunDurationPerKnockback: 0.05
+  _stunMinDuration: 0.025
+  _stunDurationPerKnockback: 0.025
   _stunTimer: 0
   _directionalInfluence: 0.5
 --- !u!114 &860409869878252518
@@ -598,7 +600,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _active: 0
   _throwChargeTimeSeconds: 0.4
   _throwChargeTimer: 0
   _throwMinForce: 5
@@ -624,6 +625,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _gunTip: {fileID: 8692099931127174155}
   arm: {fileID: 6665744144607911163}
+  offsetAngle: 0
 --- !u!114 &4264565317164244210
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -705,9 +707,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   _minigameDurationPerHealthRatio: 0.75
-  _minStunDuration: 2
+  _minStunDuration: 0.625
   _sweetSpotRatio: 0.175
   _onSuccessTimeReductionRatio: 0.25
+--- !u!114 &3296703527897574207
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6295644469921195904}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f887d001e2a44668ddd70336a2e8bba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  _radius: 0.75
+  _extraDistance: 0.25
+  _damage: 0.25
+  _knockback: {x: 6, y: 4}
+  _cooldown: 1
+  _windUpTime: 0.25
+  _followUpTime: 0.75
+  _attackLayer:
+    serializedVersion: 2
+    m_Bits: 512
+  _vfxPrefab: {fileID: 6928477528844167981, guid: bec6567e9bde3ad458da93c48b407884, type: 3}
+  _isAttacking: 0
 --- !u!1 &7921267680419083028
 GameObject:
   m_ObjectHideFlags: 0

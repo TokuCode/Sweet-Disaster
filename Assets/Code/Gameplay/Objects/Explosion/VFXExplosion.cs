@@ -22,7 +22,7 @@ namespace Code.Gameplay.Objects
             _radius = radius;
             _lifeTimer.Reset(_persistenceTime);
             _lifeTimer.Start();
-            transform.DOScale(Vector3.one * _radius, _persistenceTime).SetEase(Ease.OutBounce);
+            transform.DOScale(Vector3.one * (_radius * 2), _persistenceTime).SetEase(Ease.OutBounce);
         }
 
         private void Update()
