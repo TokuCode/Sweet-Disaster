@@ -8,7 +8,7 @@ namespace Code.Gameplay.Character.Visuals
     public class AnimationHandler : NetworkBehaviour
     {
         [SerializeField] private Animator animatorController;
-        
+            
         void Update()
         {
             if (!IsOwner) return;
@@ -16,8 +16,8 @@ namespace Code.Gameplay.Character.Visuals
             if (!PlayerController.Singleton.Dependencies.TryGetFeature(out PhysicsCheck physicsCheck)) return;
             if (!PlayerController.Singleton.Dependencies.TryGetFeature(out Health health)) return;
             
-            //animatorController.SetFloat("horizontalVel", PlayerController.Singleton.rigidbody.linearVelocityX);
-            animatorController.SetFloat("horizontalInput", InputReader.Instance.Move);
+            animatorController.SetFloat("horizontalVel", PlayerController.Singleton.rigidbody.linearVelocityX);
+            //animatorController.SetFloat("horizontalInput", InputReader.Instance.Move);
             
             animatorController.SetFloat("verticalVel", PlayerController.Singleton.rigidbody.linearVelocityY);
             
@@ -26,9 +26,6 @@ namespace Code.Gameplay.Character.Visuals
             animatorController.SetBool("isStunned", health.IsStunned);
         }
 
-        public void SetVisuals(CharacterVisuals visuals)
-        {
-            animatorController.runtimeAnimatorController = visuals.runtimeAnimator;
-        }
+        public void SetAnimator(CharacterVisuals visuals) => animatorController.runtimeAnimatorController = visuals.runtimeAnimator;
     }
 }

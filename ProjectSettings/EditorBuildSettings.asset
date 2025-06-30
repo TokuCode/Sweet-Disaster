@@ -14,13 +14,13 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/MultiplayerTest.unity
     guid: c8dc507f0d57b3c458ae9942eacd0c4e
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/MultiplayerTest1.unity
     guid: 7236e96b6f386be47942413b9f759f2f
   - enabled: 1
     path: Assets/Scenes/PostGame.unity
     guid: b7b328cc3d588ed4198332ce4bc18467
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Anims.unity
     guid: 56d27fbd013e38a478a18c0beec51a10
   - enabled: 1

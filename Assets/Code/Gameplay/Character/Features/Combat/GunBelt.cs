@@ -25,6 +25,7 @@ namespace Code.Gameplay.Character.Features
         [Header("Runtime")]
         [SerializeField] private NetworkVariable<Weapon> _activeWeapon = new(Weapon.Gun, NetworkVariableReadPermission.Owner, NetworkVariableWritePermission.Owner);
         public Weapon ActiveWeapon => _activeWeapon.Value;
+        public event Action<int> WeaponChanged;
 
         public override void InitializeFeature(Controller controller)
         {
@@ -50,6 +51,8 @@ namespace Code.Gameplay.Character.Features
             int index = (int)_activeWeapon.Value;
             index = (index + 1) % weapons.Length;
             _activeWeapon.Value = (Weapon)index;
+            
+            WeaponChanged?.Invoke(index);
         }
 
         public override void FixedUpdateFeature() { }
