@@ -15,7 +15,7 @@ namespace Code.Gameplay.Character.Features
         private Health health;
         private Shoot shoot;
         private Bomb bomb;
-        private Movement movement;
+        private Melee melee;
         
         [Header("Shield Parameters")]
         [SerializeField] private GameObject _shieldPrefab;
@@ -41,10 +41,10 @@ namespace Code.Gameplay.Character.Features
         {
             base.InitializeFeature(controller);
             _dependencies.TryGetFeature(out crouch);
-            _dependencies.TryGetFeature(out movement);
             _dependencies.TryGetFeature(out shoot);
             _dependencies.TryGetFeature(out bomb);
             _dependencies.TryGetFeature(out health);
+            _dependencies.TryGetFeature(out melee);
             health.AttackPipeline.Register(this);
             health.OnHealthChanged += OnHealthChanged;
             if (IsServer)
@@ -83,7 +83,7 @@ namespace Code.Gameplay.Character.Features
             bool canShieldInternal = !_isStaminaDepleted && !_isShieldActive.Value && _currentShieldStamina.Value > _minShieldStaminaForActivation && !_isDeactivatingShield.Value;
             bool canShieldExternal = !shoot.IsShooting && !shoot.IsReloading &&
                                      !crouch.IsCrouching && !bomb.IsThrowing &&
-                                     !health.IsStunned;
+                                     !health.IsStunned && !melee.IsAttacking;
             
             if (canShieldInternal && canShieldExternal)
             {

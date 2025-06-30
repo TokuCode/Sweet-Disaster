@@ -54,7 +54,7 @@ namespace Code.Gameplay.Character.Features
         {
             if (!IsOwner) return;
 
-            _cachedMinigameInput = @event.crouch;
+            _cachedMinigameInput = @event.free;
 
             if (!_onMinigame.Value) return;
             

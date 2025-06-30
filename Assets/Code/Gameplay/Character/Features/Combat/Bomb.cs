@@ -18,12 +18,8 @@ namespace Code.Gameplay.Character.Features
         private Health health;
         private Movement move;
         private Crouch crouch;
-        private GunBelt belt;
         private Shield shield;
-        
-        [Header("Control")] 
-        [SerializeField] private bool _active;
-        public bool Active => _active;
+        private Melee melee;
         
         [Header("Throw Parameters")] 
         [SerializeField] private float _throwChargeTimeSeconds;
@@ -57,16 +53,16 @@ namespace Code.Gameplay.Character.Features
             if (IsServer) _bombCount.Value = _startBombCount;
             if (IsOwner)
             {
-                InputReader.Instance.OnShootPressed += OnShootPressed;
-                InputReader.Instance.OnShootReleased += OnShootReleased;
+                InputReader.Instance.OnThrowPressed += OnShootPressed;
+                InputReader.Instance.OnThrowReleased += OnShootReleased;
             }
             base.InitializeFeature(controller);
             _dependencies.TryGetFeature(out health);
             _dependencies.TryGetFeature(out move);
             _dependencies.TryGetFeature(out crouch);
-            _dependencies.TryGetFeature(out belt);
             _dependencies.TryGetFeature(out shoot);
             _dependencies.TryGetFeature(out shield);
+            _dependencies.TryGetFeature(out melee);
             health.OnStun += OnStun;
             RequestBombsAuthority();
         }
@@ -75,8 +71,6 @@ namespace Code.Gameplay.Character.Features
         {
             if(!IsOwner && !IsServer) return;
             
-            SetActive();
-            
             if(_cooldownTimer > 0) _cooldownTimer -= Time.deltaTime;
             else if(_isOnCooldown) ResetThrow();
                 
@@ -84,16 +78,11 @@ namespace Code.Gameplay.Character.Features
         }
 
         public override void FixedUpdateFeature() { }
-
-        private void SetActive()
-        {
-            _active = belt.ActiveWeapon == GunBelt.Weapon.Bomb;
-        } 
     
         private void StartThrowing()
         {
-            bool canThrowInternal = _bombCount.Value > 0 && !_isOnCooldown && !_isThrowing && _active;
-            bool canThrowExternal = !shoot.IsShooting && !crouch.IsCrouching && !shoot.IsReloading && !health.IsStunned && !shield.IsShieldActive;
+            bool canThrowInternal = _bombCount.Value > 0 && !_isOnCooldown && !_isThrowing;
+            bool canThrowExternal = !shoot.IsShooting && !crouch.IsCrouching && !shoot.IsReloading && !health.IsStunned && !shield.IsShieldActive && !melee.IsAttacking;
             if (canThrowInternal && canThrowExternal)
             {
                 _isThrowing = true;

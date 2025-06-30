@@ -11,11 +11,11 @@ namespace Code.Gameplay.Character.Visuals
         [SerializeField] private Transform _gunTip;
         [SerializeField] private Transform arm;
         private Vector3 _mouseWorldPos;
-        private float offsetAngle;
+        [SerializeField] private float offsetAngle;
 
         private void Start()
         {
-            var direction = (_gunTip.position - arm.position).normalized;
+            var direction = _gunTip.localPosition.normalized;
             offsetAngle = Vector3.Angle(direction, arm.right);
         }
 
@@ -24,9 +24,8 @@ namespace Code.Gameplay.Character.Visuals
             if (!IsOwner) return;
 
             Vector3 direction = InputReader.Instance.HandleDirection;
-            _mouseWorldPos = CameraUtils.ScreenToWorldPoint(Input.mousePosition);
             
-            bool isFacingLeft = _mouseWorldPos.x < transform.position.x;
+            bool isFacingLeft = direction.x < 0;
             transform.localScale = new Vector3(isFacingLeft ? -1 : 1, transform.localScale.y, transform.localScale.z);
             
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;

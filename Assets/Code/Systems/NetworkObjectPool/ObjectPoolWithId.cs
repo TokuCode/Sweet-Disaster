@@ -8,11 +8,14 @@ namespace Code.Systems.NetworkObjectPool
 {
     public class ObjectPoolWithId
     {
+        private const int poolDups = 4;
+        
         private readonly int _prewarm;
         private List<NetworkObject> _pooledObjects = new ();
         public int Count => _pooledObjects.Count;
         public int ActiveCount => _pooledObjects.Count(no => _checkActive(no));
         private int _currentId;
+        private int _offset;
         
         private Func<NetworkObject> _createFunc;
         private Action<NetworkObject> _onGet;
@@ -20,7 +23,7 @@ namespace Code.Systems.NetworkObjectPool
         private Action<NetworkObject> _onDestroy;
         private Func<NetworkObject, bool> _checkActive;
 
-        public ObjectPoolWithId(Func<NetworkObject> CreateFunc, Action<NetworkObject> ActionOnGet, Action<NetworkObject> ActionOnRelease, Action<NetworkObject> ActionOnDestroy, Func<NetworkObject, bool> checkActive, int prewarm)
+        public ObjectPoolWithId(Func<NetworkObject> CreateFunc, Action<NetworkObject> ActionOnGet, Action<NetworkObject> ActionOnRelease, Action<NetworkObject> ActionOnDestroy, Func<NetworkObject, bool> checkActive, int prewarm, ulong clientId)
         {
             _prewarm = prewarm;
             _createFunc = CreateFunc;
@@ -29,8 +32,9 @@ namespace Code.Systems.NetworkObjectPool
             _onDestroy = ActionOnDestroy;
             _checkActive = checkActive;
             _currentId = 0;
+            _offset = (int)clientId * prewarm;
 
-            for (int i = 0; i < _prewarm; i++)
+            for (int i = 0; i < _prewarm * poolDups; i++)
                 Release(Create(out int id));
         }
 
@@ -59,9 +63,9 @@ namespace Code.Systems.NetworkObjectPool
             if (ActiveCount >= Count) no = Create(out id);
             else
             {
-                for (var i = 0; i < _pooledObjects.Count; i++)
+                for (int i = 0; i >= _offset && i < _offset + _prewarm; i++)
                 {
-                    no = _pooledObjects[i];
+                    no = _pooledObjects[i + _offset];
                     if (!_checkActive(no))
                     {
                         id = i;
@@ -78,7 +82,7 @@ namespace Code.Systems.NetworkObjectPool
         {
             if (id == -1) return null;
 
-            NetworkObject no = _pooledObjects[id];
+            NetworkObject no = _pooledObjects[id + _offset];
             _onGet?.Invoke(no);
             
             return no;
@@ -88,7 +92,7 @@ namespace Code.Systems.NetworkObjectPool
         {
             if (id == -1) return null;
             
-            NetworkObject no = _pooledObjects[id];
+            NetworkObject no = _pooledObjects[id + _offset];
             
             if (!_checkActive(no)) return null;
 
@@ -99,7 +103,7 @@ namespace Code.Systems.NetworkObjectPool
         {
             if (id == -1) return;
             
-            NetworkObject no = _pooledObjects[id];
+            NetworkObject no = _pooledObjects[id + _offset];
             _onRelease?.Invoke(no);
         }
 

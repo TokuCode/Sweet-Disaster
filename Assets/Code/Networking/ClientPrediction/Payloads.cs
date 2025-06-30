@@ -36,6 +36,7 @@ namespace Code.Networking.ClientPrediction
         public bool reload;
         public bool shield;
         public bool shoot;
+        public bool free;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
@@ -48,6 +49,7 @@ namespace Code.Networking.ClientPrediction
             serializer.SerializeValue(ref shield);
             serializer.SerializeValue(ref reload);
             serializer.SerializeValue(ref shoot);
+            serializer.SerializeValue(ref free);
         }
     }
 

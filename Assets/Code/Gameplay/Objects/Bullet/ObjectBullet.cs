@@ -102,7 +102,6 @@ namespace Code.Gameplay.Objects
                         SourcePosition = transform.position,
                         Success = true
                     });
-                    
                 } 
             }
             

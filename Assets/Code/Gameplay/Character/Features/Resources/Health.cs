@@ -131,6 +131,26 @@ namespace Code.Gameplay.Character.Features
             }
         }
 
+        public void RequestAttackInOwner(AttackEvent attackEvent)
+        {
+            RequestAttackToClientRpc(attackEvent);
+            RequestAttackToServerRpc(attackEvent);
+        }
+
+        [ClientRpc]
+        private void RequestAttackToClientRpc(AttackEvent attackEvent)
+        {
+            if (!IsOwner) return;
+            Attack(attackEvent);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        private void RequestAttackToServerRpc(AttackEvent attackEvent)
+        {
+            if (!IsServer) return;
+            Attack(attackEvent);
+        }
+
         [ServerRpc]
         private void RequestUnStunToServerRpc()
         {
