@@ -83,7 +83,7 @@ namespace Code.Gameplay.Objects
                 {
                     if (player.Dependencies.TryGetFeature(out Health health))
                     {
-                        player.Invoker.ClientId.Request(out int otherClientId);
+                        player.Invoker.PlayerNumber.Request(out int otherClientId);
                         health.Attack(new ()
                         {
                             DamagePercentage = _damage,

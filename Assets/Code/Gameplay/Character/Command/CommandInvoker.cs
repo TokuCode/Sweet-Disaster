@@ -21,7 +21,7 @@ namespace Code.Gameplay.Character.Command
         public FreezeRigidbodyCommand FreezeRigidbody { get; }
         public KnockbackRawCommand Knockback { get; }
         public RequestPosition GunTipPosition { get; }
-        public RequestClientId ClientId { get; }
+        public RequestPlayerNumber PlayerNumber { get; }
         public ResetCommand Reset { get; }
         public RespawnPlayer Respawn { get; }
         public DefeatCommand Defeat { get; }
@@ -44,7 +44,7 @@ namespace Code.Gameplay.Character.Command
             FreezeRigidbody = new(_rigidbody);
             Knockback = new(_rigidbody);
             GunTipPosition = new(_gunTip);
-            ClientId = new(player);
+            PlayerNumber = new(player);
             Reset = new(player);
             Respawn = new(player);
             Defeat = new(player);

@@ -23,7 +23,7 @@ namespace Code.Systems.NetworkObjectPool
         private Action<NetworkObject> _onDestroy;
         private Func<NetworkObject, bool> _checkActive;
 
-        public ObjectPoolWithId(Func<NetworkObject> CreateFunc, Action<NetworkObject> ActionOnGet, Action<NetworkObject> ActionOnRelease, Action<NetworkObject> ActionOnDestroy, Func<NetworkObject, bool> checkActive, int prewarm, ulong clientId)
+        public ObjectPoolWithId(Func<NetworkObject> CreateFunc, Action<NetworkObject> ActionOnGet, Action<NetworkObject> ActionOnRelease, Action<NetworkObject> ActionOnDestroy, Func<NetworkObject, bool> checkActive, int prewarm, int playerNumber)
         {
             _prewarm = prewarm;
             _createFunc = CreateFunc;
@@ -32,7 +32,7 @@ namespace Code.Systems.NetworkObjectPool
             _onDestroy = ActionOnDestroy;
             _checkActive = checkActive;
             _currentId = 0;
-            _offset = (int)clientId * prewarm;
+            _offset = playerNumber * prewarm;
 
             for (int i = 0; i < _prewarm * poolDups; i++)
                 Release(Create(out int id));
@@ -65,7 +65,7 @@ namespace Code.Systems.NetworkObjectPool
             {
                 for (int i = _offset; i < _offset + _prewarm; i++)
                 {
-                    no = _pooledObjects[i + _offset];
+                    no = _pooledObjects[i];
                     if (!_checkActive(no))
                     {
                         id = i - _offset;

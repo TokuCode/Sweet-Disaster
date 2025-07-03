@@ -54,7 +54,7 @@ namespace Code.Gameplay.Character
                 _out = true;
                 _stocks.Value--;
 
-                if (_stocks.Value < 0) ReportDefeat();
+                if (_stocks.Value <= 0) ReportDefeat();
                 else ScheduleRespawn();
                 
                 ResetController();
@@ -69,7 +69,7 @@ namespace Code.Gameplay.Character
             int stock = _stocks.Value;
             float damage = health.HealthAmount;
             
-            _invoker.ClientId.Request(out var clientId);
+            _invoker.PlayerNumber.Request(out var clientId);
             _invoker.Defeat.Perform(true);
             LoseTracker.Instance.ReportPlayerLoss((ulong)clientId, stock, damage);
         }

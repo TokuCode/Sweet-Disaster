@@ -210,18 +210,18 @@ namespace Code.Gameplay.Character.Command
         }
     }
 
-    public class RequestClientId : IRequest<int>
+    public class RequestPlayerNumber : IRequest<int>
     {
         public PlayerController playerController;
 
-        public RequestClientId(PlayerController playerController)
+        public RequestPlayerNumber(PlayerController playerController)
         {
             this.playerController = playerController;
         }
 
         public Result Request(out int output)
         {
-            output = playerController.clientId;
+            output = playerController.PlayerNumber;
             return new Result { success = true };
         }
     }

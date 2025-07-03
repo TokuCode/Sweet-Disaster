@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -9,9 +10,11 @@ namespace Code.Systems.NetworkObjectPool
     {
        public static NonNetworkObjectPool Singleton { get; private set; }
         
+        [SerializeField] private int _ownerPlayerNumber;
         [SerializeField] private List<PoolConfigObject> _poolConfigObjects;
         Dictionary<SerializableGuid, GameObject> _prefabs = new ();
         Dictionary<GameObject, ObjectPoolWithId> _pooledObjects = new ();
+        public bool init { get; private set; }
 
         private void Awake()
         {
@@ -25,12 +28,13 @@ namespace Code.Systems.NetworkObjectPool
             }
         }
 
-        public override void OnNetworkSpawn()
+        public void InitPool(int playerNumber)
         {
             foreach (var configObject in _poolConfigObjects)
             {
-                RegisterPrefabInternal(configObject.prefab, configObject.prewarmCount, configObject.prefabId);
+                RegisterPrefabInternal(configObject.prefab, configObject.prewarmCount, configObject.prefabId, playerNumber);
             }
+            init = true;
         }
 
         public override void OnNetworkDespawn()
@@ -111,7 +115,7 @@ namespace Code.Systems.NetworkObjectPool
             return _pooledObjects[prefab].GetReferenceById(id);
         }
 
-        private void RegisterPrefabInternal(GameObject prefab, int prewarmCount, SerializableGuid id)
+        private void RegisterPrefabInternal(GameObject prefab, int prewarmCount, SerializableGuid id, int playerNumber)
         {
             NetworkObject CreateFunc()
             {
@@ -140,7 +144,9 @@ namespace Code.Systems.NetworkObjectPool
 
             _prefabs.Add(id, prefab);
             
-            _pooledObjects[prefab] = new ObjectPoolWithId(CreateFunc, ActionOnGet, ActionOnRelease, ActionOnDestroy, ActionCheck, prewarmCount, NetworkManager.LocalClient.ClientId);
+            
+            _ownerPlayerNumber = playerNumber;
+            _pooledObjects[prefab] = new ObjectPoolWithId(CreateFunc, ActionOnGet, ActionOnRelease, ActionOnDestroy, ActionCheck, prewarmCount, playerNumber);
 
             NetworkManager.Singleton.PrefabHandler.AddHandler(prefab, new NonNetPooledPrefabInstanceHandler(prefab, this));
         }

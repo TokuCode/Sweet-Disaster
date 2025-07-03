@@ -7,6 +7,7 @@ using Code.Helpers;
 using Code.Helpers.Pipeline;
 using Code.Networking.ClientPrediction;
 using Code.Systems.Input;
+using Code.Systems.NetworkObjectPool;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -24,6 +25,8 @@ namespace Code.Gameplay.Character
         public CapsuleCollider2D collider { get; private set; }
         
         public int clientId { get; private set; }
+        [SerializeField] private int _playerNumber;
+        public int PlayerNumber => _playerNumber;
         public NetworkVariable<bool> outOfBattle { get; } = new();
         public NetworkVariable<bool> defeated { get; } = new();
         
@@ -117,6 +120,7 @@ namespace Code.Gameplay.Character
                 PlayerVisibility.Instance.PostPlayer(this, IsOwner);
             }
             CameraTarget.Instance.CreateTarget(this, IsOwner); 
+            SetPlayerNumber();
         }
 
         [Rpc(SendTo.NotMe)]
@@ -124,6 +128,28 @@ namespace Code.Gameplay.Character
         {
             this.clientId = clientId;
             PlayerVisibility.Instance.PostPlayer(this, IsOwner);
+        }
+
+        private void SetPlayerNumber()
+        {
+            if(!IsServer) return;
+            
+            SendPlayerNumberToClientRpc(_playerNumber);
+        }
+
+        public void SetNumber(int number)
+        {
+            _playerNumber = number;
+            
+            if(!IsOwner) return;
+            
+            NonNetworkObjectPool.Singleton.InitPool(PlayerNumber);
+        }
+
+        [ClientRpc]
+        private void SendPlayerNumberToClientRpc(int playerNumber)
+        {
+            SetNumber(playerNumber);
         }
 
         void SetSingleton()
