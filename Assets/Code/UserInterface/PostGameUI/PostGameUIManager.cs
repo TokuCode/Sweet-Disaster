@@ -21,7 +21,7 @@ namespace Code.UserInterface.PostGameUI
         
         [SerializeField] private List<PlayerSlotUI> playerSlots;
         [SerializeField] private List<TextMeshProUGUI> playersPositionsText;
-        
+
         private WinnersData.PlayerStatusData _cachedPlayerStatusData;
 
         [Header("Buttons")]
@@ -97,23 +97,38 @@ namespace Code.UserInterface.PostGameUI
                 var playerColor = _sessionManager.playerInfo.GetColor(player);
                 
                 playerSlots[i].SetSlot(playerName, playerColor);
-                
-                if (_cachedPlayerStatusData.Lives == playerStatusData.Lives 
-                    && Mathf.Approximately(_cachedPlayerStatusData.AccumulatedDmg, playerStatusData.AccumulatedDmg)
-                    && i > 0)
-                {
-                    if (_sessionManager.ActiveSession.PlayerCount == 2 || i == 1)
-                        winnerTitle.text = "Empate";
 
-                    playersPositionsText[i].text = i.ToString();
-                }
-                else
-                {
+                if (playerStatusData.IsWinner)
                     winnerTitle.text = $"Ganador: {playerName}";
-                    playersPositionsText[i].text = (i + 1).ToString();
+                
+                playersPositionsText[i].text = (i + 1).ToString();
+
+                if (!playerStatusData.IsWinner)
+                {
+                    if (i > 0)
+                    {
+                        if (_cachedPlayerStatusData.Lives == playerStatusData.Lives 
+                            && Mathf.Approximately(_cachedPlayerStatusData.AccumulatedDmg, playerStatusData.AccumulatedDmg))
+                        {
+                            if (_sessionManager.ActiveSession.PlayerCount == 2 || i == 1)
+                                winnerTitle.text = "Empate";
+
+                            playersPositionsText[i].text = i.ToString();
+                        }
+                    }
+                }
+
+                /*if (i > 0)
+                {
+                    Debug.Log($"[Last] {_cachedPlayerStatusData.Lives}");
+                    Debug.Log($"[Last] {_cachedPlayerStatusData.AccumulatedDmg}");
                 }
                 
-                _cachedPlayerStatusData = playerStatusData;
+                Debug.Log($"[Current] {playerStatusData.Lives}");
+                Debug.Log($"[Current] {playerStatusData.AccumulatedDmg}");*/
+                
+                _cachedPlayerStatusData.Lives = playerStatusData.Lives;
+                _cachedPlayerStatusData.AccumulatedDmg = playerStatusData.AccumulatedDmg;
             }
         }
 
