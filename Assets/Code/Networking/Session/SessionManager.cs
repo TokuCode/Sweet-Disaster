@@ -15,7 +15,7 @@ namespace Code.Networking.Session
     public class SessionManager : PersistentSingleton<SessionManager>
     {
         private ISession _activeSession;
-        [SerializeField] private int maxPlayers = 2;
+        [SerializeField] private int maxPlayers;
         private Dictionary<string, ulong> playerIdToClientId = new();
         
         public ISession ActiveSession
@@ -29,7 +29,7 @@ namespace Code.Networking.Session
         }
 
         public PlayerInfo playerInfo;
-        public bool IsPracticeMode { get; set; }
+        public bool IsPracticeMode { get; private set; }
         public bool ShouldRetrievePing { get; private set; } = true;
         
         // Session properties keys
@@ -80,7 +80,8 @@ namespace Code.Networking.Session
                         { MapPropertyKey, new SessionProperty("classic", VisibilityPropertyOptions.Member) }
                     },
                     
-                    PlayerProperties = GetPlayerProperties()
+                    PlayerProperties = SetPlayerProperties()
+                    
                 }.WithRelayNetwork();
                 
                 ActiveSession = await MultiplayerService.Instance.CreateSessionAsync(options); // Create the session as host
@@ -104,7 +105,7 @@ namespace Code.Networking.Session
 
                 ActiveSession = await MultiplayerService.Instance.JoinSessionByCodeAsync(code); // Join the player to the session by code
                 
-                ActiveSession.CurrentPlayer.SetProperties(GetPlayerProperties());
+                ActiveSession.CurrentPlayer.SetProperties(SetPlayerProperties());
                 await ActiveSession.SaveCurrentPlayerDataAsync();
                 
                 Debug.Log($"Session {ActiveSession.Id} joined");
@@ -134,13 +135,13 @@ namespace Code.Networking.Session
             }
         }
 
-        private Dictionary<string, PlayerProperty> GetPlayerProperties()
+        private Dictionary<string, PlayerProperty> SetPlayerProperties()
         {
             return new Dictionary<string, PlayerProperty>
             {
                 { PlayerNameKey, new PlayerProperty(playerInfo.GetRandomName(), VisibilityPropertyOptions.Member) },
                 { PlayerColorKey, new PlayerProperty(playerInfo.GetAvailableColorName(), VisibilityPropertyOptions.Member) },
-                { PlayerCharacterKey, new PlayerProperty("None", VisibilityPropertyOptions.Member) },
+                { PlayerCharacterKey, new PlayerProperty(String.Empty, VisibilityPropertyOptions.Member) },
                 { PlayerReadyToRestart, new PlayerProperty("false",  VisibilityPropertyOptions.Member) }
             };
         }

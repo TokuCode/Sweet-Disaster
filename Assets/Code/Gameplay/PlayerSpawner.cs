@@ -14,8 +14,8 @@ namespace Code.Gameplay
         [SerializeField] private GameObject playerPrefab;
         [SerializeField] private List<MapInfo> maps;
 
-        [Header("Character Prefabs")]
-        [SerializeField] private List<CharacterVisuals> characterVisualsList;
+        [Header("Character's info")]
+        [SerializeField] private List<CharacterScriptable> charactersInfo;
 
         [Header("Spawn Points")]
         [SerializeField] private List<Transform> _spawnPoints;
@@ -91,13 +91,7 @@ namespace Code.Gameplay
             }
 
             string characterName = characterProp.Value;
-            CharacterVisuals character = characterVisualsList.Find(c => c.characterName == characterName);
-
-            if (character == null)
-            {
-                Debug.LogError($"Character not found: {characterName}, assigning first character on list");
-                character = characterVisualsList[0];
-            }
+            CharacterScriptable character = GetCharacter(characterName);
 
             // Spawn the player
             
@@ -117,6 +111,19 @@ namespace Code.Gameplay
             SetAnimatorClientRpc(clientId, characterName);
             
             _index++;
+        }
+        
+        private CharacterScriptable GetCharacter(string characterName)
+        {
+            CharacterScriptable character = charactersInfo.Find(c => c.characterName == characterName);
+
+            if (character == null)
+            {
+                Debug.LogError($"Character not found: {characterName}, assigning first character on list");
+                character = charactersInfo[0];
+            }
+            
+            return character;
         }
 
         private int GetRandomIndexNotFromPrevious()
@@ -149,16 +156,12 @@ namespace Code.Gameplay
         [ClientRpc]
         private void SetAnimatorClientRpc(ulong clientId, string characterName)
         {
-            CharacterVisuals character = characterVisualsList.Find(c => c.characterName == characterName);
-
-            if (character == null)
-            {
-                Debug.LogError($"Character not found: {characterName}, assigning first character on list");
-                character = characterVisualsList[0];
-            }
+            CharacterScriptable character = GetCharacter(characterName);
             
-            NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.gameObject.GetComponent<AnimationHandler>().SetAnimator(character);
-            NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.gameObject.GetComponent<ArmSpriteChanger>().SetSprites(character);
+            NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.
+                gameObject.GetComponent<AnimationHandler>().SetAnimator(character);
+            NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.
+                gameObject.GetComponent<ArmSpriteChanger>().SetSprites(character);
         }
 
         [ClientRpc]

@@ -26,6 +26,6 @@ namespace Code.Gameplay.Character.Visuals
             animatorController.SetBool("isStunned", health.IsStunned);
         }
 
-        public void SetAnimator(CharacterVisuals visuals) => animatorController.runtimeAnimatorController = visuals.runtimeAnimator;
+        public void SetAnimator(CharacterScriptable character) => animatorController.runtimeAnimatorController = character.runtimeAnimator;
     }
 }

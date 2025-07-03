@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bce4f64fe3510c64db8871fd10006897, type: 3}
+  m_Name: Ceci
+  m_EditorClassIdentifier: 
+  characterName: Ceci
+  runtimeAnimator: {fileID: 22100000, guid: 4f3a363299f97054c81c289ad2792fc3, type: 2}
+  armWithGun: {fileID: -829961613945574920, guid: ac65a3960f704ce46bb26b5a3bbbfcde, type: 3}
+  armWithBomb: {fileID: -829961613945574920, guid: a2ab4ef3c69acba44b366aee341ec3f0, type: 3}
+  armWithShield: {fileID: -829961613945574920, guid: 7eb9ed1dde95eb14da848fd601314cb8, type: 3}
+  postGameImage: {fileID: -7590338337177074199, guid: c665df1c672a34c46bc006854d853ade, type: 3}
+  characterIcon: {fileID: 0}

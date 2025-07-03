@@ -17,20 +17,34 @@ namespace Code.Networking.Session
         
         private readonly string[] _randomNames =
         {
-            "PanConWifi",
-            "TioPapita",
-            "LagMan3000",
-            "CucharaNinja",
-            "Tiramisu",
-            "SinManaNiGloria",
-            "DonCeviche",
-            "PatitoDeFuego",
-            "ElTamalAsesino",
-            "Albondigón3000",
-            "ChispaDeTuna",
-            "CalabazaEspía",
-            "SeñorTaco"
+            "Player100",
+            "Player200",
+            "Player300",
+            "Player400"
         };
+        
+        public Color GetColor(IReadOnlyPlayer player)
+        {
+            string colorName = GetPropertyValue(player, SessionManager.Instance.PlayerColorKey);
+
+            Color color = _playerColors.TryGetValue(colorName, out var colorProp) ? colorProp : Color.gray;
+            
+            if (color == Color.gray)
+                Debug.LogWarning("Color couldn't be found, using default color");
+            
+            return color;
+        }
+
+        public string GetPropertyValue(IReadOnlyPlayer player, string propertyKey)
+        {
+            string propertyValue = player.Properties.TryGetValue(propertyKey, out var prop) ?
+                prop.Value : String.Empty;
+
+            if (propertyValue == String.Empty)
+                Debug.LogWarning($"Value not found in property {propertyKey}");
+            
+            return propertyValue;
+        }
         
         public string GetAvailableColorName()
         {
@@ -39,10 +53,7 @@ namespace Code.Networking.Session
             if (SessionManager.Instance.ActiveSession != null)
             {
                 foreach (var player in SessionManager.Instance.ActiveSession.Players)
-                {
-                    if (player.Properties.TryGetValue(SessionManager.Instance.PlayerColorKey, out var prop))
-                        takenColors.Add(prop.Value);
-                }
+                    takenColors.Add(GetPropertyValue(player, SessionManager.Instance.PlayerColorKey));
             }
             foreach (var colorName in _playerColors.Keys)
             {
@@ -50,14 +61,6 @@ namespace Code.Networking.Session
                     return colorName;
             }
             return String.Empty;
-        }
-
-        public Color GetColor(IReadOnlyPlayer player)
-        {
-            string colorName = player.Properties.TryGetValue(SessionManager.Instance.PlayerColorKey, out var colorProp)
-                ? colorProp.Value : String.Empty;
-            
-            return _playerColors.TryGetValue(colorName, out var color) ? color : Color.gray;
         }
         
         public string GetRandomName()
@@ -67,10 +70,7 @@ namespace Code.Networking.Session
             if (SessionManager.Instance.ActiveSession != null)
             {
                 foreach (var player in SessionManager.Instance.ActiveSession.Players)
-                {
-                    if (player.Properties.TryGetValue(SessionManager.Instance.PlayerNameKey, out var prop))
-                        takenNames.Add(prop.Value);
-                }
+                    takenNames.Add(GetPropertyValue(player, SessionManager.Instance.PlayerNameKey));
             }
             
             if (takenNames.Count >= _randomNames.Length)
