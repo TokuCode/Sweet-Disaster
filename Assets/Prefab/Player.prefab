@@ -79,12 +79,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 6a29b45ebaee65042b532ea32233302c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 4cc28dbb1c308524d92f7f97c6ca81d1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 2.3733332, y: 2.54}
+  m_Size: {x: 2.5714285, y: 2.5714285}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -184,7 +184,6 @@ GameObject:
   - component: {fileID: 573164576663406118}
   - component: {fileID: 860409869878252518}
   - component: {fileID: 419103442011533078}
-  - component: {fileID: 4264565317164244210}
   - component: {fileID: 7216947521899421422}
   - component: {fileID: 1990175814712795858}
   - component: {fileID: 1027848877173910424}
@@ -635,19 +634,6 @@ MonoBehaviour:
   _gunTip: {fileID: 8692099931127174155}
   arm: {fileID: 6665744144607911163}
   offsetAngle: 0
---- !u!114 &4264565317164244210
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6295644469921195904}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 428822a2ad327eb49a7f59c6c429cef5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &7216947521899421422
 MonoBehaviour:
   m_ObjectHideFlags: 0

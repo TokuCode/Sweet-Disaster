@@ -18,6 +18,6 @@ namespace Code.Gameplay
         public Sprite postGameImage;
         
         // Gameplay UI
-        public Image characterIcon;
+        public Sprite characterIcon;
     }
 }

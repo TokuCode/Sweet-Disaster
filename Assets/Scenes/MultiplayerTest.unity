@@ -6972,17 +6972,11 @@ MonoBehaviour:
   maps:
   - MapName: classic
     MapObject: {fileID: 1140701430}
-  characterVisualsList:
-  - characterName: Ceci
-    runtimeAnimator: {fileID: 22100000, guid: 4f3a363299f97054c81c289ad2792fc3, type: 2}
-    armWithGun: {fileID: -829961613945574920, guid: ac65a3960f704ce46bb26b5a3bbbfcde, type: 3}
-    armWithBomb: {fileID: -829961613945574920, guid: a2ab4ef3c69acba44b366aee341ec3f0, type: 3}
-    armWithShield: {fileID: -829961613945574920, guid: 7eb9ed1dde95eb14da848fd601314cb8, type: 3}
-  - characterName: Gladys
-    runtimeAnimator: {fileID: 22100000, guid: 4743623638bd47147b2da1cd1dd47b46, type: 2}
-    armWithGun: {fileID: -829961613945574920, guid: ac65a3960f704ce46bb26b5a3bbbfcde, type: 3}
-    armWithBomb: {fileID: -829961613945574920, guid: a2ab4ef3c69acba44b366aee341ec3f0, type: 3}
-    armWithShield: {fileID: -829961613945574920, guid: 7eb9ed1dde95eb14da848fd601314cb8, type: 3}
+  charactersInfo:
+  - {fileID: 11400000, guid: 24461c0f1829b5247a3ee9db60ef10b6, type: 2}
+  - {fileID: 11400000, guid: 527ef73e52387194596d922abbe6bcbd, type: 2}
+  - {fileID: 11400000, guid: 8f868d8038f45cf43a150bf78dbdffe2, type: 2}
+  - {fileID: 11400000, guid: 7b68f876e973f784683b84c1bf5ebaf9, type: 2}
   _spawnPoints:
   - {fileID: 2122397754}
   - {fileID: 1526050918}
