@@ -26,7 +26,9 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private Vector2 _knockback;
         [SerializeField] private float _cooldown;
         private CountdownTimer _cooldownTimer;
+        public float CooldownProgress => _cooldownTimer.Progress;
         private bool _onCooldown;
+        public bool OnCooldown => _onCooldown;
         [SerializeField] private float _windUpTime; //TODO Replace with animation events
         [SerializeField] private float _followUpTime;
         [SerializeField] private LayerMask _attackLayer;
@@ -35,6 +37,14 @@ namespace Code.Gameplay.Character.Features
         [Header("Runtime")]
         [SerializeField] private bool _isAttacking;
         public bool IsAttacking => _isAttacking;
+
+        public override void ResetFeature()
+        {
+            CancelMelee();
+            _cooldownTimer.Stop();
+            _isAttacking = false;
+            _onCooldown = false;
+        }
 
         public override void InitializeFeature(Controller controller)
         {
@@ -74,6 +84,14 @@ namespace Code.Gameplay.Character.Features
             _cooldownTimer.Start();
         }
 
+        private void CancelMelee()
+        {
+            if(!_isAttacking) return;
+            
+            StopAllCoroutines();
+            _isAttacking = false;
+        }
+
         private void MeleeAction()
         {
             _invoker.GunTipPosition.Request(out var position);
@@ -91,15 +109,20 @@ namespace Code.Gameplay.Character.Features
                 PlayerController player = collider.gameObject.GetComponent<PlayerController>();
                 if (player != null)
                 {
+                    player.Invoker.ClientId.Request(out int otherClientId);
+                    
                     if (player.Dependencies.TryGetFeature(out Health health))
                     {
+                        _invoker.ClientId.Request(out int clientId);
                         health.RequestAttackInOwner(new ()
                         {
                             DamagePercentage = _damage,
                             KnockbackForce = _knockback.x,
                             KnockbackUpForce = _knockback.y,
                             SourcePosition = centerPosition,
-                            Success = true
+                            Success = true,
+                            SenderId = clientId,
+                            ReceiverId = otherClientId
                         });
                     }
                 }
@@ -113,7 +136,8 @@ namespace Code.Gameplay.Character.Features
                         KnockbackForce = _knockback.x,
                         KnockbackUpForce = _knockback.y,
                         SourcePosition = transform.position,
-                        Success = true
+                        Success = true,
+                        Weapon = (int)GunBelt.Weapon.Melee
                     });
                 }  
             }

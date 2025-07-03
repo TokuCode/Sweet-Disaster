@@ -26,7 +26,18 @@ namespace Code.Gameplay.Character.Features
         private bool _cachedMinigameInput;
         public bool CachedMinigameInput => _cachedMinigameInput;
         public event Action OnMinigameFailed; 
-        public event Action OnMinigameSucces; 
+        public event Action OnMinigameSucces;
+
+        public override void ResetFeature()
+        {
+            if (IsServer)
+            {
+                _onMinigame.Value = false;
+            }
+            _minigameTimer.Reset();
+            _cachedMinigameInput = false;
+            _cachedStunDuration = 0;
+        }
 
         public override void InitializeFeature(Controller controller)
         {
@@ -44,7 +55,6 @@ namespace Code.Gameplay.Character.Features
             if(!_onMinigame.Value) return;
             
             if(!_minigameTimer.IsRunning) _minigameTimer.Start();
-            
             _minigameTimer.Tick(Time.deltaTime);
         }
 

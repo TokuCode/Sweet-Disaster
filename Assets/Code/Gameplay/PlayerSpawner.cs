@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Code.Gameplay.Character;
 using Code.Networking.Session;
 using Unity.Netcode;
 using Unity.Services.Multiplayer;
@@ -18,8 +19,12 @@ namespace Code.Gameplay
 
         [Header("Spawn Points")]
         [SerializeField] private List<Transform> _spawnPoints;
+
+        private List<int> _spawnPointIndexes = new();
         [SerializeField] private List<string> _tags;
         private int _index;
+        
+        [Header("Respawn Logic")]
         
         private SessionManager _sessionManager;
 
@@ -95,12 +100,15 @@ namespace Code.Gameplay
             }
 
             // Spawn the player
-            Transform spawnPoint = _spawnPoints[_index % _spawnPoints.Count];
+            
+            Transform spawnPoint = _spawnPoints[GetRandomIndexNotFromPrevious()];
             GameObject playerObj = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
             
             playerObj.tag = _tags[_index % _tags.Count];
             playerObj.GetComponent<AnimationHandler>().SetAnimator(character);
             playerObj.GetComponent<ArmSpriteChanger>().SetSprites(character);
+            
+            playerObj.GetComponent<PlayerController>().SetSpawnPosition(spawnPoint);
             
             NetworkObject networkObject = playerObj.GetComponent<NetworkObject>();
             networkObject.SpawnAsPlayerObject(clientId, true);
@@ -109,6 +117,27 @@ namespace Code.Gameplay
             SetAnimatorClientRpc(clientId, characterName);
             
             _index++;
+        }
+
+        private int GetRandomIndexNotFromPrevious()
+        {
+            int options = _spawnPoints.Count - _spawnPointIndexes.Count;
+
+            if (options <= 0) return -1;
+            
+            int option = -1;
+            int offset = Random.Range(0, _spawnPoints.Count);
+            for (int i = 0; i < _spawnPoints.Count; i++)
+            {
+                int value = (i + offset) % _spawnPoints.Count;
+                if (!_spawnPointIndexes.Contains(value))
+                {
+                    option = value;
+                    break;
+                }
+            }
+            if(option >= 0) _spawnPointIndexes.Add(option);
+            return option;
         }
 
         [ClientRpc]

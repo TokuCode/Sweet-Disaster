@@ -54,6 +54,8 @@ namespace Code.Gameplay.Character.Features
             set => _maxSpeedIdle = value;
         }
 
+        public override void ResetFeature() { }
+
         public override void InitializeFeature(Controller controller)
         {
             base.InitializeFeature(controller);

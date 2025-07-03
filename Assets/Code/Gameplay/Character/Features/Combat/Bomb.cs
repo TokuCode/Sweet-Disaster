@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Runtime.Remoting.Messaging;
 using Code.Gameplay.Character.Framework;
 using Code.Gameplay.Objects;
+using Code.Helpers;
 using Code.Helpers.Utils;
 using Code.Networking.ClientPrediction;
+using Code.Systems.Attack;
 using Code.Systems.Input;
 using Code.Systems.NetworkObjectPool;
 using Unity.Netcode;
@@ -12,14 +15,13 @@ namespace Code.Gameplay.Character.Features
 {
     public class Bomb : Feature
     {
-        private PlayerController _playerController;
-        
         private Shoot shoot;
         private Health health;
         private Movement move;
         private Crouch crouch;
         private Shield shield;
         private Melee melee;
+        private WillToLive will;
         
         [Header("Throw Parameters")] 
         [SerializeField] private float _throwChargeTimeSeconds;
@@ -30,6 +32,8 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private float _throwMaxForce;
         [SerializeField] private bool _isThrowing;
         public bool IsThrowing => _isThrowing;
+        [SerializeField] private float _timeOnMaxThrowCharge;
+        private float _timerOnMaxThrowCharge;
     
         [Header("Resource Management")] 
         [SerializeField] private float _cooldownTimeSeconds;
@@ -44,17 +48,42 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private GameObject _bombPrefab;
         private NetworkObject _bombNo;
 
+        [Header("Bomb reload")] 
+        [SerializeField] private float _bombReloadTime;
+        private CountdownTimer _bombReloadTimer;
+        public float BombReloadProgress => 1 - _bombReloadTimer.Progress;
+        [SerializeField] private float _onBulletHitAccelerateTime;
+        [SerializeField] private float _onBombHitAccelerateTime;
+        [SerializeField] private float _onShieldHitAccelerateTime;
+        [SerializeField] private float _onMeleeHitAccelerateTime;
+        [SerializeField] private float _onWillToLiveHitAccelerateTime;
+
         public void OnShootPressed() => StartThrowing();
         public void OnShootReleased() => EndThrowing();
-        
+
+        public override void ResetFeature()
+        {
+            CancelThrowing();
+            _isOnCooldown = false;
+            if (IsServer)
+            {
+                _bombCount.Value = _startBombCount;
+            }
+
+            if (IsOwner)
+            {
+                _bombReloadTimer.Reset();
+            }
+        }
+
         public override void InitializeFeature(Controller controller)
         {
-            _playerController = (PlayerController)controller;
             if (IsServer) _bombCount.Value = _startBombCount;
             if (IsOwner)
             {
                 InputReader.Instance.OnThrowPressed += OnShootPressed;
                 InputReader.Instance.OnThrowReleased += OnShootReleased;
+                InputReader.Instance.OnShootPressed += CancelThrowing;
             }
             base.InitializeFeature(controller);
             _dependencies.TryGetFeature(out health);
@@ -63,8 +92,14 @@ namespace Code.Gameplay.Character.Features
             _dependencies.TryGetFeature(out shoot);
             _dependencies.TryGetFeature(out shield);
             _dependencies.TryGetFeature(out melee);
+            _dependencies.TryGetFeature(out will);
             health.OnStun += OnStun;
+            will.OnMinigameSucces += () => AccelerateReload(GunBelt.Weapon.Will);
+            AttackBus.Singleton.Event += OnAttackGlobal;
             RequestBombsAuthority();
+            _bombReloadTimer = new(_bombReloadTime);
+            _bombReloadTimer.OnTimerStop += ReloadBomb; 
+            _bombReloadTimer.Start();
         }
     
         public override void UpdateFeature()
@@ -75,6 +110,19 @@ namespace Code.Gameplay.Character.Features
             else if(_isOnCooldown) ResetThrow();
                 
             if (_isThrowing) ThrowCharge();
+
+            if (!IsOwner) return;
+            
+            ReloadBombHandler(Time.deltaTime);
+        }
+
+        private void ReloadBombHandler(float deltaTime)
+        {
+            _invoker.Velocity.Request(out var velocity);
+
+            if (Mathf.Abs(velocity.x) < 0.1f || health.IsStunned) return;
+            
+            _bombReloadTimer.Tick(deltaTime);
         }
 
         public override void FixedUpdateFeature() { }
@@ -111,15 +159,35 @@ namespace Code.Gameplay.Character.Features
             if(IsServer) move.UnblockMovement();
             else move.RequestMovement(false);
         }
+
+        private void CancelThrowing()
+        {
+            if (!_isThrowing) return;
+            
+            _isThrowing = false;
+            
+            if(IsServer) move.UnblockMovement();
+            else move.RequestMovement(false);  
+        }
     
         private void ResetThrow() => _isOnCooldown = false;
     
         private void ThrowCharge()
         {
-            if(_throwChargeTimer < _throwChargeTimeSeconds)
+            if (_throwChargeTimer < _throwChargeTimeSeconds)
+            {
                 _throwChargeTimer += Time.deltaTime;
-            else 
-                _throwChargeTimer = 0;
+                _timerOnMaxThrowCharge = _timeOnMaxThrowCharge;
+            }
+            else
+            {
+                _throwChargeTimer = _throwChargeTimeSeconds;
+                if(_timerOnMaxThrowCharge > 0) _timerOnMaxThrowCharge -= Time.deltaTime;
+                else
+                {
+                    _throwChargeTimer = 0;
+                }
+            }
         }
         
         private void BombAction()
@@ -129,7 +197,8 @@ namespace Code.Gameplay.Character.Features
             var throwForce = direction.normalized * Mathf.Lerp(_throwMinForce, _throwMaxForce, Mathf.Clamp01(_throwChargeTimer / _throwChargeTimeSeconds));
             
             ThrowAction(position, direction, throwForce, out int id);
-            ReplicateThrowBombRpc(position, direction, throwForce, id, DateTime.Now, (int)NetworkManager.LocalClient.ClientId);
+            _invoker.ClientId.Request(out int clientId);
+            ReplicateThrowBombRpc(position, direction, throwForce, id, DateTime.Now, clientId);
         } 
         
         private void ThrowAction(Vector3 position, Vector3 direction, Vector3 throwForce, out int bombId)
@@ -141,7 +210,8 @@ namespace Code.Gameplay.Character.Features
             
             var bomb = _bombNo.gameObject.GetComponent<ObjectBomb>();
             NonPooledSync.Singleton.AddBomb(bomb);
-            bomb.Init(gameObject.tag, throwForce, absBombId, 0);
+            _invoker.ClientId.Request(out int clientId);
+            bomb.Init(gameObject.tag, throwForce, absBombId, 0, clientId);
         }
 
         private void ReplicateThrowAction(Vector3 position, Vector3 direction, Vector3 throwForce, int bombId, float latency, int senderId)
@@ -153,14 +223,63 @@ namespace Code.Gameplay.Character.Features
             
             var bomb = _bombNo.gameObject.GetComponent<ObjectBomb>();
             NonPooledSync.Singleton.AddBomb(bomb);
-            bomb.Init(gameObject.tag, throwForce, absBombId, latency);
+            bomb.Init(gameObject.tag, throwForce, absBombId, latency, senderId);
         }
         
         [ServerRpc]
         private void RequestBombDepletionToServerRpc()
         {
             _bombCount.Value--;
-        } 
+        }
+
+        [ServerRpc]
+        private void RequestBombReloadToServerRpc()
+        {
+            _bombCount.Value++;
+        }
+
+        private void ReloadBomb()
+        {
+            if (IsHost) _bombCount.Value++;
+            else RequestBombReloadToServerRpc();
+            _bombReloadTimer.Start();
+        }
+
+        public void AccelerateReload(GunBelt.Weapon weapon)
+        {
+            float accelerateTime = weapon switch
+            {
+                GunBelt.Weapon.Gun => _onBulletHitAccelerateTime,
+                GunBelt.Weapon.Bomb => _onBombHitAccelerateTime,
+                GunBelt.Weapon.Shield => _onShieldHitAccelerateTime,
+                GunBelt.Weapon.Melee => _onMeleeHitAccelerateTime,
+                GunBelt.Weapon.Will => _onWillToLiveHitAccelerateTime,
+                _ => 0f
+            };
+            
+            if(accelerateTime > 0f) _bombReloadTimer.Tick(accelerateTime);
+        }
+
+        public void RequestBlockReloadAccelerate(GunBelt.Weapon weapon, int attackerId)
+        {
+            if(IsOwner) BlockReloadAccelerate(weapon, attackerId);
+            else RequestBlockReloadAccelerateRpc((int)weapon, attackerId);
+        }
+
+        [Rpc(SendTo.Owner)]
+        private void RequestBlockReloadAccelerateRpc(int weapon, int attackerId)
+        {
+            BlockReloadAccelerate((GunBelt.Weapon)weapon, attackerId);
+        }
+
+        public void BlockReloadAccelerate(GunBelt.Weapon weapon, int attackerId)
+        {
+            _invoker.ClientId.Request(out int clientId);
+            
+            if(clientId == attackerId) return;
+            
+            
+        }
         
         [Rpc(SendTo.NotMe)]
         private void ReplicateThrowBombRpc(Vector3 position, Vector3 direction, Vector3 throwForce, int objectId, DateTime timestamp, int cliendId)
@@ -180,6 +299,18 @@ namespace Code.Gameplay.Character.Features
             {
                 bombNo.RequestOwnership();
             }
+        }
+
+        private void OnAttackGlobal(AttackEvent attack)
+        {
+            if(!IsOwner) return;
+            
+            if (!attack.Success) return;
+
+            _invoker.ClientId.Request(out int clientId);
+            if(clientId != attack.SenderId || clientId == attack.ReceiverId) return;
+            
+            AccelerateReload((GunBelt.Weapon)attack.Weapon);
         }
     }
 }

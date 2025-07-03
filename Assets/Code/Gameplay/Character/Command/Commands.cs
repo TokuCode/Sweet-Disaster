@@ -209,4 +209,84 @@ namespace Code.Gameplay.Character.Command
             return new Result { success = true };
         }
     }
+
+    public class RequestClientId : IRequest<int>
+    {
+        public PlayerController playerController;
+
+        public RequestClientId(PlayerController playerController)
+        {
+            this.playerController = playerController;
+        }
+
+        public Result Request(out int output)
+        {
+            output = playerController.clientId;
+            return new Result { success = true };
+        }
+    }
+
+    public class ResetCommand : ICommand<bool>
+    {
+        private PlayerController playerController;
+
+        public ResetCommand(PlayerController playerController)
+        {
+            this.playerController = playerController;
+        }
+
+        public Result Perform(bool input)
+        {
+            playerController.Reset();
+            return new Result { success = true };
+        }
+    }
+
+    public class DefeatCommand : ICommand<bool>
+    {
+        private PlayerController playerController;
+
+        public DefeatCommand(PlayerController playerController)
+        {
+            this.playerController = playerController;
+        }
+
+        public Result Perform(bool input)
+        {
+            playerController.Defeat();
+            return new Result { success = true };
+        }
+    }
+
+    public class RespawnPlayer : ICommand<bool>
+    {
+        private PlayerController playerController;
+
+        public RespawnPlayer(PlayerController playerController)
+        {
+            this.playerController = playerController;
+        }
+
+        public Result Perform(bool input)
+        {
+            playerController.Respawn();
+            return new Result { success = true };
+        }
+    }
+
+    public class FreezeRigidbodyCommand : ICommand<bool>
+    {
+        private Rigidbody2D rigidbody;
+
+        public FreezeRigidbodyCommand(Rigidbody2D rigidbody)
+        {
+            this.rigidbody = rigidbody;
+        }
+
+        public Result Perform(bool input)
+        {
+            rigidbody.constraints = input ? RigidbodyConstraints2D.FreezeAll : RigidbodyConstraints2D.FreezeRotation;
+            return new Result { success = true };
+        }
+    }
 }

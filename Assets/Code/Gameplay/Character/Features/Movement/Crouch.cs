@@ -23,6 +23,12 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private bool _startingCrouch;
         public bool StartingCrouch => _startingCrouch;
 
+        public override void ResetFeature()
+        {
+            _startingCrouch = false;
+            UncrouchAction();
+        }
+
         public override void InitializeFeature(Controller controller)
         {
             base.InitializeFeature(controller);

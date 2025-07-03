@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Code.Gameplay.Character.Command;
 using Code.Gameplay.Character.Framework;
+using Code.Gameplay.Objects.ObjectBox;
 using Code.Helpers;
 using Code.Helpers.Pipeline;
 using Code.Networking.ClientPrediction;
@@ -22,11 +23,17 @@ namespace Code.Gameplay.Character
         public Rigidbody2D rigidbody { get; private set; }
         public CapsuleCollider2D collider { get; private set; }
         
+        public int clientId { get; private set; }
+        public NetworkVariable<bool> outOfBattle { get; } = new();
+        public NetworkVariable<bool> defeated { get; } = new();
+        
         [Header("Camera Components")]
         [SerializeField] private Transform _followTarget;
 
         [SerializeField] private Transform _gunTip;
         public Transform GunTip => _gunTip;
+        [SerializeField] private Transform _render;
+        private Transform _spawn;
         
         //Network general
         private NetworkTimer _networkTimer;
@@ -102,8 +109,21 @@ namespace Code.Gameplay.Character
         public override void OnNetworkSpawn()
         {
             SetSingleton();
-            CameraTarget.Instance.AddTarget(_followTarget, IsOwner); 
             base.OnNetworkSpawn();
+            if (IsOwner) 
+            {
+                clientId = (int)NetworkManager.LocalClient.ClientId;
+                SendCliendIdRpc(clientId);
+                PlayerVisibility.Instance.PostPlayer(this, IsOwner);
+            }
+            CameraTarget.Instance.CreateTarget(this, IsOwner); 
+        }
+
+        [Rpc(SendTo.NotMe)]
+        private void SendCliendIdRpc(int clientId)
+        {
+            this.clientId = clientId;
+            PlayerVisibility.Instance.PostPlayer(this, IsOwner);
         }
 
         void SetSingleton()
@@ -112,12 +132,108 @@ namespace Code.Gameplay.Character
 
             if (Singleton != null)
             {
-                Debug.LogError("Only one player can be spawned at a time");
+                Debug.LogError("Only one player can be the main player");
                 Destroy(gameObject);
                 return;
             }
             
             Singleton = this;
+        }
+
+        public void Reset()
+        {
+            if(!IsServer && !IsOwner) return;
+            
+            ResetNetcode();
+            if(IsServer) outOfBattle.Value = true;
+            if (IsOwner)
+            {
+                _input.SetControl(false);
+            }
+            foreach (var feature in _features)
+            {
+                feature.ResetFeature();
+            }
+            
+            if (IsServer) ResetClientRpc();
+            ResetPlayer();
+        }
+
+        private void ResetNetcode()
+        {
+            _networkTimer.Reset();
+            _serverInputQueue.Clear();
+            _clientInputBuffer.Clear();
+            _clientStateBuffer.Clear();
+            _lastServerState = default;
+            _lastProcessedState = default;
+            _extrapolationState = default;
+            _extrapolationTimer.Stop();
+            _reconciliationTimer.Stop();
+        }
+        
+        [ClientRpc]
+        private void ResetClientRpc()
+        {
+            ResetPlayer();
+        }
+
+        private void ResetPlayer()
+        {
+            _render.gameObject.SetActive(false);
+            rigidbody.constraints = RigidbodyConstraints2D.FreezeAll;
+        }
+
+        public void Defeat()
+        {
+            if(!IsServer) return;
+            defeated.Value = true;
+        }
+
+        public void Respawn()
+        {
+            if(!IsServer) return;
+            RespawnOnPosition(_spawn.position);
+            RespawnClientRpc(_spawn.position);
+            if(IsOwner) outOfBattle.Value = false;
+        }
+
+        public void SetSpawnPosition(Transform spawn)
+        {
+            _spawn = spawn;
+        }
+
+        [ClientRpc]
+        private void RespawnClientRpc(Vector3 position)
+        {
+            RespawnOnPosition(position);
+        }
+
+        private void RespawnOnPosition(Vector3 position)
+        {
+            _render.gameObject.SetActive(true);
+            rigidbody.linearVelocity = Vector3.zero;
+            rigidbody.constraints = RigidbodyConstraints2D.FreezeRotation;
+            rigidbody.transform.position = position;
+            transform.position = position;
+
+            if (IsOwner)
+            {
+                _clientNetworkTransform.Teleport(position, Quaternion.identity, Vector3.one);
+                _input.SetControl(true);
+                if (!IsServer)
+                {
+                    SendToBattleServerRpc();
+                    if (Dependencies.TryGetFeature(out LoseReporterPadded reporter))
+                        reporter.ReportRespawnCompleted();
+                }
+            }
+        }
+
+        [ServerRpc]
+        private void SendToBattleServerRpc()
+        {
+            outOfBattle.Value = false;
         }
         
         protected override void Update()
