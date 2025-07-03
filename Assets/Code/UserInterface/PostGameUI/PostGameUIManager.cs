@@ -29,8 +29,9 @@ namespace Code.UserInterface.PostGameUI
         [SerializeField] private UnityEngine.UI.Button exitButton;
         
         [SerializeField] private TextMeshProUGUI statusText;
-        
-        //private NetworkList<bool> localPlayerReadyToRestart = new({false, false,false,false},)
+
+        private NetworkList<bool> playersReadyToRestart = new(new[] { false, false, false, false }, 
+            NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
         
         private SessionManager _sessionManager;
         private CancellationTokenSource  _cancellationTokenSource;
@@ -132,6 +133,11 @@ namespace Code.UserInterface.PostGameUI
             {
                 Debug.LogException(e);
                 UIUtilities.Instance.MessagePopUp("Ha ocurrido un error al actualizar las propiedades del jugador.", false);
+            }
+
+            if (IsOwner)
+            {
+                //_sessionManager.ActiveSession.Players[]
             }
             
             playAgainButton.interactable = false;
