@@ -38,6 +38,8 @@ namespace Code.Gameplay.Character
         [SerializeField] private Transform _render;
         private Transform _spawn;
         
+        public event Action<PlayerPublicInfo> OnPost;
+        
         //Network general
         private NetworkTimer _networkTimer;
         private const float serverTickRate = 60f;
@@ -116,8 +118,8 @@ namespace Code.Gameplay.Character
             if (IsOwner) 
             {
                 clientId = (int)NetworkManager.LocalClient.ClientId;
+                OnPost?.Invoke(PlayerVisibility.Instance.PostPlayer(this, IsOwner));
                 SendCliendIdRpc(clientId);
-                PlayerVisibility.Instance.PostPlayer(this, IsOwner);
             }
             CameraTarget.Instance.CreateTarget(this, IsOwner); 
             SetPlayerNumber();
@@ -126,8 +128,13 @@ namespace Code.Gameplay.Character
         [Rpc(SendTo.NotMe)]
         private void SendCliendIdRpc(int clientId)
         {
+            PostPlayer(clientId);
+        }
+
+        private void PostPlayer(int clientId)
+        {
             this.clientId = clientId;
-            PlayerVisibility.Instance.PostPlayer(this, IsOwner);
+            OnPost?.Invoke(PlayerVisibility.Instance.PostPlayer(this, IsOwner));
         }
 
         private void SetPlayerNumber()

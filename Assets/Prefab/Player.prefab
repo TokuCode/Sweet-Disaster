@@ -484,6 +484,7 @@ MonoBehaviour:
   - {fileID: 1027848877173910424}
   - {fileID: 4303144466517633692}
   - {fileID: 3296703527897574207}
+  _playerNumber: 0
   _followTarget: {fileID: 6022316762160544414}
   _gunTip: {fileID: 8692099931127174155}
   _render: {fileID: 8787853860257289433}
@@ -847,8 +848,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2bee672b9c6640642a48fc80bf1d3d58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
   colorIndicator: {fileID: 7311318009976808056}
+  player: {fileID: 5059216841921135527}
 --- !u!1 &7921267680419083028
 GameObject:
   m_ObjectHideFlags: 0

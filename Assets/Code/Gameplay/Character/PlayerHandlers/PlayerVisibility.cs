@@ -34,7 +34,7 @@ namespace Code.Gameplay.Character
             Instance = this;
         }
 
-        public void PostPlayer(PlayerController player, bool isPlayer)
+        public PlayerPublicInfo PostPlayer(PlayerController player, bool isPlayer)
         {
             ulong clientId = (ulong)player.clientId;
             var playerProps = SessionManager.Instance.ActiveSession.Players.First(playerProp => SessionManager.Instance.PlayerIdToClientId[playerProp.Id] == clientId);
@@ -58,6 +58,8 @@ namespace Code.Gameplay.Character
             };
             Players.Add(newPlayer);
             PlayerAdded?.Invoke(newPlayer);
+            
+            return newPlayer;
         }
         
         public Color GetPlayerColor(PlayerController player)
