@@ -1363,7 +1363,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _matchTime: 180
+  _matchTime: 240
 --- !u!1 &246328382
 GameObject:
   m_ObjectHideFlags: 0

@@ -42,12 +42,12 @@ namespace Code.Gameplay.Character
             MergeSortUtil<PlayerWinCondition>.MergeSort(conditions);
 
             for (int i = 0; i < conditions.Count - 1; i++)
-                ReportLoss(conditions[i].player);
+                ReportLoss(conditions[i]);
         }
 
-        private void ReportLoss(PlayerController player)
+        private void ReportLoss(PlayerWinCondition condition)
         {
-            player.Dependencies.TryGetFeature(out LoseReporterPadded reporter);
+            condition.player.Dependencies.TryGetFeature(out LoseReporterPadded reporter);
             reporter.ReportDefeat();
         }
 

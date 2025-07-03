@@ -66,12 +66,12 @@ namespace Code.Gameplay.Character
         {
             if (!IsServer) return;
             
-            int stock = _stocks.Value;
-            float damage = health.HealthAmount;
+            int stocks = _stocks.Value;
+            float damage = _dependencies.TryGetFeature(out Health health) ? health.HealthAmount : Mathf.Infinity;
             
             _invoker.PlayerNumber.Request(out var clientId);
             _invoker.Defeat.Perform(true);
-            LoseTracker.Instance.ReportPlayerLoss((ulong)clientId, stock, damage);
+            LoseTracker.Instance.ReportPlayerLoss((ulong)clientId, stocks, damage);
         }
 
         private void ScheduleRespawn()

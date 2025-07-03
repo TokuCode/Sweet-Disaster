@@ -88,8 +88,8 @@ namespace Code.Gameplay.Character.Features
             var forceDirection = Vector3.Slerp(force.normalized, handleDirection, _directionalInfluence);
             force = forceDirection * force.magnitude;
             
-            if (IsOwner)
-                _invoker.Knockback.Perform(force);
+            //if (IsOwner)
+            _invoker.Knockback.Perform(force);
 
             float stunTime = _stunMinDuration + _stunDurationPerKnockback * (knockback + knockbackUp);
             Stun(stunTime, healthRatio);

@@ -6,6 +6,7 @@ using Unity.Services.Multiplayer;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
+using Code.Gameplay.Character;
 using Code.Helpers.UI;
 
 namespace Code.Gameplay
@@ -53,8 +54,17 @@ namespace Code.Gameplay
 
             if (remainingIds.Count == 1)
             {
-                SendPlayerDataToStackRpc(remainingIds[0], lives, damage);
-                
+                var remainingPlayerInfo = PlayerVisibility.Instance.Players.FirstOrDefault(playerInfo => playerInfo.player.clientId == (int)remainingIds[0]);
+                PlayerController remainingPlayer = remainingPlayerInfo.player;
+                if (remainingPlayer != null)
+                {
+                    remainingPlayer.Dependencies.TryGetFeature(out LoseReporterPadded reporter);
+                    reporter.ReportDefeat();
+                }
+            }
+
+            else if (remainingIds.Count == 0)
+            {
                 if (_sessionManager.ActiveSession.IsHost && !_sessionManager.IsPracticeMode)
                     NetworkManager.SceneManager.LoadScene("PostGame", LoadSceneMode.Single);
             }
