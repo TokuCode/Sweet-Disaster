@@ -31,7 +31,8 @@ namespace Code.UserInterface.HUD
         private void Update()
         {
             if (SessionManager.Instance == null) return;
-            //if (!SessionManager.Instance.IsPracticeMode) return;
+            
+            if (!SessionManager.Instance.IsPracticeMode) return;
 
             if (Input.GetKeyDown(KeyCode.Tab))
             {

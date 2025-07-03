@@ -44,15 +44,22 @@ public class ObjectBomb : NetworkBehaviour
 
     [Header("Dynamic Settings")]
     [SerializeField] private string _ownerTag;
+    [SerializeField] private int _senderId;
     
     [Header("Sync Settings")]
     [SerializeField] private float _maxPositionError;
     [SerializeField] private float _maxVelocityError;
     
+    [Header("Persistence Time")]
+    [SerializeField] private float _persistenceTime;
+    private CountdownTimer _persistenceTimer;
+    
     private void Awake()
     {
         _initTimer = new(_initTime);
         _initTimer.OnTimerStop += OnDelayedInit;
+        _persistenceTimer = new(_persistenceTime);
+        _persistenceTimer.OnTimerStop += ResetNonNotify;
     }
 
     private void OnDelayedInit()
@@ -71,6 +78,7 @@ public class ObjectBomb : NetworkBehaviour
     {
         if (!started) return;
         
+        _persistenceTimer.Tick(Time.deltaTime);
         _initTimer.Tick(Time.deltaTime);
     }
 
@@ -85,11 +93,12 @@ public class ObjectBomb : NetworkBehaviour
         };
     }
 
-    public void Init(string ownerTag, Vector2 impulse, int id, float latency)
+    public void Init(string ownerTag, Vector2 impulse, int id, float latency, int senderId)
     {
         _ownerTag = ownerTag;
         this.id = id;
         _initTimer.Start();
+        _persistenceTimer.Start();
         //if (latency != 0)
         //{
         //    Anticipate(impulse, latency);
@@ -97,6 +106,7 @@ public class ObjectBomb : NetworkBehaviour
         //}
         //else _rigidbody2D.linearVelocity = impulse;
         _rigidbody2D.linearVelocity = impulse;
+        _senderId = senderId;
         started = true;
     }
 
@@ -160,6 +170,9 @@ public class ObjectBomb : NetworkBehaviour
         _collider2D.isTrigger = true;
         
         _bounceCount = 0; 
+        _persistenceTimer.Reset();
+        _senderId = -1;
+        
         started = false;
     }
 
@@ -171,10 +184,18 @@ public class ObjectBomb : NetworkBehaviour
         float angle = Vector3.Angle(Vector3.up, surfaceNormal);
         bool horizontal = angle < _maxSlopeAngle;
 
-        if (collision.gameObject.CompareTag(_ownerTag) && _bounceCount == 0) return;
+        //if (collision.gameObject.CompareTag(_ownerTag) && _bounceCount == 0) return;
         
-        if(LayerMaskUtils.CompareGameObjectLayerMask(collision.gameObject, _attackLayer) || (horizontal && !LayerMaskUtils.CompareGameObjectLayerMask(collision.gameObject, _bounceLayer))) Explode(); 
-        else Bounce(surfaceNormal);
+        if(LayerMaskUtils.CompareGameObjectLayerMask(collision.gameObject, _attackLayer) || (horizontal && !LayerMaskUtils.CompareGameObjectLayerMask(collision.gameObject, _bounceLayer))) Explode();
+        else
+        {
+            Bounce(surfaceNormal);
+            var shield = collision.gameObject.GetComponent<ObjectShield>();
+            if (shield != null)
+            {
+                shield.OnBlock(_senderId);
+            }
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -202,13 +223,17 @@ public class ObjectBomb : NetworkBehaviour
 
                 if (player.Dependencies.TryGetFeature(out Health health))
                 {
+                    player.Invoker.ClientId.Request(out int otherClientId);
                     health.Attack(new AttackEvent
                     {
                         DamagePercentage = damagePercentage,
                         KnockbackForce = knockbackLevel,
                         KnockbackUpForce = knockbackUpLevel,
                         SourcePosition = transform.position,
-                        Success = true
+                        Success = true,
+                        SenderId = _senderId,
+                        Weapon = (int)GunBelt.Weapon.Bomb,
+                        ReceiverId = otherClientId,
                     });
                 }
             }
@@ -228,7 +253,9 @@ public class ObjectBomb : NetworkBehaviour
                     KnockbackForce = knockbackLevel,
                     KnockbackUpForce = knockbackUpLevel,
                     SourcePosition = transform.position,
-                    Success = true
+                    Success = true,
+                    SenderId = _senderId,
+                    Weapon = (int)GunBelt.Weapon.Bomb
                 }); 
             }
         }

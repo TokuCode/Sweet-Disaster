@@ -1,5 +1,5 @@
-﻿using System;
-using Code.Gameplay.Character.Framework;
+﻿using Code.Gameplay.Character.Framework;
+using Code.Gameplay.Objects;
 using Code.Helpers.Pipeline;
 using Code.Networking.ClientPrediction;
 using Code.Systems.Attack;
@@ -11,7 +11,6 @@ namespace Code.Gameplay.Character.Features
 {
     public class Shield : Feature, IProcess<AttackEvent>
     {
-        private Crouch crouch;
         private Health health;
         private Shoot shoot;
         private Bomb bomb;
@@ -36,11 +35,23 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private bool _isStaminaDepleted;
         public bool IsStaminaDepleted => _isStaminaDepleted;
         [SerializeField] private float _minShieldStaminaForActivation;
-        
+
+        public override void ResetFeature()
+        {
+            if (IsServer)
+            {
+                _isShieldActive.Value = false;
+                _isDeactivatingShield.Value = false;
+                ActivateShieldObjectRpc(false);
+                _currentShieldStamina.Value = _maxShieldStamina;
+            }
+            _isStaminaDepleted = false;
+            _shield.SetActive(false);
+        }
+
         public override void InitializeFeature(Controller controller)
         {
             base.InitializeFeature(controller);
-            _dependencies.TryGetFeature(out crouch);
             _dependencies.TryGetFeature(out shoot);
             _dependencies.TryGetFeature(out bomb);
             _dependencies.TryGetFeature(out health);
@@ -92,7 +103,8 @@ namespace Code.Gameplay.Character.Features
                     _isShieldActive.Value = true;
                     _isDeactivatingShield.Value = false;
                 }
-                else ActivateShieldServerRpc(true, false); }
+                else ActivateShieldServerRpc(true, false);
+            }
         }
     
         public void TryDeactivateShield()
@@ -145,7 +157,7 @@ namespace Code.Gameplay.Character.Features
         
         public void DeactivateShield()
         {
-            if (IsHost)
+            if (IsServer)
             {
                 _isShieldActive.Value = false;
                 _isDeactivatingShield.Value = false;
@@ -198,8 +210,14 @@ namespace Code.Gameplay.Character.Features
             var direction = InputReader.Instance.HandleDirection;
             var diff = @event.SourcePosition - InputReader.Instance.HandlePosition;
             var angle = Vector3.Angle(direction, diff);
+
+            bool blocked = angle <= _shieldAngle;
+            @event.Success = !blocked; 
             
-            @event.Success = angle > _shieldAngle; 
+            _invoker.ClientId.Request(out int clientId);
+            bool selfAttack = @event.SenderId == clientId;
+            
+            if(blocked && !selfAttack) bomb.AccelerateReload(GunBelt.Weapon.Shield);
         }
 
         [ServerRpc]
@@ -247,6 +265,7 @@ namespace Code.Gameplay.Character.Features
         private void CreateShield()
         {
             _shield = Instantiate(_shieldPrefab, transform.position, Quaternion.identity);
+            _shield.GetComponent<ObjectShield>().Init(bomb);
             _shield.SetActive(false);
         }
     }

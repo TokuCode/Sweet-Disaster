@@ -1,5 +1,4 @@
-﻿using System;
-using Code.Gameplay.Objects;
+﻿using Code.Gameplay.Objects;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;

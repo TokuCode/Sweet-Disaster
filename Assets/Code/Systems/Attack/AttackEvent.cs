@@ -10,6 +10,9 @@ namespace Code.Systems.Attack
         public float KnockbackForce;
         public float KnockbackUpForce;
         public bool Success;
+        public int SenderId;
+        public int ReceiverId;
+        public int Weapon;
         
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
@@ -18,6 +21,9 @@ namespace Code.Systems.Attack
             serializer.SerializeValue(ref KnockbackForce);
             serializer.SerializeValue(ref KnockbackUpForce);
             serializer.SerializeValue(ref Success);
+            serializer.SerializeValue(ref SenderId);
+            serializer.SerializeValue(ref ReceiverId);
+            serializer.SerializeValue(ref Weapon);
         }
     }
 }

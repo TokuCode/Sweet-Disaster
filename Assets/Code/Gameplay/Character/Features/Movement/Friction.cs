@@ -20,6 +20,11 @@ namespace Code.Gameplay.Character.Features
         public bool IsTurning(Vector2 velocity) => _cachedMoveDirection > 0 && velocity.x < 0 ||
                                   _cachedMoveDirection < 0 && velocity.x > 0;
 
+        public override void ResetFeature()
+        {
+            _cachedMoveDirection = 0;
+        }
+
         public override void InitializeFeature(Controller controller)
         {
             base.InitializeFeature(controller);

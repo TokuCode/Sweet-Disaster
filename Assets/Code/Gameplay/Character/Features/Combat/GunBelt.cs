@@ -17,7 +17,8 @@ namespace Code.Gameplay.Character.Features
             Bomb,
             Reloading,
             Melee,
-            Shield
+            Shield,
+            Will
         }
 
         private Bomb bomb;
@@ -26,8 +27,6 @@ namespace Code.Gameplay.Character.Features
         private Melee melee;
         
         [Header("Settings")]
-        [SerializeField] private float _cooldown;
-        private float _timer;
         [SerializeField] private float _maxActiveWeaponTime;
 
         [Header("Runtime")]
@@ -37,6 +36,15 @@ namespace Code.Gameplay.Character.Features
         private Weapon _lastActiveWeapon;
         public Weapon LastActiveWeapon => _lastActiveWeapon;
         private float _lastActiveTime;
+
+        public override void ResetFeature()
+        {
+            if (IsOwner)
+            {
+                _activeWeapon.Value = Weapon.NoWeapon;
+            }
+            _lastActiveWeapon = Weapon.NoWeapon;
+        }
 
         public override void InitializeFeature(Controller controller)
         {

@@ -15,14 +15,14 @@ namespace Code.Gameplay.Character.Features
         private Movement move;
         
         [Header("Health Parameters")]
-        [SerializeField] private NetworkVariable<float> _health = new (0, NetworkVariableReadPermission.Owner);
+        [SerializeField] private NetworkVariable<float> _health = new ();
         public float HealthAmount => _health.Value;
         [SerializeField] private float _baseHealth;
         public float BaseHealth => _baseHealth;
         public float HealthRatio => _health.Value / _baseHealth;
         
         [Header("Stun")]
-        [SerializeField] private NetworkVariable<bool> _isStunned = new (false, NetworkVariableReadPermission.Owner);
+        [SerializeField] private NetworkVariable<bool> _isStunned = new ();
         public bool IsStunned => _isStunned.Value;
         [SerializeField] private float _stunMinDuration;
         [SerializeField] private float _stunDurationPerKnockback;
@@ -36,7 +36,16 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private float _directionalInfluence;
         
         public Pipeline<AttackEvent> AttackPipeline { get; private set; }
-    
+
+        public override void ResetFeature()
+        {
+            if (IsServer)
+            {
+                _health.Value = 0;
+                _isStunned.Value = false;
+            }
+        }
+
         public override void InitializeFeature(Controller controller)
         {
             base.InitializeFeature(controller);
@@ -129,6 +138,8 @@ namespace Code.Gameplay.Character.Features
                 Damage(attackEvent.DamagePercentage);
                 Knockback(direction, attackEvent.KnockbackForce, attackEvent.KnockbackUpForce, newHealthRatio);
             }
+            
+            if(IsServer) AttackBus.Singleton.BroadcastEvent(attackEvent);
         }
 
         public void RequestAttackInOwner(AttackEvent attackEvent)

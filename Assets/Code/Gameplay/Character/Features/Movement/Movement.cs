@@ -18,6 +18,14 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private NetworkVariable<bool> _isMovementBlocked = new (false, NetworkVariableReadPermission.Owner);
         public bool IsMovementBlocked => _isMovementBlocked.Value;
 
+        public override void ResetFeature()
+        {
+            if (IsServer)
+            {
+                _isMovementBlocked.Value = false;
+            }
+        }
+
         public override void InitializeFeature(Controller controller)
         {
             base.InitializeFeature(controller);

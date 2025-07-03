@@ -38,6 +38,14 @@ namespace Code.Gameplay.Character.Features
             set => _fallGravityMultiplier = value;
         }
 
+        public override void ResetFeature()
+        {
+            _cachedCrouchInput = false;
+            _cachedJumpInput = false;
+            _jumpCooldownTimer = 0;
+            _onDeparture = false;
+        }
+
         public override void InitializeFeature(Controller controller)
         {
             base.InitializeFeature(controller);

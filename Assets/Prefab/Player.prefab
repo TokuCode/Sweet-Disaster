@@ -398,8 +398,9 @@ MonoBehaviour:
   - {fileID: 3296703527897574207}
   _followTarget: {fileID: 6022316762160544414}
   _gunTip: {fileID: 8692099931127174155}
+  _render: {fileID: 8787853860257289433}
   _reconciliationCooldownTime: 1
-  _reconciliationThreshold: 2.5
+  _reconciliationThreshold: 5
   _extrapolationLimit: 0.5
   _extrapolationMultiplier: 1.2
   _extrapolationMinLatency: 0.3
@@ -531,7 +532,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _cooldown: 0.5
   _maxActiveWeaponTime: 0
   _activeWeapon:
     m_InternalValue: 0
@@ -550,13 +550,14 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _timeBetweenShots: 0.05
   _burstCount: 3
-  _timeBetweenBursts: 0.5
+  _timeBetweenBursts: 0.25
   _holdToShoot: 1
   _lastShotTime: 0
   _isShooting: 0
-  _reloadTime: 0.95
-  _reloadTimer: 0
+  _reloadTime: 1
   _magazineSize: 24
+  _activeReloadPosition: 0.55
+  _activeReloadSpan: 0.35
   _bulletPrefab: {fileID: 3392542828733932666, guid: 164d47ae8f05cd143be5125ce73b26e3, type: 3}
   _baseImprecision: 0
   _imprecision: 0
@@ -601,16 +602,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _throwChargeTimeSeconds: 0.4
+  _throwChargeTimeSeconds: 0.45
   _throwChargeTimer: 0
   _throwMinForce: 5
   _throwMaxForce: 30
   _isThrowing: 0
+  _timeOnMaxThrowCharge: 0.15
   _cooldownTimeSeconds: 1.5
   _cooldownTimer: 0
   _isOnCooldown: 0
-  _startBombCount: 99
+  _startBombCount: 5
   _bombPrefab: {fileID: 6612687119068740015, guid: a189366a9cb40e049a06199f5a62fc44, type: 3}
+  _bombReloadTime: 10
+  _onBulletHitAccelerateTime: 0.5
+  _onBombHitAccelerateTime: 1
+  _onShieldHitAccelerateTime: 1.5
+  _onMeleeHitAccelerateTime: 3.5
+  _onWillToLiveHitAccelerateTime: 1
 --- !u!114 &419103442011533078
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -694,6 +702,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  baseStockCount: 3
+  _timeToRespawn: 3
 --- !u!114 &4303144466517633692
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -707,8 +717,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _minigameDurationPerHealthRatio: 0.75
-  _minStunDuration: 0.625
+  _minigameDurationPerHealthRatio: 0.825
+  _minStunDuration: 0.5
   _sweetSpotRatio: 0.175
   _onSuccessTimeReductionRatio: 0.25
 --- !u!114 &3296703527897574207
