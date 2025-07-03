@@ -53,7 +53,7 @@ namespace Code.Gameplay
 
             if (remainingIds.Count == 1)
             {
-                SendPlayerDataToStackRpc(remainingIds[0], lives, damage);
+                SendPlayerDataToStackRpc(remainingIds[0], lives, damage, true);
                 
                 if (_sessionManager.ActiveSession.IsHost && !_sessionManager.IsPracticeMode)
                     NetworkManager.SceneManager.LoadScene("PostGame", LoadSceneMode.Single);
@@ -61,16 +61,22 @@ namespace Code.Gameplay
         }
 
         [Rpc(SendTo.Everyone)]
-        private void SendPlayerDataToStackRpc(ulong clientId, int lives, float damage)
+        private void SendPlayerDataToStackRpc(ulong clientId, int lives, float damage, bool isWinner = false)
         {
             var playerStatusData = new WinnersData.PlayerStatusData
             {
                 ClientId = clientId,
-                Lives = lives,              // TO-DO: Modify for player's actual info
-                AccumulatedDmg = damage     // TO-DO: Modify for player's actual info
+                Lives = lives,         
+                AccumulatedDmg = damage
             };
             
             WinnersData.playerStatusDataStack.Push(playerStatusData);
+            
+            /*
+            Debug.Log($"[Sent] {playerStatusData.Lives}");
+            Debug.Log($"[Sent] {playerStatusData.Lives}");
+            Debug.Log($"[Received] {WinnersData.playerStatusDataStack.Peek().Lives}");
+            Debug.Log($"[Received] {WinnersData.playerStatusDataStack.Peek().AccumulatedDmg}");*/
         }
     }
 }
