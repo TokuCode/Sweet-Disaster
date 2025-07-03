@@ -30,8 +30,10 @@ namespace Code.UserInterface.PostGameUI
         
         [SerializeField] private TextMeshProUGUI statusText;
 
-        private NetworkList<bool> playersReadyToRestart = new(new[] { false, false, false, false }, 
-            NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        /*private NetworkList<bool> playersReadyToRestart = new(new[] { false, false, false, false }, 
+            NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);*/
+
+        //private List<string> playersReady = new();
         
         private SessionManager _sessionManager;
         private CancellationTokenSource  _cancellationTokenSource;
@@ -135,14 +137,21 @@ namespace Code.UserInterface.PostGameUI
                 UIUtilities.Instance.MessagePopUp("Ha ocurrido un error al actualizar las propiedades del jugador.", false);
             }
 
-            if (IsOwner)
+            /*if (IsOwner && IsClient)
             {
-                //_sessionManager.ActiveSession.Players[]
-            }
+                SendReadyStatusRpc();
+                Debug.Log(playersReady);
+            }*/
             
             playAgainButton.interactable = false;
             statusText.text = "Esperando a los jugadores...";
             CheckAllReadyToRestart();
+        }
+
+        [Rpc(SendTo.Server)]
+        private void SendReadyStatusRpc()
+        {
+            //playersReady.Add(_sessionManager.ActiveSession.CurrentPlayer.Id);
         }
         
         private async void CheckAllReadyToRestart()

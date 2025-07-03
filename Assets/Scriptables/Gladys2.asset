@@ -18,4 +18,4 @@ MonoBehaviour:
   armWithBomb: {fileID: -829961613945574920, guid: a2ab4ef3c69acba44b366aee341ec3f0, type: 3}
   armWithShield: {fileID: -829961613945574920, guid: 7eb9ed1dde95eb14da848fd601314cb8, type: 3}
   postGameImage: {fileID: 4254021271541456957, guid: 4547ce5307e88ac479f3efc873b9f03f, type: 3}
-  characterIcon: {fileID: 0}
+  characterIcon: {fileID: 4254021271541456957, guid: 4547ce5307e88ac479f3efc873b9f03f, type: 3}

@@ -17,10 +17,10 @@ namespace Code.Networking.Session
         
         private readonly string[] _randomNames =
         {
-            "Player100",
-            "Player200",
-            "Player300",
-            "Player400"
+            "ArrozConLeche",
+            "Mazamorra",
+            "Suspiro",
+            "TortaHelada"
         };
         
         public Color GetColor(IReadOnlyPlayer player)

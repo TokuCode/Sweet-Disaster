@@ -8,6 +8,7 @@ namespace Code.Gameplay
         public struct PlayerStatusData
         {
             public ulong ClientId;
+            public bool Defeated;
             public int Lives;
             public float AccumulatedDmg;
         }
