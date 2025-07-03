@@ -202,7 +202,7 @@ namespace Code.Gameplay.Character.Features
             _invoker.GunTipPosition.Request(out var position);
             
             FireAction(position, direction, out int id);
-            _invoker.ClientId.Request(out int clientId);
+            _invoker.PlayerNumber.Request(out int clientId);
             ReplicateFireGunRpc(position, direction, id, DateTime.Now, clientId);
             
             Recoil(direction);
@@ -216,7 +216,7 @@ namespace Code.Gameplay.Character.Features
             
             var bullet = _bulletNetworkObject.gameObject.GetComponent<ObjectBullet>();
             
-            _invoker.ClientId.Request(out int clientId);
+            _invoker.PlayerNumber.Request(out int clientId);
             
             bullet.Initialize(direction, gameObject.tag, 0, clientId);
         }

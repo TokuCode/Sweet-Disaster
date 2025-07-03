@@ -56,9 +56,10 @@ namespace Code.Gameplay
                 SetMapClientRpc(mapProperty.Value);
             }
 
-            foreach (var sessionPlayer in _sessionManager.ActiveSession.Players)
+            for (int i = 0; i < _sessionManager.ActiveSession.Players.Count; i++)
             {
-                SpawnPlayer(sessionPlayer);
+                var  sessionPlayer = _sessionManager.ActiveSession.Players[i];
+                SpawnPlayer(sessionPlayer, i);
             }
         }
 
@@ -74,7 +75,7 @@ namespace Code.Gameplay
             }
         }
 		
-        private void SpawnPlayer(IReadOnlyPlayer sessionPlayer)
+        private void SpawnPlayer(IReadOnlyPlayer sessionPlayer, int playerNumber)
         {
             // Map authentication ID to client ID
             if (!SessionManager.Instance.PlayerIdToClientId.TryGetValue(sessionPlayer.Id, out ulong clientId))
@@ -103,6 +104,7 @@ namespace Code.Gameplay
             playerObj.GetComponent<ArmSpriteChanger>().SetSprites(character);
             
             playerObj.GetComponent<PlayerController>().SetSpawnPosition(spawnPoint);
+            playerObj.GetComponent<PlayerController>().SetNumber(playerNumber);
             
             NetworkObject networkObject = playerObj.GetComponent<NetworkObject>();
             networkObject.SpawnAsPlayerObject(clientId, true);

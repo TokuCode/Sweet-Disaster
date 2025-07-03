@@ -214,7 +214,7 @@ namespace Code.Gameplay.Character.Features
             bool blocked = angle <= _shieldAngle;
             @event.Success = !blocked; 
             
-            _invoker.ClientId.Request(out int clientId);
+            _invoker.PlayerNumber.Request(out int clientId);
             bool selfAttack = @event.SenderId == clientId;
             
             if(blocked && !selfAttack) bomb.AccelerateReload(GunBelt.Weapon.Shield);

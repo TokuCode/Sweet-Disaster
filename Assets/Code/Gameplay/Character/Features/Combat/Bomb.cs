@@ -43,6 +43,7 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private int _startBombCount;
         private NetworkVariable<int> _bombCount = new (0, NetworkVariableReadPermission.Owner);
         public int BombCount => _bombCount.Value;
+        private bool _bombsRequested;
     
         [Header("Bomb Parameters")] 
         [SerializeField] private GameObject _bombPrefab;
@@ -96,7 +97,6 @@ namespace Code.Gameplay.Character.Features
             health.OnStun += OnStun;
             will.OnMinigameSucces += () => AccelerateReload(GunBelt.Weapon.Will);
             AttackBus.Singleton.Event += OnAttackGlobal;
-            RequestBombsAuthority();
             _bombReloadTimer = new(_bombReloadTime);
             _bombReloadTimer.OnTimerStop += ReloadBomb; 
             _bombReloadTimer.Start();
@@ -112,6 +112,8 @@ namespace Code.Gameplay.Character.Features
             if (_isThrowing) ThrowCharge();
 
             if (!IsOwner) return;
+            
+            if(!_bombsRequested) RequestBombsAuthority();
             
             ReloadBombHandler(Time.deltaTime);
         }
@@ -197,7 +199,7 @@ namespace Code.Gameplay.Character.Features
             var throwForce = direction.normalized * Mathf.Lerp(_throwMinForce, _throwMaxForce, Mathf.Clamp01(_throwChargeTimer / _throwChargeTimeSeconds));
             
             ThrowAction(position, direction, throwForce, out int id);
-            _invoker.ClientId.Request(out int clientId);
+            _invoker.PlayerNumber.Request(out int clientId);
             ReplicateThrowBombRpc(position, direction, throwForce, id, DateTime.Now, clientId);
         } 
         
@@ -210,7 +212,7 @@ namespace Code.Gameplay.Character.Features
             
             var bomb = _bombNo.gameObject.GetComponent<ObjectBomb>();
             NonPooledSync.Singleton.AddBomb(bomb);
-            _invoker.ClientId.Request(out int clientId);
+            _invoker.PlayerNumber.Request(out int clientId);
             bomb.Init(gameObject.tag, throwForce, absBombId, 0, clientId);
         }
 
@@ -274,7 +276,7 @@ namespace Code.Gameplay.Character.Features
 
         public void BlockReloadAccelerate(GunBelt.Weapon weapon, int attackerId)
         {
-            _invoker.ClientId.Request(out int clientId);
+            _invoker.PlayerNumber.Request(out int clientId);
             
             if(clientId == attackerId) return;
             
@@ -290,15 +292,17 @@ namespace Code.Gameplay.Character.Features
         
         public override void Apply(ref InputPayload @event) { }
 
-        private void RequestBombsAuthority()
+        public void RequestBombsAuthority()
         {
-            if(!IsOwner) return;
+            if(!IsOwner || !NonNetworkObjectPool.Singleton.init) return;
 
             var allBombs = NonNetworkObjectPool.Singleton.GetAllNetworkObjects(_bombPrefab);
             foreach (var bombNo in allBombs)
             {
                 bombNo.RequestOwnership();
             }
+
+            _bombsRequested = true;
         }
 
         private void OnAttackGlobal(AttackEvent attack)
@@ -307,7 +311,7 @@ namespace Code.Gameplay.Character.Features
             
             if (!attack.Success) return;
 
-            _invoker.ClientId.Request(out int clientId);
+            _invoker.PlayerNumber.Request(out int clientId);
             if(clientId != attack.SenderId || clientId == attack.ReceiverId) return;
             
             AccelerateReload((GunBelt.Weapon)attack.Weapon);

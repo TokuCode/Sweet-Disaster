@@ -109,11 +109,11 @@ namespace Code.Gameplay.Character.Features
                 PlayerController player = collider.gameObject.GetComponent<PlayerController>();
                 if (player != null)
                 {
-                    player.Invoker.ClientId.Request(out int otherClientId);
+                    player.Invoker.PlayerNumber.Request(out int otherClientId);
                     
                     if (player.Dependencies.TryGetFeature(out Health health))
                     {
-                        _invoker.ClientId.Request(out int clientId);
+                        _invoker.PlayerNumber.Request(out int clientId);
                         health.RequestAttackInOwner(new ()
                         {
                             DamagePercentage = _damage,
