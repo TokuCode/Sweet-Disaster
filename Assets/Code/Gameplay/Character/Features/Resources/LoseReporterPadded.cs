@@ -10,6 +10,8 @@ namespace Code.Gameplay.Character
 {
     public class LoseReporterPadded : Feature
     {
+        private Health health;
+        
         private const int _extraFramesToWaitRespawn = 5;
         [SerializeField] private int baseStockCount;
         private NetworkVariable<int> _stocks = new ();
@@ -27,6 +29,7 @@ namespace Code.Gameplay.Character
         {
             base.InitializeFeature(controller);
             if(IsServer) _stocks.Value = baseStockCount;
+            _dependencies.TryGetFeature(out health);
         }
 
         public override void UpdateFeature()
@@ -63,9 +66,12 @@ namespace Code.Gameplay.Character
         {
             if (!IsServer) return;
             
+            int stock = _stocks.Value;
+            float damage = health.HealthAmount;
+            
             _invoker.ClientId.Request(out var clientId);
             _invoker.Defeat.Perform(true);
-            LoseTracker.Instance.ReportPlayerLoss((ulong)clientId);
+            LoseTracker.Instance.ReportPlayerLoss((ulong)clientId, stock, damage);
         }
 
         private void ScheduleRespawn()
@@ -110,16 +116,6 @@ namespace Code.Gameplay.Character
         public override void FixedUpdateFeature() { }
 
         public override void Apply(ref InputPayload @event) { }
-        
-        [Rpc(SendTo.Server)]
-        private void ReportLossToServerRpc(RpcParams rpcParams = default)
-        {
-            ulong clientId = rpcParams.Receive.SenderClientId;
-#if UNITY_EDITOR
-            Debug.Log($"[Server] Player {clientId} reported that lost.");
-#endif
-            LoseTracker.Instance.ReportPlayerLoss(clientId);
-        }
 
         [Rpc(SendTo.Owner)]
         private void RequestResetOnOwnerRpc()

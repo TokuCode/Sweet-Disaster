@@ -11,6 +11,7 @@ namespace Code.Gameplay.Character
     {
         public static PlayerVisibility Instance;
         public List<PlayerPublicInfo> Players = new();
+        [SerializeField] private PlayerSpawner _spawner;
         
         public event Action<PlayerPublicInfo> PlayerAdded;
         
@@ -22,9 +23,6 @@ namespace Code.Gameplay.Character
             { "green", Color.green }
         }; 
         
-        [SerializeField] private List<CharactersSetupInfo> _characters = new();
-        private Dictionary<string, Sprite> _characterSprites = new();
-
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -34,9 +32,6 @@ namespace Code.Gameplay.Character
                 return;
             }
             Instance = this;
-
-            foreach (var character in _characters)
-                _characterSprites.Add(character.characterName, character.characterIcon);
         }
 
         public void PostPlayer(PlayerController player, bool isPlayer)
@@ -49,7 +44,8 @@ namespace Code.Gameplay.Character
             string characterName = playerProps.Properties.TryGetValue(SessionManager.Instance.PlayerCharacterKey, out var characterProp) ? characterProp.Value : string.Empty;
             
             Color playerColor = _playerColors.TryGetValue(colorName, out var colorProp) ? colorProp : Color.white;
-            Sprite characterIcon = _characterSprites.GetValueOrDefault(characterName);
+            CharacterScriptable scriptable = _spawner.GetCharacter(characterName);
+            Sprite characterIcon = scriptable.characterIcon;
             
             var newPlayer = new PlayerPublicInfo
             {
@@ -57,12 +53,13 @@ namespace Code.Gameplay.Character
                 isPlayer = isPlayer,
                 playerName = playerName,
                 playerColor = playerColor,
-                playerIcon = characterIcon
+                playerIcon = characterIcon,
+                scriptable = scriptable
             };
             Players.Add(newPlayer);
             PlayerAdded?.Invoke(newPlayer);
         }
-
+        
         public Color GetPlayerColor(PlayerController player)
         {
             var playerPublicInfo = Players.FirstOrDefault(playerInfo => playerInfo.player == player);
@@ -91,17 +88,12 @@ namespace Code.Gameplay.Character
         public string playerName;
         public Color playerColor;
         public Sprite playerIcon;
+        
+        public CharacterScriptable scriptable;
 
         public int CompareTo(PlayerPublicInfo other)
         {
             return player.clientId - other.player.clientId;
         }
-    }
-
-    [Serializable]
-    public struct CharactersSetupInfo
-    {
-        public string characterName;
-        public Sprite characterIcon;
     }
 }

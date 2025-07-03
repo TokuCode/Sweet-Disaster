@@ -113,7 +113,7 @@ namespace Code.Gameplay
             _index++;
         }
         
-        private CharacterScriptable GetCharacter(string characterName)
+        public CharacterScriptable GetCharacter(string characterName)
         {
             CharacterScriptable character = charactersInfo.Find(c => c.characterName == characterName);
 

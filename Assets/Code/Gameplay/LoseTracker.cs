@@ -33,7 +33,7 @@ namespace Code.Gameplay
 
         private void OnDisable() => Destroy(gameObject);
 
-        public void ReportPlayerLoss(ulong clientId)
+        public void ReportPlayerLoss(ulong clientId, int lives, float damage)
         {
             if (!IsServer) return;
 
@@ -43,7 +43,7 @@ namespace Code.Gameplay
                 return;
             }
             
-            SendPlayerDataToStackRpc(clientId);
+            SendPlayerDataToStackRpc(clientId, lives, damage);
             
             var excludedIds = WinnersData.playerStatusDataStack.Select(p => p.ClientId);
             var remainingIds = NetworkManager.Singleton.ConnectedClientsList
@@ -53,7 +53,7 @@ namespace Code.Gameplay
 
             if (remainingIds.Count == 1)
             {
-                SendPlayerDataToStackRpc(remainingIds[0]);
+                SendPlayerDataToStackRpc(remainingIds[0], lives, damage);
                 
                 if (_sessionManager.ActiveSession.IsHost && !_sessionManager.IsPracticeMode)
                     NetworkManager.SceneManager.LoadScene("PostGame", LoadSceneMode.Single);
@@ -61,13 +61,13 @@ namespace Code.Gameplay
         }
 
         [Rpc(SendTo.Everyone)]
-        private void SendPlayerDataToStackRpc(ulong clientId)
+        private void SendPlayerDataToStackRpc(ulong clientId, int lives, float damage)
         {
             var playerStatusData = new WinnersData.PlayerStatusData
             {
                 ClientId = clientId,
-                Lives = 0,              // TO-DO: Modify for player's actual info
-                AccumulatedDmg = 0f     // TO-DO: Modify for player's actual info
+                Lives = lives,              // TO-DO: Modify for player's actual info
+                AccumulatedDmg = damage     // TO-DO: Modify for player's actual info
             };
             
             WinnersData.playerStatusDataStack.Push(playerStatusData);
