@@ -7,19 +7,22 @@ using System.Threading;
 using Unity.Services.Multiplayer;
 using Code.Networking.Session;
 using TMPro;
-using Color = UnityEngine.Color;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
 using System.Threading.Tasks;
 using Code.Helpers.UI;
+using Code.Gameplay;
 
 namespace Code.UserInterface.PostGameUI
 {
-    public class PostGameUIManager : MonoBehaviour
+    public class PostGameUIManager : NetworkBehaviour
     {
         [SerializeField] private TextMeshProUGUI winnerTitle;
-        [SerializeField] private List<GameObject> loserList;
-        [SerializeField] private GameObject winner;
+        
+        [SerializeField] private List<PlayerSlotUI> playerSlots;
+        [SerializeField] private List<TextMeshProUGUI> playersPositionsText;
+        
+        private WinnersData.PlayerStatusData _cachedPlayerStatusData;
 
         [Header("Buttons")]
         [SerializeField] private UnityEngine.UI.Button playAgainButton;
@@ -27,16 +30,10 @@ namespace Code.UserInterface.PostGameUI
         
         [SerializeField] private TextMeshProUGUI statusText;
         
+        //private NetworkList<bool> localPlayerReadyToRestart = new({false, false,false,false},)
+        
         private SessionManager _sessionManager;
         private CancellationTokenSource  _cancellationTokenSource;
-        
-        [Serializable]
-        public struct Characters
-        {
-            public string name;
-            public Sprite image;
-        }
-        [SerializeField] private List<Characters> characters;
 
         private void Awake()
         {
@@ -47,13 +44,34 @@ namespace Code.UserInterface.PostGameUI
             _cancellationTokenSource = new CancellationTokenSource();
         }
 
-        private void Start()
+        public override async void OnNetworkSpawn()
         {
-            PopulatePlayers();
+            base.OnNetworkSpawn();
+
+            if (IsServer)
+            {
+                PopulatePlayers();
+                PopulatePlayersRpc();
+            }
+            
+            try
+            {
+                _sessionManager.ActiveSession.CurrentPlayer.SetProperty(
+                    _sessionManager.PlayerReadyToRestart,
+                    new PlayerProperty("false", VisibilityPropertyOptions.Member));
+                await _sessionManager.ActiveSession.SaveCurrentPlayerDataAsync();
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                UIUtilities.Instance.MessagePopUp("No se pudo actualizar las propiedades del jugador", true);
+            }
         }
         
-        private void OnDisable()
+        public override void OnNetworkDespawn()
         {
+            base.OnNetworkDespawn();
+            
             playAgainButton.onClick.RemoveListener(OnPlayAgainPressed);
             exitButton.onClick.RemoveListener(ReturnToLobby);
             
@@ -63,89 +81,57 @@ namespace Code.UserInterface.PostGameUI
 
         private void PopulatePlayers()
         {
-            var session = _sessionManager.ActiveSession;
-            var winnerPlayerId = session.Properties.TryGetValue(_sessionManager.WinnerPropertyKey, out var winnerPlayer)
-                ? winnerPlayer.Value : String.Empty;
-        
-            if (string.IsNullOrEmpty(winnerPlayerId) || session == null)
+            for (int i = 0; i < _sessionManager.ActiveSession.PlayerCount; i++)
             {
-                Debug.LogWarning("Winner ID not set or session is null.");
-                UIUtilities.Instance.MessagePopUp("Hubo un error al cargar los datos.", true);
-                return;
-            }
-        
-            var winnerMember = session.Players.FirstOrDefault(p => p.Id == winnerPlayerId);
-            if (winnerMember == null)
-            {
-                Debug.LogWarning("Winner player not found in session.");
-                winnerTitle.text = "Ganador ...";
-                UIUtilities.Instance.MessagePopUp("Hubo un error al cargar los datos.", true);
-                return;
-            }
-        
-            // Setup winner UI
-            var winnerImg = winner.transform.GetChild(0).GetComponent<UnityEngine.UI.Image>();
-            var winnerSlot = winner.transform.GetChild(1).GetComponent<PlayerSlotUI>();
-        
-            string winnerCharacter = winnerMember.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var charProp)
-                ? charProp.Value : null;
-        
-            if (!string.IsNullOrEmpty(winnerCharacter))
-            {
-                var character = characters.FirstOrDefault(c => c.name == winnerCharacter);
-                if (character.image != null)
-                    winnerImg.sprite = character.image;
-            }
-        
-            string winnerName = winnerMember.Properties.TryGetValue(_sessionManager.PlayerNameKey, out var nameProp)
-                ? nameProp.Value : $"Jugador {winnerPlayerId}";
-        
-            winnerSlot.nameText.text = winnerName;
-            winnerSlot.outlineColor.color = _sessionManager.playerInfo.GetColor(winnerMember);
-            winnerTitle.text = $"Ganador: {winnerName}";
-        
-            // Setup losers
-            var losers = session.Players.Where(p => p.Id != winnerPlayerId).ToList();
-            for (int i = 0; i < loserList.Count; i++)
-            {
-                if (i < losers.Count)
+                var playerStatusData = WinnersData.playerStatusDataStack.Pop();
+                
+                var playerId = _sessionManager.PlayerIdToClientId.FirstOrDefault(p => p.Value == playerStatusData.ClientId).Key;
+                var player = _sessionManager.ActiveSession.Players.FirstOrDefault(p => p.Id == playerId);
+                
+                if (player == null) return;
+
+                var playerName = _sessionManager.playerInfo.GetPropertyValue(player, _sessionManager.PlayerNameKey);
+                var playerColor = _sessionManager.playerInfo.GetColor(player);
+                
+                playerSlots[i].SetSlot(playerName, playerColor);
+                
+                if (_cachedPlayerStatusData.Lives == playerStatusData.Lives 
+                    && Mathf.Approximately(_cachedPlayerStatusData.AccumulatedDmg, playerStatusData.AccumulatedDmg)
+                    && i > 0)
                 {
-                    var slot = loserList[i].transform.GetChild(1).GetComponent<PlayerSlotUI>();
-                    var image = loserList[i].transform.GetChild(0).GetComponent<UnityEngine.UI.Image>();
-        
-                    var loser = losers[i];
-        
-                    string loserCharacter = loser.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var lcharProp)
-                        ? lcharProp.Value : null;
-        
-                    if (!string.IsNullOrEmpty(loserCharacter))
-                    {
-                        var character = characters.FirstOrDefault(c => c.name == loserCharacter);
-                        if (character.image != null)
-                            image.sprite = character.image;
-                    }
-        
-                    string loserName = loser.Properties.TryGetValue(_sessionManager.PlayerNameKey, out var lnameProp)
-                        ? lnameProp.Value : $"Jugador {i + 1}";
-        
-                    slot.nameText.text = loserName;
-                    slot.outlineColor.color = _sessionManager.playerInfo.GetColor(loser);
+                    if (_sessionManager.ActiveSession.PlayerCount == 2 || i == 1)
+                        winnerTitle.text = "Empate";
+
+                    playersPositionsText[i].text = i.ToString();
                 }
+                else
+                {
+                    winnerTitle.text = $"Ganador: {playerName}";
+                    playersPositionsText[i].text = (i + 1).ToString();
+                }
+                
+                _cachedPlayerStatusData = playerStatusData;
             }
+        }
+
+        [Rpc(SendTo.NotMe)]
+        private void PopulatePlayersRpc()
+        {
+            PopulatePlayers();
         }
         
         private async void OnPlayAgainPressed()
         {
-            _sessionManager.ActiveSession.CurrentPlayer.SetProperty(_sessionManager.PlayerReadyToRestart,
-                new PlayerProperty("true", VisibilityPropertyOptions.Member));
-
             try
             {
+                _sessionManager.ActiveSession.CurrentPlayer.SetProperty(_sessionManager.PlayerReadyToRestart,
+                    new PlayerProperty("true", VisibilityPropertyOptions.Member));
                 await _sessionManager.ActiveSession.SaveCurrentPlayerDataAsync();
             }
             catch (Exception e)
             {
-                UIUtilities.Instance.MessagePopUp("Ha ocurrido un error de conexión.", false);
+                Debug.LogException(e);
+                UIUtilities.Instance.MessagePopUp("Ha ocurrido un error al actualizar las propiedades del jugador.", false);
             }
             
             playAgainButton.interactable = false;
@@ -174,23 +160,8 @@ namespace Code.UserInterface.PostGameUI
                         Debug.Log("All players are ready. Restarting game...");
                     
                         if (_sessionManager.ActiveSession.IsHost)
-                        {
-                            session.AsHost().SetProperty(
-                                _sessionManager.WinnerPropertyKey,
-                                new SessionProperty("None", VisibilityPropertyOptions.Member)
-                            );
-
-                            try
-                            {
-                                await session.AsHost().SavePropertiesAsync();
-                            }
-                            catch (Exception e)
-                            {
-                                UIUtilities.Instance.MessagePopUp("Ha ocurrido un error de conexión.", false);
-                            }
-                        
                             NetworkManager.Singleton.SceneManager.LoadScene("MultiplayerTest", LoadSceneMode.Single);
-                        }
+                        
                         break;
                     }
 
@@ -203,7 +174,7 @@ namespace Code.UserInterface.PostGameUI
                 Debug.Log("Restart check cancelled.");
             }
         }
-
+        
         private void ReturnToLobby()
         {
             SessionManager.Instance.LeaveSession();

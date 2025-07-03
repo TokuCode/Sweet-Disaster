@@ -35,11 +35,11 @@ namespace Code.Gameplay.Character.Visuals
             _gunbelt.WeaponChanged -= ChangeArm;
         }
 
-        public void SetSprites(CharacterVisuals visuals)
+        public void SetSprites(CharacterScriptable character)
         {
-            _armWithGun = visuals.armWithGun;
-            _armWithBomb = visuals.armWithBomb;
-            _armWithShield = visuals.armWithShield;
+            _armWithGun = character.armWithGun;
+            _armWithBomb = character.armWithBomb;
+            _armWithShield = character.armWithShield;
         }
         
         private void ChangeArm(int index)

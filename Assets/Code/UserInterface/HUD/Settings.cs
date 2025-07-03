@@ -31,7 +31,7 @@ namespace Code.UserInterface.HUD
         private void Update()
         {
             if (SessionManager.Instance == null) return;
-            if (!SessionManager.Instance.IsPracticeMode) return;
+            //if (!SessionManager.Instance.IsPracticeMode) return;
 
             if (Input.GetKeyDown(KeyCode.Tab))
             {
@@ -41,6 +41,12 @@ namespace Code.UserInterface.HUD
         }
 
         public void ApplyJumpSettingsFromUI()
+        {
+            ApplySettings();
+            ApplySettingsRpc();
+        }
+
+        private void ApplySettings()
         {
             if(PlayerController.Singleton == null) return;
 
@@ -65,6 +71,12 @@ namespace Code.UserInterface.HUD
                 
             if (float.TryParse(airDispersionField.text, out float airDispersion))
                 _shoot.AirImprecision = airDispersion;
+        }
+        
+        [Rpc(SendTo.NotMe)]
+        private void ApplySettingsRpc()
+        {
+            ApplySettings();
         }
     }
 }

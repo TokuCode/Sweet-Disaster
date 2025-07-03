@@ -8,4 +8,12 @@ AnimatorOverrideController:
   m_PrefabAsset: {fileID: 0}
   m_Name: CeciController
   m_Controller: {fileID: 9100000, guid: eeaaa33ed4a33874688b636b3558a7fc, type: 2}
-  m_Clips: []
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: e464d9fea4884394c961253327456db9, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: ec1c81fe001d31e4881fd2fcc0e2751d, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: d773cb9826d62674bb57bbe3eb6a79fb, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 56c1d169740a30342a2be7c4e469f4f5, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 65b9684d2418e5a4091a4571904cedbd, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 84ab082a55b94ef4d8bc9ac32f54f150, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 6ac1b4a339bba144baa5f8a725b7bad5, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: becde0bc120124d4f8c8326f904f6b93, type: 2}

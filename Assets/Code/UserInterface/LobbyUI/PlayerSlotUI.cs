@@ -9,7 +9,7 @@ namespace Code.UserInterface.LobbyUI
         public TMP_Text nameText;
         public Image outlineColor;
         
-        public void Setup(string playerName, Color color)
+        public void SetSlot(string playerName, Color color)
         {
             nameText.alignment = TextAlignmentOptions.Left;
             nameText.text = playerName;
