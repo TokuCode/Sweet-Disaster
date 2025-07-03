@@ -146,7 +146,6 @@ namespace Code.UserInterface.PostGameUI
             catch (Exception e)
             {
                 UIUtilities.Instance.MessagePopUp("Ha ocurrido un error de conexión.", false);
-                ReturnToLobby();
             }
             
             playAgainButton.interactable = false;
@@ -188,7 +187,6 @@ namespace Code.UserInterface.PostGameUI
                             catch (Exception e)
                             {
                                 UIUtilities.Instance.MessagePopUp("Ha ocurrido un error de conexión.", false);
-                                ReturnToLobby();
                             }
                         
                             NetworkManager.Singleton.SceneManager.LoadScene("MultiplayerTest", LoadSceneMode.Single);
