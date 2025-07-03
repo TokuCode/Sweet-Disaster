@@ -30,6 +30,8 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private bool _isHeadBlocked;
         public bool HeadBlocked => _isHeadBlocked;
 
+        public override void ResetFeature() { }
+
         public override void InitializeFeature(Controller controller)
         {
             base.InitializeFeature(controller);

@@ -34,20 +34,26 @@ namespace Code.Gameplay.Character.Features
         public float LastShotTime => _lastShotTime;
         [SerializeField] private bool _isShooting;
         public bool IsShooting => _isShooting;
-        private Vector3 cachedHandlePosition;
-        private Vector3 cachedHandleDirection;
-        private bool lastShootInput;
 
         [Header("Reloading Settings")]
         [SerializeField] private float _reloadTime;
-
-        [SerializeField] private float _reloadTimer;
+        public float ReloadTime => _reloadTime;
+        private NetworkVariable<float> _reloadTimer = new();
+        public float ReloadTimer => _reloadTimer.Value;
         [SerializeField] private int _magazineSize;
         public int MagazineSize => _magazineSize;
         private NetworkVariable<int> _currentAmmo = new(0, NetworkVariableReadPermission.Owner);
         public int CurrentAmmo => _currentAmmo.Value;
         private NetworkVariable<bool> _isReloading = new(false, NetworkVariableReadPermission.Owner);
         public bool IsReloading => _isReloading.Value;
+        
+        [Header("Active Reload Settings")]
+        [SerializeField] private float _activeReloadPosition;
+        public float ActiveReloadPosition => _activeReloadPosition;
+        [SerializeField] private float _activeReloadSpan;
+        public float ActiveReloadSpan => _activeReloadSpan;
+        private bool _failedActiveReload;
+        public bool FailedActiveReload => _failedActiveReload;
 
         [Header("Projectile Settings")] 
         [SerializeField] private GameObject _bulletPrefab;
@@ -79,12 +85,26 @@ namespace Code.Gameplay.Character.Features
             get => _airImprecision;
             set => _airImprecision = value;
         }
-        
+
+        public override void ResetFeature()
+        {
+            if (IsServer)
+            {
+                CancelReloading();
+                _currentAmmo.Value = _magazineSize;
+            }
+            if(IsOwner) CancelShooting();
+        }
+
         public override void InitializeFeature(Controller controller)
         {
             if(IsServer) _currentAmmo.Value = _magazineSize;
 
-            if (IsOwner) InputReader.Instance.OnShootPressed += OnShootPressed;
+            if (IsOwner)
+            {
+                InputReader.Instance.OnShootPressed += OnShootPressed;
+                InputReader.Instance.OnReloadPressed += TryActiveReload;
+            }
             
             base.InitializeFeature(controller);
             
@@ -101,12 +121,14 @@ namespace Code.Gameplay.Character.Features
         {
             if (!IsOwner && !IsServer) return;
             
+            if(!_isReloading.Value && _failedActiveReload) _failedActiveReload = false;
+            
             if (_holdToShoot && InputReader.Instance.Shoot && IsOwner)
                 TryShooting();
             
             if (!IsServer) return;
             
-            if(_reloadTimer > 0) _reloadTimer -= Time.deltaTime;
+            if(_reloadTimer.Value > 0) _reloadTimer.Value -= Time.deltaTime;
             else if (_isReloading.Value) StopReloading();
 
             if (_reloadRequested)
@@ -165,6 +187,14 @@ namespace Code.Gameplay.Character.Features
             _isShooting = false;
         }
 
+        private void CancelShooting()
+        {
+            if(!_isShooting) return;
+            
+            StopAllCoroutines();
+            _isShooting = false;
+        }
+
         private void ShootAction(int burstIndex)
         {
             var direction = InputReader.Instance.HandleDirection;
@@ -172,7 +202,8 @@ namespace Code.Gameplay.Character.Features
             _invoker.GunTipPosition.Request(out var position);
             
             FireAction(position, direction, out int id);
-            ReplicateFireGunRpc(position, direction, id, DateTime.Now, (int)NetworkManager.LocalClient.ClientId);
+            _invoker.ClientId.Request(out int clientId);
+            ReplicateFireGunRpc(position, direction, id, DateTime.Now, clientId);
             
             Recoil(direction);
         }
@@ -184,7 +215,10 @@ namespace Code.Gameplay.Character.Features
             _bulletNetworkObject = NonNetworkObjectPool.Singleton.GetNetworkObject(_bulletPrefab, position, rotation, out bulletId);
             
             var bullet = _bulletNetworkObject.gameObject.GetComponent<ObjectBullet>();
-            bullet.Initialize(direction, gameObject.tag, 0);
+            
+            _invoker.ClientId.Request(out int clientId);
+            
+            bullet.Initialize(direction, gameObject.tag, 0, clientId);
         }
 
         private void ReplicateFireAction(Vector3 position, Vector3 direction, int bulletId, float latency, int senderId)
@@ -194,7 +228,7 @@ namespace Code.Gameplay.Character.Features
             _bulletNetworkObject = NonNetworkObjectPool.Singleton.GetNetworkObjectById(_bulletPrefab, position, rotation, bulletId, senderId);
             
             var bullet = _bulletNetworkObject.gameObject.GetComponent<ObjectBullet>();
-            bullet.Initialize(direction, gameObject.tag, latency); 
+            bullet.Initialize(direction, gameObject.tag, latency, senderId); 
         }
 
         private void Recoil(Vector3 direction)
@@ -235,7 +269,7 @@ namespace Code.Gameplay.Character.Features
             if(_currentAmmo.Value < _magazineSize && !_isReloading.Value)
             {
                 _isReloading.Value = true;
-                _reloadTimer = _reloadTime;
+                _reloadTimer.Value = _reloadTime;
             }
         }
 
@@ -264,12 +298,32 @@ namespace Code.Gameplay.Character.Features
         
         public override void Apply(ref InputPayload @event)
         {
-            if (@event.reload && !_isShooting && !bomb.IsThrowing && !shield.IsShieldActive && !melee.IsAttacking) 
+            if (@event.reload && !_isReloading.Value && !_isShooting && !bomb.IsThrowing && !shield.IsShieldActive && !melee.IsAttacking) 
             {
                 if(!IsServer) RequestReloadToServerRpc();
                 else TryReload();
             }
         }
+
+        public void TryActiveReload()
+        {
+            if(_failedActiveReload || !_isReloading.Value) return;
+
+            float progress = 1 - _reloadTimer.Value/_reloadTime;
+            if (Mathf.Abs(progress - _activeReloadPosition) <= _activeReloadSpan / 2f)
+            {
+                if(IsServer) StopReloading();
+                else RequestReloadStopToServerRpc();
+            }
+            else _failedActiveReload = true;
+        }
+
+        [ServerRpc]
+        private void RequestReloadStopToServerRpc()
+        {
+            StopReloading();
+        }
+        
 
         [ServerRpc]
         private void RequestReloadToServerRpc()

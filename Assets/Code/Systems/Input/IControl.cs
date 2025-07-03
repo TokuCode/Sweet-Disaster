@@ -15,5 +15,7 @@ namespace Code.Systems.Input
         bool Free { get; }
         Vector3 HandlePosition { get; }
         Vector3 HandleDirection { get; }
+
+        void SetControl(bool control);
     }
 }

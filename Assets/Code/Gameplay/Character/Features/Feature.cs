@@ -20,7 +20,7 @@ namespace Code.Gameplay.Character.Features
                 player.InputPipeline.Register(this);
             }
         }
-
+        public abstract void ResetFeature();
         public abstract void UpdateFeature();
         public abstract void FixedUpdateFeature();
 

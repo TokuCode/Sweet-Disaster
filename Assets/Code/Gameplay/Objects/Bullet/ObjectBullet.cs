@@ -31,12 +31,13 @@ namespace Code.Gameplay.Objects
         [Header("Dynamic Settings")]
         [SerializeField] private string _ownerTag;
         [SerializeField] private Vector2 _direction;
+        [SerializeField] private int _senderId;
         
         [Header("Collision Settings")]
         [SerializeField] LayerMask _characterLayer;
         [SerializeField] LayerMask _solidLayer;
 
-        public void Initialize(Vector2 direction, string ownerTag, float latency)
+        public void Initialize(Vector2 direction, string ownerTag, float latency, int senderId)
         {
             _ownerTag = ownerTag;
             _direction = direction;
@@ -46,6 +47,8 @@ namespace Code.Gameplay.Objects
             _rigidbody.position += _direction.normalized * (_speed * latency);
             
             _lifeTimeTimer = _lifeTime;
+            
+            _senderId = senderId;
 
             started = true;
         }
@@ -80,13 +83,17 @@ namespace Code.Gameplay.Objects
                 {
                     if (player.Dependencies.TryGetFeature(out Health health))
                     {
+                        player.Invoker.ClientId.Request(out int otherClientId);
                         health.Attack(new ()
                         {
                             DamagePercentage = _damage,
                             KnockbackForce = _knockbackLevel,
                             KnockbackUpForce = _knockbackUpLevel,
                             SourcePosition = transform.position,
-                            Success = true
+                            Success = true,
+                            SenderId = _senderId,
+                            ReceiverId = otherClientId,
+                            Weapon = (int)GunBelt.Weapon.Gun
                         });
                     }
                 }
@@ -100,13 +107,17 @@ namespace Code.Gameplay.Objects
                         KnockbackForce = _knockbackLevel,
                         KnockbackUpForce = _knockbackUpLevel,
                         SourcePosition = transform.position,
-                        Success = true
+                        Success = true,
+                        SenderId = _senderId,
+                        Weapon = (int)GunBelt.Weapon.Gun
                     });
                 } 
             }
             
             if (LayerMaskUtils.CompareGameObjectLayerMask(other.gameObject, _solidLayer) || (LayerMaskUtils.CompareGameObjectLayerMask(other.gameObject, _characterLayer) && !other.gameObject.CompareTag(_ownerTag)))
             {
+                ObjectShield shield = other.gameObject.GetComponent<ObjectShield>(); 
+                if(shield != null) shield.OnBlock(_senderId);
                 Reset();
             }
         }
@@ -118,6 +129,8 @@ namespace Code.Gameplay.Objects
             _ownerTag = string.Empty;
             _direction = Vector3.zero;
             _rigidbody.linearVelocity = Vector3.zero; 
+            
+            _senderId = -1;
             
             started = false;
         }
