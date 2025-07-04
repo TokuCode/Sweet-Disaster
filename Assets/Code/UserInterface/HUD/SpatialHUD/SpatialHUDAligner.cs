@@ -17,6 +17,14 @@ namespace Code.UserInterface.HUD
 
         private void UpdatePosition()
         {
+            if (Player.defeated.Value || Player.outOfBattle.Value)
+            {
+                _transform.gameObject.SetActive(false);
+                return;
+            }
+            
+            _transform.gameObject.SetActive(true);
+            
             Player.Invoker.CenterPosition.Request(out var position);
             _transform.position = position + _offset;
         }

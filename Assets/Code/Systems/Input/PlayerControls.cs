@@ -216,17 +216,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""bd54402f-04bc-4f9c-8bae-4e221e660754"",
-                    ""path"": ""<Keyboard>/space"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";PC"",
-                    ""action"": ""Jump"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""1b494cbe-fe13-4804-adc0-b0421b32fc36"",
                     ""path"": ""<Gamepad>/leftStick/down"",
                     ""interactions"": """",
@@ -271,8 +260,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""d5c9deee-ab98-469d-9977-b87d103b37fc"",
-                    ""path"": ""<Keyboard>/leftShift"",
+                    ""id"": ""bd54402f-04bc-4f9c-8bae-4e221e660754"",
+                    ""path"": ""<Keyboard>/space"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";PC"",
@@ -436,7 +425,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""b9268579-ee9c-4524-b809-d08a5249d113"",
+                    ""id"": ""ec28beca-f863-4bc6-8cfe-c68bdd386971"",
                     ""path"": ""<Keyboard>/s"",
                     ""interactions"": """",
                     ""processors"": """",

@@ -37,6 +37,8 @@ namespace Code.Gameplay.Character
         public Transform GunTip => _gunTip;
         [SerializeField] private Transform _render;
         private Transform _spawn;
+        [SerializeField] private ObjectBox _viewBox;
+        public ObjectBox ViewBox => _viewBox;
         
         public event Action<PlayerPublicInfo> OnPost;
         

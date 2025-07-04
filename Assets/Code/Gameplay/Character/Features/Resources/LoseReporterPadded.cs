@@ -12,7 +12,7 @@ namespace Code.Gameplay.Character
     {
         private Health health;
         
-        private const int _extraFramesToWaitRespawn = 5;
+        private const int _extraFramesToWaitRespawn = 15;
         [SerializeField] private int baseStockCount;
         private NetworkVariable<int> _stocks = new ();
         [SerializeField] private float _timeToRespawn;

@@ -105,8 +105,9 @@ namespace Code.Gameplay.Character
             if(!tracker.player.Invoker.CenterPosition.Request(out var playerPosition).success) return;
 
             bool inSceneView = CameraBox.Instance.Inside(playerPosition);
+            bool inPlayerView = PlayerController.Singleton != null && PlayerController.Singleton.ViewBox.InsideBox(playerPosition);
 
-            if (!inSceneView)
+            if (!inSceneView || !inPlayerView)
             {
                 tracker.target.Radius = _radiusBase;
                 tracker.target.Weight = _baseWeight;

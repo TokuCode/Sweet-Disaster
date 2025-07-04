@@ -3018,10 +3018,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   _targets: []
-  _radiusBase: 3
+  _radiusBase: 3.5
   _radiusGrowth: 10
-  _baseWeight: 1
-  _focusWeight: 1
+  _baseWeight: 2
+  _focusWeight: 4
 --- !u!4 &557548776
 Transform:
   m_ObjectHideFlags: 0
@@ -3486,7 +3486,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  players: []
   _portraitPrefab: {fileID: 7963343510983890411, guid: cb763e1907222d74dbd680074a1ee7ae, type: 3}
   _portraitContainer: {fileID: 1917258020}
 --- !u!4 &630549892
@@ -8547,12 +8546,12 @@ MonoBehaviour:
       Offset: {x: 0, y: 0}
   CenterOnActivate: 1
   TargetOffset: {x: 0, y: 0, z: 0}
-  Damping: {x: 1, y: 1, z: 1}
+  Damping: {x: 4, y: 4, z: 4}
   Lookahead:
-    Enabled: 0
-    Time: 0
-    Smoothing: 0
-    IgnoreY: 0
+    Enabled: 1
+    Time: 0.25
+    Smoothing: 3
+    IgnoreY: 1
 --- !u!114 &1438334643
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8626,7 +8625,7 @@ MonoBehaviour:
   FramingMode: 2
   FramingSize: 0.8
   CenterOffset: {x: 0, y: 0}
-  Damping: 2
+  Damping: 10
   SizeAdjustment: 2
   LateralAdjustment: 0
   FovRange: {x: 1, y: 100}

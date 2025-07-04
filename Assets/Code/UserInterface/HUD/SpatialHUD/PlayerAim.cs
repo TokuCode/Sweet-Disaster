@@ -45,6 +45,14 @@ namespace Code.UserInterface.HUD
         {
             if (Player == null) return;
             
+            if (Player.defeated.Value || Player.outOfBattle.Value)
+            {
+                _aimRect.gameObject.SetActive(false);
+                return;
+            }
+            
+            _aimRect.gameObject.SetActive(true);
+            
             Vector3 positionToTrack = Player.GunTip.position + InputReader.Instance.HandleDirection * _aimDistance;
             _aimRect.transform.position = CameraUtils.WorldToScreenPosition(positionToTrack, _main);
         }
