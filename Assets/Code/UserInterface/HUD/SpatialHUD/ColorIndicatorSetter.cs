@@ -18,5 +18,16 @@ namespace Code.UserInterface.HUD
         {
             colorIndicator.color = publicInfo.playerColor;
         }
+
+        private void Update()
+        {
+            if (player.outOfBattle.Value || player.defeated.Value)
+            {
+                colorIndicator.gameObject.SetActive(false);
+                return;
+            }
+            
+            colorIndicator.gameObject.SetActive(true);
+        }
     }
 }

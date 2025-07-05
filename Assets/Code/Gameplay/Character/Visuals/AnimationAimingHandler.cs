@@ -1,5 +1,3 @@
-using System;
-using Code.Helpers.Utils;
 using Code.Systems.Input;
 using Unity.Netcode;
 using UnityEngine;

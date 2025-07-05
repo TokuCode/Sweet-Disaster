@@ -49,7 +49,7 @@ namespace Code.Gameplay.Character.Features
 
             if(health.IsStunned) return;
             
-            if(!physics.IsGrounded)
+            if(!physics.IsGrounded && !physics.OnSlope)
                 ApplyFriction(_airFriction, velocity);
             else if(IsTurning(velocity) || _cachedMoveDirection == 0)
                 ApplyFriction(_groundFriction, velocity);

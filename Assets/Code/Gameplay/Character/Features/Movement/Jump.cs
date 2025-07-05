@@ -16,6 +16,7 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private float _jumpCooldown;
         [SerializeField] private float _coyoteTime;
         [SerializeField] private float _fallGravityMultiplier; 
+        [SerializeField] private float _fastFallGravityMultiplier; 
         [SerializeField] private float _lowJumpGravityMultiplier;
         [SerializeField] private float _maxFallSpeed;
         
@@ -60,8 +61,6 @@ namespace Code.Gameplay.Character.Features
 
             if(_jumpCooldownTimer > 0) _jumpCooldownTimer -= Time.deltaTime;
             else if (check.IsGrounded) _onDeparture = false;
-            
-            _invoker.GravityScale.Perform(check.OnSlope ? 0f : 1f);
         }
 
         public override void FixedUpdateFeature()
@@ -69,7 +68,6 @@ namespace Code.Gameplay.Character.Features
             if (!IsOwner && !IsServer) return;
             
             VariableJumpGravity();
-            FastFall();
             LimitFallSpeed();
         }
 
@@ -99,26 +97,17 @@ namespace Code.Gameplay.Character.Features
 
         private void VariableJumpGravity()
         {
-            if(!OnDeparture) return;
-            
-            if (check.OnSlope || health.IsStunned) return;
+            if (health.IsStunned) return;
             
             if(!_invoker.Velocity.Request(out Vector2 velocity).success) return;
 
-            if (velocity.y < 0 || (_cachedCrouchInput && !_cachedJumpInput))
+            if (_cachedCrouchInput && !_cachedJumpInput)
+                _invoker.AddForce.Perform(new(Vector2.up, Physics2D.gravity.y * (_fastFallGravityMultiplier - 1) * Time.fixedDeltaTime, ForceMode2D.Impulse));
+            else if (velocity.y < 0 || (_cachedCrouchInput && !_cachedJumpInput))
                 _invoker.AddForce.Perform(new(Vector2.up, Physics2D.gravity.y * (_fallGravityMultiplier - 1) * Time.fixedDeltaTime, ForceMode2D.Impulse));
             else if (velocity.y > 0 && !_cachedJumpInput)
                 _invoker.AddForce.Perform(new(Vector2.up, Physics2D.gravity.y * (_lowJumpGravityMultiplier - 1) * Time.fixedDeltaTime, ForceMode2D.Impulse));
-        }
-
-        private void FastFall()
-        {
-            if(OnDeparture) return;
             
-            if(check.IsGrounded || check.OnSlope) return;
-            
-            if(_cachedCrouchInput && !_cachedJumpInput) 
-                _invoker.AddForce.Perform(new(Vector2.up, Physics2D.gravity.y * (_fallGravityMultiplier - 1) * Time.fixedDeltaTime, ForceMode2D.Impulse));
         }
 
         private void LimitFallSpeed()

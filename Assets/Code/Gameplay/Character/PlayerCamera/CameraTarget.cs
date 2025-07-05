@@ -15,6 +15,13 @@ namespace Code.Gameplay.Character
         private CinemachineTargetGroup _cameraTargetGroup;
         [SerializeField] private List<Tracker> _targets = new ();
         
+        [Header("Base Tracker")]
+        [SerializeField] private Transform _baseTargetTransform;
+        [SerializeField] private float _baseTargetRadius;
+        [SerializeField] private float _baseTargetWeight;
+        private CinemachineTargetGroup.Target _baseTarget;
+        private bool _usingBaseTarget;
+        
         [Header("Settings")] 
         [SerializeField] private float _radiusBase;
         [SerializeField] private float _radiusGrowth;
@@ -32,6 +39,12 @@ namespace Code.Gameplay.Character
             Instance = this;
             
             _cameraTargetGroup = GetComponent<CinemachineTargetGroup>();
+            _baseTarget = new CinemachineTargetGroup.Target
+            {
+                Object = _baseTargetTransform,
+                Radius = _baseTargetRadius,
+                Weight = _baseTargetWeight
+            };
         }
         
         public void CreateTarget(PlayerController player, bool isPlayer)
@@ -73,12 +86,24 @@ namespace Code.Gameplay.Character
 
         public void RemoveOfViewTarget(Tracker tracker)
         {
+            if (_cameraTargetGroup.Targets.Count <= 1 && !_usingBaseTarget)
+            {
+                _cameraTargetGroup.Targets.Add(_baseTarget);
+                _usingBaseTarget = true;
+            }
+            
             if(_cameraTargetGroup.Targets.Contains(tracker.target)) _cameraTargetGroup.Targets.Remove(tracker.target);
             tracker.outOfView = true;
         }
 
         public void AddToViewTarget(Tracker tracker)
         {
+            if (_usingBaseTarget)
+            {
+                _cameraTargetGroup.Targets.Remove(_baseTarget);
+                _usingBaseTarget = false;
+            }
+            
             _cameraTargetGroup.Targets.Add(tracker.target);
             if(!_cameraTargetGroup.Targets.Contains(tracker.target)) _cameraTargetGroup.Targets.Add(tracker.target);
             tracker.outOfView = false;
@@ -105,21 +130,46 @@ namespace Code.Gameplay.Character
             if(!tracker.player.Invoker.CenterPosition.Request(out var playerPosition).success) return;
 
             bool inSceneView = CameraBox.Instance.Inside(playerPosition);
+            bool inPlayerView = PlayerController.Singleton != null && PlayerController.Singleton.ViewBox.InsideBox(playerPosition);
+            bool isPlayer = tracker.isPlayer;
+            bool playerInBattle = !tracker.player.outOfBattle.Value && !tracker.player.defeated.Value;
 
-            if (!inSceneView)
+            if(!isPlayer && !tracker.outOfView && (!inSceneView || !inPlayerView || !playerInBattle))
+            { 
+                RemoveOfViewTarget(tracker);
+                return;
+            }
+
+            if (!isPlayer && tracker.outOfView && (!inSceneView || !inPlayerView || !playerInBattle))
             {
-                tracker.target.Radius = _radiusBase;
-                tracker.target.Weight = _baseWeight;
-                if(!tracker.outOfView && !tracker.isPlayer) RemoveOfViewTarget(tracker);
-               if(tracker.isPlayer) tracker.tracker.position = CameraBox.Instance.ConstrainToView(playerPosition);
+                return;
+            }
+            
+            if (isPlayer && !inSceneView && playerInBattle)
+            {
+               tracker.tracker.position = CameraBox.Instance.ConstrainToView(playerPosition);
+               tracker.target.Radius = _radiusBase;
+               tracker.target.Weight = _baseWeight;
+               return;
+            }
+
+            if (isPlayer && !playerInBattle && !tracker.outOfView)
+            {
+                RemoveOfViewTarget(tracker);
+                return;
+            }
+
+            if (isPlayer && !playerInBattle && tracker.outOfView)
+            {
                 return;
             }
             
             if(tracker.outOfView) AddToViewTarget(tracker);
+            
+            float distanceToBox = CameraBox.Instance.Distance(playerPosition);
+            
             tracker.tracker.position = playerPosition;
-
-            float distance = CameraBox.Instance.Distance(playerPosition);
-            tracker.target.Radius = Mathf.Clamp(distance, _radiusBase, _radiusGrowth);
+            tracker.target.Radius = Mathf.Clamp(distanceToBox, _radiusBase, _radiusGrowth);
             tracker.target.Weight = tracker.isPlayer ? _focusWeight : _baseWeight;
         }
 

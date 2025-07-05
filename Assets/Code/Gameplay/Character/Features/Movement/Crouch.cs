@@ -19,7 +19,7 @@ namespace Code.Gameplay.Character.Features
         [Header("Runtime")]
         [SerializeField] private bool _isCrouching;
         public bool IsCrouching => _isCrouching;
-        public bool CanCrouch(PhysicsCheck check, Jump jump, Health health) => check.IsGrounded && !jump.OnDeparture && !health.IsStunned; 
+        public bool CanCrouch(PhysicsCheck check, Jump jump, Health health) => (check.IsGrounded || check.OnSlope) && !jump.OnDeparture && !health.IsStunned; 
         [SerializeField] private bool _startingCrouch;
         public bool StartingCrouch => _startingCrouch;
 

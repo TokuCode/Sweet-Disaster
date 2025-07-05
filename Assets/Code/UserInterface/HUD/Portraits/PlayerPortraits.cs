@@ -9,8 +9,9 @@ namespace Code.UserInterface.HUD
 {
     public class PlayerPortraits : NetworkBehaviour
     {
-        public List<PlayerPublicInfo> players = new();
-        private int playerCount;
+        private int _playerCount;
+        private bool _playersLoaded;
+        private bool _portraitsLoaded;
         [SerializeField] private GameObject _portraitPrefab;
         
         [Header("UI Elements")]
@@ -19,7 +20,6 @@ namespace Code.UserInterface.HUD
         public override void OnNetworkSpawn()
         {
             NetworkManager.SceneManager.OnLoadEventCompleted += SetPlayerCount;
-            PlayerVisibility.Instance.PlayerAdded += OnPlayerPost;
         }
 
         public override void OnNetworkDespawn()
@@ -27,22 +27,24 @@ namespace Code.UserInterface.HUD
             NetworkManager.SceneManager.OnLoadEventCompleted -= SetPlayerCount;
         }
 
-        private void SetPlayerCount(string sceneName, UnityEngine.SceneManagement.LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
+        private void Update()
         {
-            playerCount = SessionManager.Instance.ActiveSession.Players.Count;
-        }
-
-        public void OnPlayerPost(PlayerPublicInfo player)
-        { 
-            players.Add(player);
-            if (players.Count == playerCount)
+            if (PlayerVisibility.Instance.Players.Count == _playerCount && _playersLoaded && !_portraitsLoaded)
             {
                 SpawnPortraits();
+                _portraitsLoaded = true;
             }
+        }
+
+        private void SetPlayerCount(string sceneName, UnityEngine.SceneManagement.LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
+        {
+            _playerCount = SessionManager.Instance.ActiveSession.Players.Count;
+            _playersLoaded = true;
         }
 
         public void SpawnPortraits()
         {
+            var players = new List<PlayerPublicInfo>(PlayerVisibility.Instance.Players);
             MergeSortUtil<PlayerPublicInfo>.MergeSort(players);
             foreach (var player in players)
             {
