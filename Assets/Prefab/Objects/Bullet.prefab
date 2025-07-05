@@ -338,12 +338,13 @@ MonoBehaviour:
     Part3: 3859855505
     Part4: 2102966229
   _lifeTime: 4
-  _damage: 0.05
+  _baseDamage: 2.5
   _knockbackLevel: 2
   _knockbackUpLevel: 5
   _speed: 25
   _ownerTag: 
   _direction: {x: 0, y: 0}
+  _senderId: 0
   _characterLayer:
     serializedVersion: 2
     m_Bits: 512

@@ -4,7 +4,6 @@ using Code.Gameplay.Objects.ObjectBox;
 using Unity.Cinemachine;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Code.Gameplay.Character
 {

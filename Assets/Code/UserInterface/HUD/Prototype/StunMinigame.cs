@@ -8,6 +8,8 @@ namespace Code.UserInterface.HUD
 {
     public class StunMinigame : MonoBehaviour
     {
+        private const float BaseScreenWidth = 1920f;
+        
         private WillToLive _will;
 
         [Header("UI Elements")] 
@@ -26,6 +28,7 @@ namespace Code.UserInterface.HUD
         private Color _initialColor;
         private bool _assignedEvents;
         private bool _onTransition;
+        private float _reScale;
 
         private void Awake()
         {
@@ -56,7 +59,8 @@ namespace Code.UserInterface.HUD
 
         private void UpdateHandlePosition()
         {
-            float radius = (_minigameRect.rect.width - _handle.rect.width)/2;
+            _reScale = Screen.width / BaseScreenWidth;
+            float radius = (_minigameRect.rect.width - _handle.rect.width) * _reScale /2;
             float angle = Mathf.PI * (.5f - 2 * _will.MinigameProgress);
             Vector3 relativePos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0) * radius;
             _handle.position = _minigameRect.position + relativePos;

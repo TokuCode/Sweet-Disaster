@@ -763,6 +763,7 @@ MonoBehaviour:
   _movementImprecisionPerSpeedUnit: 0.25
   _recoilForce: 2.5
   _recoilImpulseAngle: 45
+  _damageAmpPerTemperature: 1
   _reloadRequested: 0
 --- !u!114 &573164576663406118
 MonoBehaviour:
@@ -807,6 +808,7 @@ MonoBehaviour:
   _timeOnMaxThrowCharge: 0.15
   _cooldownTimeSeconds: 1.5
   _cooldownTimer: 0
+  _cooldownAmpPerTemperatureProgress: 2
   _isOnCooldown: 0
   _startBombCount: 5
   _bombPrefab: {fileID: 6612687119068740015, guid: a189366a9cb40e049a06199f5a62fc44, type: 3}
@@ -875,6 +877,16 @@ MonoBehaviour:
   _shieldStaminaSpendRate: 40
   _isStaminaDepleted: 0
   _minShieldStaminaForActivation: 15
+  _maxShieldTemperature: 100
+  _heatPerDamagePercentage: 1
+  _heatDissipationRate: 5
+  _cooldownRate: 15
+  _selfDamageInExplosion: 0.1
+  _selfKnockbackInExplosion: {x: 2.5, y: 2.5}
+  _selfAttackVfx: {fileID: 6928477528844167981, guid: bec6567e9bde3ad458da93c48b407884, type: 3}
+  _selfAttackRadius: 1
+  _safeZoneMax: 0.1
+  _warningZoneMax: 0.5
 --- !u!114 &1027848877173910424
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -920,17 +932,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _radius: 0.75
-  _extraDistance: 0.25
-  _damage: 0.25
-  _knockback: {x: 6, y: 4}
+  _minRadius: 1
+  _maxRadius: 5
+  _minDamage: 0.1
+  _minKnockback: {x: 2.5, y: 2.5}
+  _maxDamage: 0.5
+  _maxKnockback: {x: 10, y: 10}
   _cooldown: 1
-  _windUpTime: 0.25
-  _followUpTime: 0.75
+  _windUpTime: 0.05
+  _followUpTime: 0.25
   _attackLayer:
     serializedVersion: 2
     m_Bits: 512
   _vfxPrefab: {fileID: 6928477528844167981, guid: bec6567e9bde3ad458da93c48b407884, type: 3}
+  _minPushback: 50
+  _maxPushback: 250
+  _pushbackImpulseAngle: 45
   _isAttacking: 0
 --- !u!114 &2112320117977785655
 MonoBehaviour:

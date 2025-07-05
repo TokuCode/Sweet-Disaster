@@ -72,6 +72,9 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private float _recoilForce;
         [SerializeField] private float _recoilImpulseAngle;
 
+        [Header("Overshoot Settings")] 
+        [SerializeField] private float _damageAmpPerTemperature;
+
         [Header("Server Side")] 
         [SerializeField] private bool _reloadRequested;
 
@@ -203,14 +206,16 @@ namespace Code.Gameplay.Character.Features
             if(burstIndex > 0) direction = ImprecisionDirection(direction);
             _invoker.GunTipPosition.Request(out var position);
             
-            FireAction(position, direction, out int id);
+            float damageMultiplier = 1 + _damageAmpPerTemperature * shield.TemperatureProgress; 
+            
+            FireAction(position, direction, out int id, damageMultiplier);
             _invoker.PlayerNumber.Request(out int clientId);
-            ReplicateFireGunRpc(position, direction, id, DateTime.Now, clientId);
+            ReplicateFireGunRpc(position, direction, id, DateTime.Now, clientId, damageMultiplier);
             
             Recoil(direction);
         }
 
-        private void FireAction(Vector3 position, Vector3 direction, out int bulletId)
+        private void FireAction(Vector3 position, Vector3 direction, out int bulletId, float damageMultiplier)
         {
             var rotation = DirectionToRotation.GetRotation(direction);
             
@@ -219,18 +224,19 @@ namespace Code.Gameplay.Character.Features
             var bullet = _bulletNetworkObject.gameObject.GetComponent<ObjectBullet>();
             
             _invoker.PlayerNumber.Request(out int clientId);
+
             
-            bullet.Initialize(direction, gameObject.tag, 0, clientId);
+            bullet.Initialize(direction, gameObject.tag, 0, clientId, damageMultiplier);
         }
 
-        private void ReplicateFireAction(Vector3 position, Vector3 direction, int bulletId, float latency, int senderId)
+        private void ReplicateFireAction(Vector3 position, Vector3 direction, int bulletId, float latency, int senderId, float damageMultiplier)
         {
             var rotation = DirectionToRotation.GetRotation(direction);
             
             _bulletNetworkObject = NonNetworkObjectPool.Singleton.GetNetworkObjectById(_bulletPrefab, position, rotation, bulletId, senderId);
             
             var bullet = _bulletNetworkObject.gameObject.GetComponent<ObjectBullet>();
-            bullet.Initialize(direction, gameObject.tag, latency, senderId); 
+            bullet.Initialize(direction, gameObject.tag, latency, senderId, damageMultiplier); 
         }
 
         private void Recoil(Vector3 direction)
@@ -351,10 +357,10 @@ namespace Code.Gameplay.Character.Features
         }
 
         [Rpc(SendTo.NotMe)]
-        private void ReplicateFireGunRpc(Vector3 position, Vector3 direction, int objectId, DateTime timestamp, int clientId)
+        private void ReplicateFireGunRpc(Vector3 position, Vector3 direction, int objectId, DateTime timestamp, int clientId, float damageMultiplier)
         {
             float latency = MilisecondsUtils.CalculateLatency(timestamp);
-            ReplicateFireAction(position, direction, objectId, latency, clientId);
+            ReplicateFireAction(position, direction, objectId, latency, clientId, damageMultiplier);
         }
     }
 }

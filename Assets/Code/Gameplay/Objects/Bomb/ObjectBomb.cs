@@ -54,6 +54,9 @@ public class ObjectBomb : NetworkBehaviour
     [SerializeField] private float _persistenceTime;
     private CountdownTimer _persistenceTimer;
     
+    [Header("Shield Block")]
+    [SerializeField] private float _shieldHeatDamage;
+    
     private void Awake()
     {
         _initTimer = new(_initTime);
@@ -193,7 +196,7 @@ public class ObjectBomb : NetworkBehaviour
             var shield = collision.gameObject.GetComponent<ObjectShield>();
             if (shield != null)
             {
-                shield.OnBlock(_senderId);
+                shield.OnBlock(_senderId, _shieldHeatDamage);
             }
         }
     }
@@ -234,6 +237,7 @@ public class ObjectBomb : NetworkBehaviour
                         SenderId = _senderId,
                         Weapon = (int)GunBelt.Weapon.Bomb,
                         ReceiverId = otherClientId,
+                        Unblockeable = false
                     });
                 }
             }
@@ -255,7 +259,8 @@ public class ObjectBomb : NetworkBehaviour
                     SourcePosition = transform.position,
                     Success = true,
                     SenderId = _senderId,
-                    Weapon = (int)GunBelt.Weapon.Bomb
+                    Weapon = (int)GunBelt.Weapon.Bomb,
+                    Unblockeable = false
                 }); 
             }
         }

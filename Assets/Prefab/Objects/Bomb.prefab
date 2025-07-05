@@ -293,3 +293,4 @@ MonoBehaviour:
   _maxPositionError: 0.5
   _maxVelocityError: 0.5
   _persistenceTime: 15
+  _shieldHeatDamage: 0.2

@@ -222,3 +222,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  _spriteRenderer: {fileID: 8589223236669130223}
+  _shieldColor:
+    serializedVersion: 2
+    key0: {r: 0.5529412, g: 0.67058825, b: 0.9960785, a: 1}
+    key1: {r: 0.9963374, g: 1, b: 0.5330188, a: 1}
+    key2: {r: 1, g: 0.45336083, b: 0, a: 0}
+    key3: {r: 1, g: 0, b: 0.05374098, a: 0}
+    key4: {r: 1, g: 0, b: 0.05374098, a: 0}
+    key5: {r: 1, g: 0, b: 0.05374098, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 9830
+    ctime2: 32768
+    ctime3: 65150
+    ctime4: 65150
+    ctime5: 65150
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: 0
+    m_NumColorKeys: 4
+    m_NumAlphaKeys: 2

@@ -13,6 +13,7 @@ namespace Code.Systems.Attack
         public int SenderId;
         public int ReceiverId;
         public int Weapon;
+        public bool Unblockeable;
         
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
@@ -24,6 +25,7 @@ namespace Code.Systems.Attack
             serializer.SerializeValue(ref SenderId);
             serializer.SerializeValue(ref ReceiverId);
             serializer.SerializeValue(ref Weapon);
+            serializer.SerializeValue(ref Unblockeable);
         }
     }
 }

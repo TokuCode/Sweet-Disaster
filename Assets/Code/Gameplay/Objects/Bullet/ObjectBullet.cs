@@ -23,7 +23,7 @@ namespace Code.Gameplay.Objects
         [Header("Static Settings")] 
         [SerializeField] private float _lifeTime;
         private float _lifeTimeTimer;
-        [SerializeField] private float _damage;
+        [SerializeField] private float _baseDamage;
         [SerializeField] private float _knockbackLevel;
         [SerializeField] private float _knockbackUpLevel;
         [SerializeField] private float _speed;
@@ -32,15 +32,17 @@ namespace Code.Gameplay.Objects
         [SerializeField] private string _ownerTag;
         [SerializeField] private Vector2 _direction;
         [SerializeField] private int _senderId;
+        private float _damage;
         
         [Header("Collision Settings")]
         [SerializeField] LayerMask _characterLayer;
         [SerializeField] LayerMask _solidLayer;
 
-        public void Initialize(Vector2 direction, string ownerTag, float latency, int senderId)
+        public void Initialize(Vector2 direction, string ownerTag, float latency, int senderId, float damageMultiplier)
         {
             _ownerTag = ownerTag;
             _direction = direction;
+            _damage = _baseDamage * damageMultiplier;
             transform.right = direction;
             
             latency = Mathf.Min(latency, maxLatencyMiliseconds/1000);
@@ -93,7 +95,8 @@ namespace Code.Gameplay.Objects
                             Success = true,
                             SenderId = _senderId,
                             ReceiverId = otherClientId,
-                            Weapon = (int)GunBelt.Weapon.Gun
+                            Weapon = (int)GunBelt.Weapon.Gun,
+                            Unblockeable = false
                         });
                     }
                 }
@@ -109,7 +112,8 @@ namespace Code.Gameplay.Objects
                         SourcePosition = transform.position,
                         Success = true,
                         SenderId = _senderId,
-                        Weapon = (int)GunBelt.Weapon.Gun
+                        Weapon = (int)GunBelt.Weapon.Gun,
+                        Unblockeable = false
                     });
                 } 
             }
@@ -117,7 +121,7 @@ namespace Code.Gameplay.Objects
             if (LayerMaskUtils.CompareGameObjectLayerMask(other.gameObject, _solidLayer) || (LayerMaskUtils.CompareGameObjectLayerMask(other.gameObject, _characterLayer) && !other.gameObject.CompareTag(_ownerTag)))
             {
                 ObjectShield shield = other.gameObject.GetComponent<ObjectShield>(); 
-                if(shield != null) shield.OnBlock(_senderId);
+                if(shield != null) shield.OnBlock(_senderId, _damage);
                 Reset();
             }
         }
@@ -129,6 +133,7 @@ namespace Code.Gameplay.Objects
             _ownerTag = string.Empty;
             _direction = Vector3.zero;
             _rigidbody.linearVelocity = Vector3.zero; 
+            _damage = _baseDamage;
             
             _senderId = -1;
             

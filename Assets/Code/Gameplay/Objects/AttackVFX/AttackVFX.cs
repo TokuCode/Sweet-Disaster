@@ -8,14 +8,16 @@ namespace Code.Gameplay.Objects
         private SpriteRenderer spriteRenderer;
         [SerializeField] private float _persistenceTime;
         [SerializeField] private AnimationCurve _fadeCurve;
+        private float radius;
 
         private void Awake()
         {
             spriteRenderer = GetComponent<SpriteRenderer>();
         }
 
-        public void Init()
+        public void Init(float radius)
         {
+            transform.localScale = Vector3.one * (radius * 2);
             StartCoroutine(FadeSequence());
         }
 

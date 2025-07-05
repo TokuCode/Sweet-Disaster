@@ -78,15 +78,6 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Melee",
-                    "type": "Button",
-                    "id": "1b75352a-05c7-4539-8fee-0f64a121fb04",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "Shield",
                     "type": "Button",
                     "id": "566e0b34-4688-4592-9824-659b9f892afb",
@@ -290,28 +281,6 @@
                     "processors": "",
                     "groups": ";PC",
                     "action": "Throw",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "824420a3-cbbb-43cd-96b6-80fdee3c4053",
-                    "path": "<Gamepad>/rightStickPress",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Gamepad",
-                    "action": "Melee",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "3b49f22d-e293-48a2-b861-1a7f52143f59",
-                    "path": "<Keyboard>/v",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";PC",
-                    "action": "Melee",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

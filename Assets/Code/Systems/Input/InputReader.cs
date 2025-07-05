@@ -27,6 +27,8 @@ namespace Code.Systems.Input
         public event Action OnMeleeReleased;
         
         public event Action OnReloadPressed;
+        
+        public event Action OnShieldPressed;
 
         [SerializeField] private bool _onGamepad;
         public bool OnGamepad => _onGamepad;
@@ -234,8 +236,11 @@ namespace Code.Systems.Input
         public void OnShield(InputAction.CallbackContext context)
         {
             if (!control) return;
-            if(context.performed)
+            if (context.performed)
+            {
+                OnShieldPressed?.Invoke();
                 Shield = true;
+            }
             else if (context.canceled)
                 Shield = false;
         }

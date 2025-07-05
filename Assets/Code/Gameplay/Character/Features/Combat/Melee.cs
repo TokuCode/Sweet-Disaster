@@ -20,10 +20,12 @@ namespace Code.Gameplay.Character.Features
         private Crouch crouch;
 
         [Header("Attack")] 
-        [SerializeField] private float _radius;
-        [SerializeField] private float _extraDistance;
-        [SerializeField] private float _damage;
-        [SerializeField] private Vector2 _knockback;
+        [SerializeField] private float _minRadius;
+        [SerializeField] private float _maxRadius;
+        [SerializeField] private float _minDamage;
+        [SerializeField] private Vector2 _minKnockback;
+        [SerializeField] private float _maxDamage;
+        [SerializeField] private Vector2 _maxKnockback;
         [SerializeField] private float _cooldown;
         private CountdownTimer _cooldownTimer;
         public float CooldownProgress => _cooldownTimer.Progress;
@@ -33,6 +35,11 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private float _followUpTime;
         [SerializeField] private LayerMask _attackLayer;
         [SerializeField] private GameObject _vfxPrefab;
+
+        [Header("ShieldBash")] 
+        [SerializeField] private float _minPushback;
+        [SerializeField] private float _maxPushback;
+        [SerializeField] private float _pushbackImpulseAngle;
         
         [Header("Runtime")]
         [SerializeField] private bool _isAttacking;
@@ -54,7 +61,7 @@ namespace Code.Gameplay.Character.Features
             _dependencies.TryGetFeature(out bomb);
             _dependencies.TryGetFeature(out crouch);
             _dependencies.TryGetFeature(out health);
-            if(IsOwner) InputReader.Instance.OnMeleePressed += TryMelee;
+            if(IsOwner) InputReader.Instance.OnShootPressed += TryMelee;
             _cooldownTimer = new (_cooldown);
             _cooldownTimer.OnTimerStop += ResetMelee;
         }
@@ -62,9 +69,10 @@ namespace Code.Gameplay.Character.Features
         private void TryMelee()
         {
             bool canAttackInternal = !_isAttacking && !_onCooldown;
-            bool canAttackExternal = !crouch.IsCrouching && !health.IsStunned && !shield.IsShieldActive && !bomb.IsThrowing && !shoot.IsShooting && !shoot.IsReloading;
+            bool canAttackExternal =  shield.IsShieldActive && shield.OutSafeZone;
             if (canAttackInternal && canAttackExternal)
             {
+                shield.ShieldBash();
                 StartCoroutine(MeleeSequence());
             }
         }
@@ -96,12 +104,20 @@ namespace Code.Gameplay.Character.Features
         {
             _invoker.GunTipPosition.Request(out var position);
             _invoker.CenterPosition.Request(out var centerPosition);
-            position += InputReader.Instance.HandleDirection * _extraDistance;
+            float radius = Mathf.Lerp(_minRadius, _maxRadius, shield.TemperatureProgress);
+            float damage = Mathf.Lerp(_minDamage, _maxDamage, shield.TemperatureProgress);
+            Vector2 knockback = Vector2.Lerp(_minKnockback, _maxKnockback, shield.TemperatureProgress);
+            float pushback = Mathf.Lerp(_minPushback, _maxPushback, shield.TemperatureProgress); 
+                
+            position += InputReader.Instance.HandleDirection * radius;
+            var pushbackDirection = (position - centerPosition).normalized;
             
-            AttackVFX(position);
-            ReplicateVFXRpc(position);
+            PushBack(pushbackDirection, pushback);
+            
+            AttackVFX(position, radius);
+            ReplicateVFXRpc(position, radius);
 
-            var colliders = Physics2D.OverlapCircleAll(position, _radius, _attackLayer);
+            var colliders = Physics2D.OverlapCircleAll(position, radius, _attackLayer);
             foreach (var collider in colliders)
             {
                 if(collider.gameObject.CompareTag(gameObject.tag)) continue;
@@ -116,13 +132,14 @@ namespace Code.Gameplay.Character.Features
                         _invoker.PlayerNumber.Request(out int clientId);
                         health.RequestAttackInOwner(new ()
                         {
-                            DamagePercentage = _damage,
-                            KnockbackForce = _knockback.x,
-                            KnockbackUpForce = _knockback.y,
+                            DamagePercentage = damage,
+                            KnockbackForce = knockback.x,
+                            KnockbackUpForce = knockback.y,
                             SourcePosition = centerPosition,
                             Success = true,
                             SenderId = clientId,
-                            ReceiverId = otherClientId
+                            ReceiverId = otherClientId,
+                            Unblockeable = false
                         });
                     }
                 }
@@ -132,15 +149,27 @@ namespace Code.Gameplay.Character.Features
                 {
                     dummy.Attack(new ()
                     {
-                        DamagePercentage = _damage,
-                        KnockbackForce = _knockback.x,
-                        KnockbackUpForce = _knockback.y,
+                        DamagePercentage = damage,
+                        KnockbackForce = knockback.x,
+                        KnockbackUpForce = knockback.y,
                         SourcePosition = transform.position,
                         Success = true,
-                        Weapon = (int)GunBelt.Weapon.Melee
+                        Weapon = (int)GunBelt.Weapon.Melee,
+                        Unblockeable = false
                     });
                 }  
             }
+        }
+
+        private void PushBack(Vector3 direction, float pushback)
+        {
+            float minY = -Mathf.Cos(_pushbackImpulseAngle * Mathf.Deg2Rad);
+            if (_invoker.Velocity.Request(out var velocity).success)
+            { 
+                if (direction.y <= minY && velocity.y < 0)
+                    _invoker.Velocity.Perform(velocity.With(y: 0));
+            }
+            _invoker.AddForce.Perform(new(-direction, pushback, ForceMode2D.Impulse));
         }
 
         private void ResetMelee()
@@ -155,17 +184,17 @@ namespace Code.Gameplay.Character.Features
             _cooldownTimer.Tick(Time.deltaTime);
         }
 
-        private void AttackVFX(Vector3 position)
+        private void AttackVFX(Vector3 position, float radius)
         {
             var go = ObjectPoolManager.Instance.Get(_vfxPrefab, position, Quaternion.identity);
             go.SetActive(true);
-            go.GetComponent<AttackVFX>().Init();
+            go.GetComponent<AttackVFX>().Init(radius);
         }
 
         [Rpc(SendTo.NotMe)]
-        private void ReplicateVFXRpc(Vector3 position)
+        private void ReplicateVFXRpc(Vector3 position, float radius)
         {
-            AttackVFX(position);
+            AttackVFX(position, radius);
         }
 
         public override void FixedUpdateFeature() { }

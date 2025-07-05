@@ -38,6 +38,7 @@ namespace Code.Gameplay.Character.Features
         [Header("Resource Management")] 
         [SerializeField] private float _cooldownTimeSeconds;
         [SerializeField] private float _cooldownTimer;
+        [SerializeField] private float _cooldownAmpPerTemperatureProgress;
         [SerializeField] private bool _isOnCooldown;
         public bool IsOnCooldown => _isOnCooldown;
         [SerializeField] private int _startBombCount;
@@ -108,8 +109,12 @@ namespace Code.Gameplay.Character.Features
         public override void UpdateFeature()
         {
             if(!IsOwner && !IsServer) return;
-            
-            if(_cooldownTimer > 0) _cooldownTimer -= Time.deltaTime;
+
+            if (_cooldownTimer > 0)
+            {
+                float amp = 1 + _cooldownAmpPerTemperatureProgress * shield.TemperatureProgress;
+                _cooldownTimer -= Time.deltaTime * amp;
+            }
             else if(_isOnCooldown) ResetThrow();
                 
             if (_isThrowing) ThrowCharge();
