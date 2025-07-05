@@ -43,8 +43,8 @@ namespace Code.UserInterface.LobbyUI
             nextMapButton.onClick.AddListener(() => ChangeMap(1));
             prevMapButton.onClick.AddListener(() => ChangeMap(-1));
 
-            nextMapButton.interactable = _sessionManager.ActiveSession.IsHost;
-            prevMapButton.interactable = _sessionManager.ActiveSession.IsHost;
+            //nextMapButton.interactable = _sessionManager.ActiveSession.IsHost;
+            //prevMapButton.interactable = _sessionManager.ActiveSession.IsHost;
         }
 
         private void Start()
@@ -133,8 +133,11 @@ namespace Code.UserInterface.LobbyUI
         public async void OnCharacterSelected(CharacterButtonUI character)
         {
             bool success = await TrySelectCharacter(character.characterName);
+            
+#if UNITY_EDITOR
             if (!success) Debug.Log("Character already taken");
             else Debug.Log($"My Character: {character.characterName}");
+#endif
         }
         
         public void CopyToClipboard() => GUIUtility.systemCopyBuffer = codeText.text;
