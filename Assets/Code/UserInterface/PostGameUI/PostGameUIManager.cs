@@ -38,18 +38,15 @@ namespace Code.UserInterface.PostGameUI
         private SessionManager _sessionManager;
         private CancellationTokenSource  _cancellationTokenSource;
 
-        private void Awake()
+        public override async void OnNetworkSpawn()
         {
+            base.OnNetworkSpawn();
+            
             playAgainButton.onClick.AddListener(OnPlayAgainPressed);
             exitButton.onClick.AddListener(ReturnToLobby);
             
             _sessionManager = SessionManager.Instance;
             _cancellationTokenSource = new CancellationTokenSource();
-        }
-
-        public override async void OnNetworkSpawn()
-        {
-            base.OnNetworkSpawn();
 
             if (IsServer)
             {
@@ -117,15 +114,6 @@ namespace Code.UserInterface.PostGameUI
                         }
                     }
                 }
-
-                /*if (i > 0)
-                {
-                    Debug.Log($"[Last] {_cachedPlayerStatusData.Lives}");
-                    Debug.Log($"[Last] {_cachedPlayerStatusData.AccumulatedDmg}");
-                }
-                
-                Debug.Log($"[Current] {playerStatusData.Lives}");
-                Debug.Log($"[Current] {playerStatusData.AccumulatedDmg}");*/
                 
                 _cachedPlayerStatusData.Lives = playerStatusData.Lives;
                 _cachedPlayerStatusData.AccumulatedDmg = playerStatusData.AccumulatedDmg;
