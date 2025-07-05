@@ -145,8 +145,7 @@ namespace Code.Gameplay.Character.Features
             {
                 _isThrowing = true;
                 _throwChargeTimer = 0f;
-                if(IsServer) move.BlockMovement();
-                else move.RequestMovement(true);
+                if(IsOwner) move.BlockMovement();
             }
         }
 
@@ -166,8 +165,7 @@ namespace Code.Gameplay.Character.Features
             _cooldownTimer = _cooldownTimeSeconds;
             _isOnCooldown = true;
             
-            if(IsServer) move.UnblockMovement();
-            else move.RequestMovement(false);
+            if(IsOwner) move.UnblockMovement();
         }
 
         private void CancelThrowing()
@@ -176,8 +174,7 @@ namespace Code.Gameplay.Character.Features
             
             _isThrowing = false;
             
-            if(IsServer) move.UnblockMovement();
-            else move.RequestMovement(false);  
+            if(IsOwner) move.UnblockMovement();
         }
     
         private void ResetThrow() => _isOnCooldown = false;

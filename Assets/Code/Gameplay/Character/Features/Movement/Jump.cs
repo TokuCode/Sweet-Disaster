@@ -103,7 +103,7 @@ namespace Code.Gameplay.Character.Features
 
             if (_cachedCrouchInput && !_cachedJumpInput)
                 _invoker.AddForce.Perform(new(Vector2.up, Physics2D.gravity.y * (_fastFallGravityMultiplier - 1) * Time.fixedDeltaTime, ForceMode2D.Impulse));
-            else if (velocity.y < 0 || (_cachedCrouchInput && !_cachedJumpInput))
+            else if (velocity.y < 0)
                 _invoker.AddForce.Perform(new(Vector2.up, Physics2D.gravity.y * (_fallGravityMultiplier - 1) * Time.fixedDeltaTime, ForceMode2D.Impulse));
             else if (velocity.y > 0 && !_cachedJumpInput)
                 _invoker.AddForce.Perform(new(Vector2.up, Physics2D.gravity.y * (_lowJumpGravityMultiplier - 1) * Time.fixedDeltaTime, ForceMode2D.Impulse));

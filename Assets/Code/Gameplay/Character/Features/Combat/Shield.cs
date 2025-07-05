@@ -21,9 +21,9 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private GameObject _shieldPrefab;
         private GameObject _shield;
         [SerializeField] private float _shieldAngle;
-        [SerializeField] private NetworkVariable<bool> _isShieldActive = new(false, NetworkVariableReadPermission.Owner);
+        [SerializeField] private NetworkVariable<bool> _isShieldActive = new(false, NetworkVariableReadPermission.Owner, NetworkVariableWritePermission.Owner);
         [SerializeField] private float _deactivateShieldDelay;
-        [SerializeField] private NetworkVariable<bool> _isDeactivatingShield = new(false, NetworkVariableReadPermission.Owner);
+        [SerializeField] private NetworkVariable<bool> _isDeactivatingShield = new(false, NetworkVariableReadPermission.Owner, NetworkVariableWritePermission.Owner);
         public bool IsShieldActive => _isShieldActive.Value || _isDeactivatingShield.Value;
     
         [Header("Shield Stamina")] 
@@ -46,9 +46,9 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private Vector2 _selfKnockbackInExplosion;
         [SerializeField] private GameObject _selfAttackVfx;
         [SerializeField] private float _selfAttackRadius;
-        private NetworkVariable<bool> _isOnCooldown = new();
+        private NetworkVariable<bool> _isOnCooldown = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
         public bool OnCooldown => _isOnCooldown.Value;
-        private NetworkVariable<float> _shieldTemperature = new();
+        private NetworkVariable<float> _shieldTemperature = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
         public float Temperature => _shieldTemperature.Value;
         public float TemperatureProgress => _shieldTemperature.Value / _maxShieldTemperature;
 
@@ -64,16 +64,15 @@ namespace Code.Gameplay.Character.Features
 
         public override void ResetFeature()
         {
-            if (IsServer)
+            if (IsOwner)
             {
                 _isShieldActive.Value = false;
                 _isDeactivatingShield.Value = false;
                 ActivateShieldObjectRpc(false);
-                _currentShieldStamina.Value = _maxShieldStamina;
                 _shieldTemperature.Value = 0;
                 _isOnCooldown.Value = false;
             }
-            _isStaminaDepleted = false;
+
             _shield.SetActive(false);
         }
 
@@ -109,12 +108,9 @@ namespace Code.Gameplay.Character.Features
 
         public override void UpdateFeature()
         {
-            if(!IsServer && !IsOwner) return;
-            
-            TemperatureManagement();
-            
             if(!IsOwner) return;
             
+            TemperatureManagement();
             if(_isShieldActive.Value || _isDeactivatingShield.Value) SetShieldAtHandle();
         }
 
@@ -129,23 +125,15 @@ namespace Code.Gameplay.Character.Features
             if (canShieldInternal && canShieldExternal)
             {
                 ActivateShield();
-                if (IsHost)
-                {
-                    _isShieldActive.Value = true;
-                    _isDeactivatingShield.Value = false;
-                }
-                else ActivateShieldServerRpc(true, false);
+                _isShieldActive.Value = true;
+                _isDeactivatingShield.Value = false;
             }
         }
     
         public void TryDeactivateShield()
         {
-            if (IsHost)
-            {
-                _isShieldActive.Value = false;
-                _isDeactivatingShield.Value = true;
-            }
-            else ActivateShieldServerRpc(false, true);
+            _isShieldActive.Value = false;
+            _isDeactivatingShield.Value = true;
             
             Invoke(nameof(DeactivateShield), _deactivateShieldDelay);
         }
@@ -188,12 +176,8 @@ namespace Code.Gameplay.Character.Features
         
         public void DeactivateShield()
         {
-            if (IsServer)
-            {
-                _isShieldActive.Value = false;
-                _isDeactivatingShield.Value = false;
-            }
-            else ActivateShieldServerRpc(false, false);
+            _isShieldActive.Value = false; 
+            _isDeactivatingShield.Value = false;
             
             _shield.SetActive(false);
             ActivateShieldObjectRpc(false);
@@ -228,7 +212,7 @@ namespace Code.Gameplay.Character.Features
 
         private void TemperatureManagement()
         {
-            if(!IsServer) return;
+            if(!IsOwner) return;
             
             if (!_isShieldActive.Value || _isOnCooldown.Value)
             {
@@ -243,7 +227,7 @@ namespace Code.Gameplay.Character.Features
 
         private void SelfShieldExplosion()
         {
-            if(!IsServer) return;
+            if(!IsOwner) return;
 
             _invoker.GunTipPosition.Request(out var gunTipPosition);
             _invoker.PlayerNumber.Request(out var playerNumber);
@@ -282,11 +266,7 @@ namespace Code.Gameplay.Character.Features
         
         public void ShieldBash()
         {
-            if (!IsServer && IsOwner)
-            {
-                RequestShieldBashOnServerRpc();
-                return;
-            }
+            if (!IsOwner) return;
 
             _isOnCooldown.Value = true;
             TryDeactivateShield();
@@ -327,28 +307,14 @@ namespace Code.Gameplay.Character.Features
 
         public void HeatShield(float damage)
         {
-            if(IsServer) HeatShieldAction(damage);
-            else HeatShieldRequestToServerRpc(damage);
+            HeatShieldAction(damage);
         }
         
         private void HeatShieldAction(float damagePercentage)
         {
-            if(!IsServer) return;
+            if(!IsOwner) return;
             _shieldTemperature.Value = Mathf.Min(_shieldTemperature.Value + _heatPerDamagePercentage * damagePercentage * 100, _maxShieldTemperature);
             if (_shieldTemperature.Value >= _maxShieldTemperature && !_isOnCooldown.Value) SelfShieldExplosion();
-        }
-
-        [ServerRpc]
-        private void HeatShieldRequestToServerRpc(float damagePercentage)
-        {
-            HeatShieldAction(damagePercentage);
-        }
-
-        [ServerRpc]
-        private void ActivateShieldServerRpc(bool isShieldActive, bool isDeactivatingShield)
-        {
-            _isShieldActive.Value = isShieldActive;
-            _isDeactivatingShield.Value = isDeactivatingShield;
         }
 
         [Rpc(SendTo.NotMe)]

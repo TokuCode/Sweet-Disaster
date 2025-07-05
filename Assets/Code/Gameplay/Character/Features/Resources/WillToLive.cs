@@ -14,12 +14,12 @@ namespace Code.Gameplay.Character.Features
         [Header("Stun Minigame")]
         [SerializeField] private float _minigameDurationPerHealthRatio;
         [SerializeField] private float _minStunDuration;
-        [SerializeField] private float _sweetSpotRatio;
+        [SerializeField] private float _sweetSpotSpan;
+        public float SweetSpotSpan => _sweetSpotSpan;
         private float _cachedStunDuration;
-        public float SweetSpotRatio => _sweetSpotRatio;
         [SerializeField] private float _onSuccessTimeReductionRatio;
         private CountdownTimer _minigameTimer;
-        private NetworkVariable<bool> _onMinigame = new(false, NetworkVariableReadPermission.Owner);
+        private NetworkVariable<bool> _onMinigame = new(false, NetworkVariableReadPermission.Owner, NetworkVariableWritePermission.Owner);
         public float MinigameProgress => 1 - _minigameTimer.Progress;
         public bool OnMinigame => _onMinigame.Value;
         private bool _cachedMinigameInput;
@@ -29,7 +29,7 @@ namespace Code.Gameplay.Character.Features
 
         public override void ResetFeature()
         {
-            if (IsServer)
+            if (IsOwner)
             {
                 _onMinigame.Value = false;
             }
@@ -74,7 +74,7 @@ namespace Code.Gameplay.Character.Features
         {
             if (!_cachedMinigameInput || !_onMinigame.Value) return;
 
-            if (_minigameTimer.Progress <= _sweetSpotRatio)
+            if (_minigameTimer.Progress <= _sweetSpotSpan)
             {
                 _health.AccelerateStun(Mathf.Max(1f, _onSuccessTimeReductionRatio * _cachedStunDuration));
                 OnMinigameSucces?.Invoke();
@@ -90,24 +90,22 @@ namespace Code.Gameplay.Character.Features
 
         private void StartMinigame(float stunDuration, float healthRatio)
         {
-            if(!IsServer) return;
+            if(!IsOwner) return;
             
             if(stunDuration < _minStunDuration) return;
             
             _onMinigame.Value = true;
             
-            if(IsHost) StartMinigameAction(healthRatio, stunDuration);
-            else StartMinigameOnClientRpc(healthRatio, stunDuration);
+            StartMinigameAction(healthRatio, stunDuration);
         }
 
         private void EndMinigame()
         {
-            if(!IsServer) return;
+            if(!IsOwner) return;
             
             _onMinigame.Value = false;
             
-            if(IsHost) EndMinigameAction();
-            else EndMinigameOnClientRpc();
+            EndMinigameAction();
         }
 
         [ClientRpc]

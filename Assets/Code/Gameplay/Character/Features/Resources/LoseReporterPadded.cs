@@ -57,8 +57,8 @@ namespace Code.Gameplay.Character
                 if (_stocks.Value <= 0) ReportDefeat();
                 else ScheduleRespawn();
                 
-                ResetController();
-                RequestResetOnOwnerRpc();
+                ResetController(_stocks.Value > 0);
+                RequestResetOnOwnerRpc(_stocks.Value > 0);
             }
         }
 
@@ -118,14 +118,14 @@ namespace Code.Gameplay.Character
         public override void Apply(ref InputPayload @event) { }
 
         [Rpc(SendTo.Owner)]
-        private void RequestResetOnOwnerRpc()
+        private void RequestResetOnOwnerRpc(bool resetMovement)
         {
-            ResetController();
+            ResetController(resetMovement);
         }
 
-        private void ResetController()
+        private void ResetController(bool resetMovement)
         {
-            _invoker.Reset.Perform(false);
+            _invoker.Reset.Perform(resetMovement);
         }
     }
 }

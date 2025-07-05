@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Code.Gameplay.Objects.ObjectBox;
 using Unity.Cinemachine;
 using Unity.Netcode;
@@ -31,7 +32,7 @@ namespace Code.Gameplay.Character
         {
             if (Instance != null && Instance != this)
             {
-                Debug.LogWarning($"There is more than one instance of {this.GetType().Name}");
+                Debug.LogWarning($"There is more than one instance of {GetType().Name}");
                 Destroy(gameObject);
                 return;
             }
@@ -63,7 +64,8 @@ namespace Code.Gameplay.Character
                 tracker = playerTracker.transform,
                 target = target,
                 isPlayer = isPlayer,
-                enabled = true
+                enabled = true,
+                internalOutOfBattle = false
             });
             
             _cameraTargetGroup.Targets.Add(target);
@@ -131,7 +133,7 @@ namespace Code.Gameplay.Character
             bool inSceneView = CameraBox.Instance.Inside(playerPosition);
             bool inPlayerView = PlayerController.Singleton != null && PlayerController.Singleton.ViewBox.InsideBox(playerPosition);
             bool isPlayer = tracker.isPlayer;
-            bool playerInBattle = !tracker.player.outOfBattle.Value && !tracker.player.defeated.Value;
+            bool playerInBattle = !tracker.player.outOfBattle.Value && !tracker.player.defeated.Value && !tracker.internalOutOfBattle;
 
             if(!isPlayer && !tracker.outOfView && (!inSceneView || !inPlayerView || !playerInBattle))
             { 
@@ -207,6 +209,13 @@ namespace Code.Gameplay.Character
                 target.target.Radius = currentRadius;
             }
         }
+
+        public void SetInternalOutOfBattle(PlayerController player, bool internalOutOfBattle)
+        {
+            Tracker playerTracker = _targets.FirstOrDefault(tracker => tracker.player == player);
+            if(playerTracker == null) return;
+            playerTracker.internalOutOfBattle = internalOutOfBattle;
+        }
     }
 
     [Serializable]
@@ -218,5 +227,6 @@ namespace Code.Gameplay.Character
         public bool isPlayer;
         public bool enabled;
         public bool outOfView;
+        public bool internalOutOfBattle;
     }
 }
