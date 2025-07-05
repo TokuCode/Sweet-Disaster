@@ -22,6 +22,9 @@ namespace Code.Networking.Session
         private void RegisterPlayerId()
         {
             string playerId = SessionManager.Instance.ActiveSession.CurrentPlayer.Id;
+            var clientId = NetworkManager.LocalClient.ClientId;
+            if(SessionManager.Instance.PlayerIdToClientId.TryAdd(playerId, clientId))
+                Debug.Log($"[Client] Self Registered: {playerId} with clientId: {clientId}");
             Debug.Log($"[Client] Sending PlayerId: {playerId} to server...");
             SendPlayerIdRpc(playerId);
         }
@@ -31,7 +34,7 @@ namespace Code.Networking.Session
             RegisterPlayerId();
         }
 
-        [Rpc(SendTo.Everyone)]
+        [Rpc(SendTo.NotMe)]
         private void SendPlayerIdRpc(string playerId, RpcParams rpcParams = default)
         {
             ulong clientId = rpcParams.Receive.SenderClientId;
