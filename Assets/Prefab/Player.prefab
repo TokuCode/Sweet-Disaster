@@ -817,6 +817,7 @@ MonoBehaviour:
   _onShieldHitAccelerateTime: 1.5
   _onMeleeHitAccelerateTime: 3.5
   _onWillToLiveHitAccelerateTime: 1
+  _onActiveReloadHitAccelerateTime: 0.2
 --- !u!114 &419103442011533078
 MonoBehaviour:
   m_ObjectHideFlags: 0
