@@ -1,12 +1,17 @@
-﻿using Code.Gameplay.Character.Framework;
+﻿using Code.Gameplay.Character.Command;
+using Code.Gameplay.Character.Framework;
+using Code.Helpers;
 using Code.Networking.ClientPrediction;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Code.Gameplay.Character.Features
 {
     public class Movement : Feature
     {
+        private const float baseSnapAngle = 45f;
+        
         private PhysicsCheck check;
         private Speed speed;
         private Jump jump;
@@ -14,6 +19,10 @@ namespace Code.Gameplay.Character.Features
         [Header("Settings")]
         [SerializeField] private float _airMultiplier;
         
+        [Header("Snap To Ground")]
+        [SerializeField] private float _snapToGroundForce;
+        [SerializeField] private float _boostSlopeForce;
+
         [Header("Runtime")]
         [SerializeField] private NetworkVariable<bool> _isMovementBlocked = new (false, NetworkVariableReadPermission.Owner);
         public bool IsMovementBlocked => _isMovementBlocked.Value;
@@ -41,6 +50,27 @@ namespace Code.Gameplay.Character.Features
             if (!IsOwner && !IsServer) return;
             
             LimitMovement();
+            TurnMovement();
+        }
+
+        private void TurnMovement()
+        {
+            if (check.SlopeNormal == check.PreviousSlopeNormal) return;
+            
+            _invoker.Velocity.Request(out Vector2 velocity);
+            float turnSign = Mathf.Sign(DirectionAngle(check.PreviousSlopeNormal, check.SlopeNormal));
+            float xVelocitySign = Mathf.Sign(velocity.x);
+            float snap = Vector3.Angle(check.PreviousSlopeNormal, check.SlopeNormal) * _snapToGroundForce / baseSnapAngle; 
+            float boost = Vector3.Angle(check.PreviousSlopeNormal, check.SlopeNormal) * _boostSlopeForce / baseSnapAngle;
+            Vector2 force = Vector2.down * (xVelocitySign * turnSign * snap) + Vector2.right * (xVelocitySign * boost);
+            _invoker.AddForce.Perform(new(force, ForceMode2D.Impulse));
+        }
+
+        private float DirectionAngle(Vector2 from, Vector2 to)
+        {
+            float angleFrom = -Vector2.SignedAngle(Vector2.up, from);
+            float angleTo = -Vector2.SignedAngle(Vector2.up, to);
+            return angleTo - angleFrom;
         }
 
         private void Move(float moveInput)
@@ -56,9 +86,9 @@ namespace Code.Gameplay.Character.Features
             Vector2 direction = Vector2.right;
              if (check.OnSlope && !onDeparture)
                 direction = check.ProjectOnSlopeDirection(direction);
-            
-            Vector2 movement = direction * (moveInput * acceleration);
-            float multiplier = check.IsGrounded ? 1f : _airMultiplier;
+             
+            Vector2 movement = direction.normalized * (moveInput * acceleration);
+            float multiplier = check.IsGrounded || check.OnSlope ? 1f : _airMultiplier;
             _invoker.AddForce.Perform(new(movement * multiplier, ForceMode2D.Force));
         }
         

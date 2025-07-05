@@ -51,6 +51,7 @@ namespace Code.Gameplay.Character.Features
 
         [Header("Bomb reload")] 
         [SerializeField] private float _bombReloadTime;
+        [SerializeField] private float _minHorizontalSpeedToReload;
         private CountdownTimer _bombReloadTimer;
         public float BombReloadProgress => 1 - _bombReloadTimer.Progress;
         [SerializeField] private float _onBulletHitAccelerateTime;
@@ -122,7 +123,7 @@ namespace Code.Gameplay.Character.Features
         {
             _invoker.Velocity.Request(out var velocity);
 
-            if (Mathf.Abs(velocity.x) < 0.1f || health.IsStunned) return;
+            if (Mathf.Abs(velocity.x) < _minHorizontalSpeedToReload || health.IsStunned) return;
             
             _bombReloadTimer.Tick(deltaTime);
         }

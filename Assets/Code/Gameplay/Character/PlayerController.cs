@@ -189,9 +189,12 @@ namespace Code.Gameplay.Character
             {
                 feature.ResetFeature();
             }
-            
-            if (IsServer) ResetClientRpc();
-            ResetPlayer();
+
+            if (IsServer)
+            {
+                ResetClientRpc(_spawn.position);
+                ResetPlayer(_spawn.position);
+            }
         }
 
         private void ResetNetcode()
@@ -208,15 +211,21 @@ namespace Code.Gameplay.Character
         }
         
         [ClientRpc]
-        private void ResetClientRpc()
+        private void ResetClientRpc(Vector3 position)
         {
-            ResetPlayer();
+            ResetPlayer(position);
         }
 
-        private void ResetPlayer()
+        private void ResetPlayer(Vector3 position)
         {
-            _render.gameObject.SetActive(false);
+            if (IsOwner)
+            {
+                _clientNetworkTransform.Teleport(position, Quaternion.identity, Vector3.one);
+            }
+            rigidbody.linearVelocity = Vector3.zero;
             rigidbody.constraints = RigidbodyConstraints2D.FreezeAll;
+            collider.enabled = false;
+            _render.gameObject.SetActive(false);
         }
 
         public void Defeat()
@@ -228,8 +237,8 @@ namespace Code.Gameplay.Character
         public void Respawn()
         {
             if(!IsServer) return;
-            RespawnOnPosition(_spawn.position);
-            RespawnClientRpc(_spawn.position);
+            RespawnOnPosition();
+            RespawnClientRpc();
             if(IsOwner) outOfBattle.Value = false;
         }
 
@@ -239,22 +248,19 @@ namespace Code.Gameplay.Character
         }
 
         [ClientRpc]
-        private void RespawnClientRpc(Vector3 position)
+        private void RespawnClientRpc()
         {
-            RespawnOnPosition(position);
+            RespawnOnPosition();
         }
 
-        private void RespawnOnPosition(Vector3 position)
+        private void RespawnOnPosition()
         {
+            collider.enabled = true;
             _render.gameObject.SetActive(true);
-            rigidbody.linearVelocity = Vector3.zero;
             rigidbody.constraints = RigidbodyConstraints2D.FreezeRotation;
-            rigidbody.transform.position = position;
-            transform.position = position;
 
             if (IsOwner)
             {
-                _clientNetworkTransform.Teleport(position, Quaternion.identity, Vector3.one);
                 _input.SetControl(true);
                 if (!IsServer)
                 {
