@@ -19,7 +19,6 @@ namespace Code.Gameplay.Character
         private NetworkVariable<float> _timerToRespawn = new();
         public float TimeToRespawn => _timerToRespawn.Value;
         private bool _respawning;
-        private bool _out;
         private bool _respawningProcess;
         public int StockCount => _stocks.Value;
 
@@ -36,7 +35,7 @@ namespace Code.Gameplay.Character
         {
             if(!IsOwner && !IsServer) return;
             
-            if(IsOwner && !_out) CheckLoss();
+            if(IsOwner) CheckLoss();
             
             if(!IsServer) return;
             
@@ -53,10 +52,7 @@ namespace Code.Gameplay.Character
 
             if (SceneBox.Instance.Outside(position))
             {
-                _out = true;
-                
                 StockLostReportToServerRpc();
-                
             }
         }
 
@@ -75,6 +71,8 @@ namespace Code.Gameplay.Character
         [ServerRpc]
         private void StockLostReportToServerRpc()
         {
+            if(_respawning || _respawningProcess || _stocks.Value <= 0) return;
+            
             _stocks.Value--;
 
             if (_stocks.Value <= 0) ReportDefeat();
@@ -112,7 +110,6 @@ namespace Code.Gameplay.Character
             for(int i = 0; i < _extraFramesToWaitRespawn; i++)
                 yield return null;
             
-            _out = false;
             _respawning = false;
             _respawningProcess = false;
         }
