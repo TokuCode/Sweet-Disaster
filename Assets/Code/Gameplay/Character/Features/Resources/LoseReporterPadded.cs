@@ -34,9 +34,11 @@ namespace Code.Gameplay.Character
 
         public override void UpdateFeature()
         {
-            if(!IsServer) return;
+            if(!IsOwner && !IsServer) return;
             
-            if(!_out) CheckLoss();
+            if(IsOwner && !_out) CheckLoss();
+            
+            if(!IsServer) return;
             
             if(_timerToRespawn.Value > 0) _timerToRespawn.Value -= Time.deltaTime;
             else if(_respawning && !_respawningProcess)
@@ -52,13 +54,9 @@ namespace Code.Gameplay.Character
             if (SceneBox.Instance.Outside(position))
             {
                 _out = true;
-                _stocks.Value--;
-
-                if (_stocks.Value <= 0) ReportDefeat();
-                else ScheduleRespawn();
                 
-                ResetController(_stocks.Value > 0);
-                RequestResetOnOwnerRpc(_stocks.Value > 0);
+                StockLostReportToServerRpc();
+                
             }
         }
 
@@ -72,6 +70,18 @@ namespace Code.Gameplay.Character
             _invoker.PlayerNumber.Request(out var clientId);
             _invoker.Defeat.Perform(true);
             LoseTracker.Instance.ReportPlayerLoss((ulong)clientId, stocks, damage);
+        }
+
+        [ServerRpc]
+        private void StockLostReportToServerRpc()
+        {
+            _stocks.Value--;
+
+            if (_stocks.Value <= 0) ReportDefeat();
+            else ScheduleRespawn();
+            
+            ResetController(_stocks.Value > 0);
+            RequestResetOnOwnerRpc(_stocks.Value > 0);
         }
 
         private void ScheduleRespawn()

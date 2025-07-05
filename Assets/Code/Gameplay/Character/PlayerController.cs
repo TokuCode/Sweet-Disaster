@@ -220,9 +220,11 @@ namespace Code.Gameplay.Character
 
         private void ResetPlayer(Vector3 position, bool resetPosition)
         {
-            if (IsOwner && resetPosition)
+            if (resetPosition)
             {
-                _clientNetworkTransform.Teleport(position, Quaternion.identity, Vector3.one);
+                transform.position = position;
+                rigidbody.position = position;
+                if(IsOwner) _clientNetworkTransform.Teleport(position, Quaternion.identity, Vector3.one);
             }
             rigidbody.linearVelocity = Vector3.zero;
             rigidbody.constraints = RigidbodyConstraints2D.FreezeAll;

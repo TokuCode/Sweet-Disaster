@@ -25,6 +25,7 @@ namespace Code.Gameplay.Objects
         [SerializeField] private float _lifeTime;
         private float _lifeTimeTimer;
         [SerializeField] private float _baseDamage;
+        [SerializeField] private float _baseHeatDamage;
         [SerializeField] private float _knockbackLevel;
         [SerializeField] private float _knockbackUpLevel;
         [SerializeField] private float _speed;
@@ -34,6 +35,7 @@ namespace Code.Gameplay.Objects
         [SerializeField] private Vector2 _direction;
         [SerializeField] private int _senderId;
         private float _damage;
+        private float _heatDamage;
         
         [Header("Collision Settings")]
         [SerializeField] LayerMask _characterLayer;
@@ -48,6 +50,7 @@ namespace Code.Gameplay.Objects
             _ownerTag = ownerTag;
             _direction = direction;
             _damage = _baseDamage * damageMultiplier;
+            _heatDamage = _baseHeatDamage * damageMultiplier;
             transform.right = direction;
             
             latency = Mathf.Min(latency, maxLatencyMiliseconds/1000);
@@ -126,7 +129,7 @@ namespace Code.Gameplay.Objects
             if (LayerMaskUtils.CompareGameObjectLayerMask(other.gameObject, _solidLayer) || (LayerMaskUtils.CompareGameObjectLayerMask(other.gameObject, _characterLayer) && !other.gameObject.CompareTag(_ownerTag)))
             {
                 ObjectShield shield = other.gameObject.GetComponent<ObjectShield>(); 
-                if(shield != null) shield.OnBlock(_senderId, _damage);
+                if(shield != null) shield.OnBlock(_senderId, _heatDamage);
                 Reset();
             }
         }
@@ -139,6 +142,7 @@ namespace Code.Gameplay.Objects
             _direction = Vector3.zero;
             _rigidbody.linearVelocity = Vector3.zero; 
             _damage = _baseDamage;
+            _heatDamage = _baseHeatDamage;
             
             _senderId = -1;
             

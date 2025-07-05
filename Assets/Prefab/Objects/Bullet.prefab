@@ -338,7 +338,8 @@ MonoBehaviour:
     Part3: 3859855505
     Part4: 2102966229
   _lifeTime: 4
-  _baseDamage: 0.025
+  _baseDamage: 0.05
+  _baseHeatDamage: 0.1
   _knockbackLevel: 2
   _knockbackUpLevel: 5
   _speed: 25
