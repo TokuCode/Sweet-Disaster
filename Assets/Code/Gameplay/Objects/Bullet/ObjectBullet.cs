@@ -4,6 +4,7 @@ using Code.Gameplay.Character.Features;
 using Code.Helpers;
 using Code.Helpers.Utils;
 using Code.Networking.ClientPrediction;
+using Code.Systems.NetworkObjectPool;
 using Unity.Netcode;
 using UnityEngine;
 using Unity.Collections;
@@ -37,6 +38,10 @@ namespace Code.Gameplay.Objects
         [Header("Collision Settings")]
         [SerializeField] LayerMask _characterLayer;
         [SerializeField] LayerMask _solidLayer;
+        
+        [Header("Vfx Settings")]
+        [SerializeField] private GameObject _vfx;
+        [SerializeField] private float _radiusVfx;
 
         public void Initialize(Vector2 direction, string ownerTag, float latency, int senderId, float damageMultiplier)
         {
@@ -138,6 +143,15 @@ namespace Code.Gameplay.Objects
             _senderId = -1;
             
             started = false;
+            
+            AttackVFX(transform.position, _radiusVfx);
+        }
+        
+        private void AttackVFX(Vector3 position, float radius)
+        {
+            var go = ObjectPoolManager.Instance.Get(_vfx, position, Quaternion.identity);
+            go.SetActive(true);
+            go.GetComponent<AttackVFX>().Init(radius);
         }
     }
 }

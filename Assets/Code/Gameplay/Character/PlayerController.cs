@@ -177,7 +177,7 @@ namespace Code.Gameplay.Character
             Singleton = this;
         }
 
-        public void Reset()
+        public void Reset(bool resetPosition)
         {
             if(!IsServer && !IsOwner) return;
             
@@ -194,8 +194,8 @@ namespace Code.Gameplay.Character
 
             if (IsServer)
             {
-                ResetClientRpc(_spawn.position);
-                ResetPlayer(_spawn.position);
+                ResetClientRpc(_spawn.position, resetPosition);
+                ResetPlayer(_spawn.position, resetPosition);
             }
         }
 
@@ -213,14 +213,14 @@ namespace Code.Gameplay.Character
         }
         
         [ClientRpc]
-        private void ResetClientRpc(Vector3 position)
+        private void ResetClientRpc(Vector3 position, bool resetPosition)
         {
-            ResetPlayer(position);
+            ResetPlayer(position, resetPosition);
         }
 
-        private void ResetPlayer(Vector3 position)
+        private void ResetPlayer(Vector3 position, bool resetPosition)
         {
-            if (IsOwner)
+            if (IsOwner && resetPosition)
             {
                 _clientNetworkTransform.Teleport(position, Quaternion.identity, Vector3.one);
             }
@@ -228,6 +228,7 @@ namespace Code.Gameplay.Character
             rigidbody.constraints = RigidbodyConstraints2D.FreezeAll;
             collider.enabled = false;
             _render.gameObject.SetActive(false);
+            CameraTarget.Instance.SetInternalOutOfBattle(this, true);
         }
 
         public void Defeat()
@@ -260,7 +261,8 @@ namespace Code.Gameplay.Character
             collider.enabled = true;
             _render.gameObject.SetActive(true);
             rigidbody.constraints = RigidbodyConstraints2D.FreezeRotation;
-
+            CameraTarget.Instance.SetInternalOutOfBattle(this, false);
+            
             if (IsOwner)
             {
                 _input.SetControl(true);

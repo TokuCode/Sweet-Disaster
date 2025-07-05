@@ -38,13 +38,13 @@ namespace Code.Gameplay.Character.Features
         [Header("Reloading Settings")]
         [SerializeField] private float _reloadTime;
         public float ReloadTime => _reloadTime;
-        private NetworkVariable<float> _reloadTimer = new();
+        private NetworkVariable<float> _reloadTimer = new(0, NetworkVariableReadPermission.Owner, NetworkVariableWritePermission.Owner);
         public float ReloadTimer => _reloadTimer.Value;
         [SerializeField] private int _magazineSize;
         public int MagazineSize => _magazineSize;
-        private NetworkVariable<int> _currentAmmo = new(0, NetworkVariableReadPermission.Owner);
+        private NetworkVariable<int> _currentAmmo = new(0, NetworkVariableReadPermission.Owner, NetworkVariableWritePermission.Owner);
         public int CurrentAmmo => _currentAmmo.Value;
-        private NetworkVariable<bool> _isReloading = new(false, NetworkVariableReadPermission.Owner);
+        private NetworkVariable<bool> _isReloading = new(false, NetworkVariableReadPermission.Owner, NetworkVariableWritePermission.Owner);
         public bool IsReloading => _isReloading.Value;
         
         [Header("Active Reload Settings")]
@@ -93,22 +93,22 @@ namespace Code.Gameplay.Character.Features
 
         public override void ResetFeature()
         {
-            if (IsServer)
+            if (IsOwner)
             {
+                CancelShooting();
                 CancelReloading();
                 _currentAmmo.Value = _magazineSize;
             }
-            if(IsOwner) CancelShooting();
         }
 
         public override void InitializeFeature(Controller controller)
         {
-            if(IsServer) _currentAmmo.Value = _magazineSize;
 
             if (IsOwner)
             {
                 InputReader.Instance.OnShootPressed += OnShootPressed;
                 InputReader.Instance.OnReloadPressed += TryActiveReload;
+                _currentAmmo.Value = _magazineSize;
             }
             
             base.InitializeFeature(controller);
@@ -131,16 +131,10 @@ namespace Code.Gameplay.Character.Features
             if (_holdToShoot && InputReader.Instance.Shoot && IsOwner)
                 TryShooting();
             
-            if (!IsServer) return;
+            if (!IsOwner) return;
             
             if(_reloadTimer.Value > 0) _reloadTimer.Value -= Time.deltaTime;
             else if (_isReloading.Value) StopReloading();
-
-            if (_reloadRequested)
-            {
-                TryReload();
-                _reloadRequested = false;
-            }
         }
 
         public override void FixedUpdateFeature() { }
@@ -159,8 +153,7 @@ namespace Code.Gameplay.Character.Features
                 StartCoroutine(ShootingSequence());
             else if (_currentAmmo.Value <= 0)
             {
-                if(!IsServer) RequestReloadToServerRpc();
-                else TryReload();
+                TryReload();
             }
         }
 
@@ -173,16 +166,12 @@ namespace Code.Gameplay.Character.Features
             {
                 ShootAction(i);
                 _lastShotTime = Time.time;
-                if (IsHost)
+                _currentAmmo.Value--;
+                if (_currentAmmo.Value <= 0)
                 {
-                    _currentAmmo.Value--;
-                    if (_currentAmmo.Value <= 0)
-                    {
-                        TryReload();
-                        break;
-                    }
+                    TryReload();
+                    break;
                 }
-                else RequestAmmoDepletionToServerRpc();
 
                 yield return new WaitForSeconds(_timeBetweenShots);
                 
@@ -308,8 +297,7 @@ namespace Code.Gameplay.Character.Features
         {
             if (@event.reload && !_isReloading.Value && !_isShooting && !bomb.IsThrowing && !shield.IsShieldActive && !melee.IsAttacking) 
             {
-                if(!IsServer) RequestReloadToServerRpc();
-                else TryReload();
+                TryReload();
             }
         }
 
@@ -320,11 +308,7 @@ namespace Code.Gameplay.Character.Features
             float progress = 1 - _reloadTimer.Value/_reloadTime;
             if (Mathf.Abs(progress - _activeReloadPosition) <= _activeReloadSpan / 2f)
             {
-                if (IsServer)
-                {
-                    ActiveReloadAction();
-                }
-                else ActiveReloadSuccessServerRpc();
+                ActiveReloadAction();
             }
             else _failedActiveReload = true;
         }

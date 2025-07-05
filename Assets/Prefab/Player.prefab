@@ -915,10 +915,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _minigameDurationPerHealthRatio: 0.825
+  _minigameDurationPerHealthRatio: 0.625
   _minStunDuration: 0
-  _sweetSpotRatio: 0.175
-  _onSuccessTimeReductionRatio: 0.25
+  _sweetSpotSpan: 0.2
+  _onSuccessTimeReductionRatio: 0.33
 --- !u!114 &3296703527897574207
 MonoBehaviour:
   m_ObjectHideFlags: 0

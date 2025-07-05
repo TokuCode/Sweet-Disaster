@@ -24,12 +24,12 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private float _boostSlopeForce;
 
         [Header("Runtime")]
-        [SerializeField] private NetworkVariable<bool> _isMovementBlocked = new (false, NetworkVariableReadPermission.Owner);
+        [SerializeField] private NetworkVariable<bool> _isMovementBlocked = new (false, NetworkVariableReadPermission.Owner, NetworkVariableWritePermission.Owner);
         public bool IsMovementBlocked => _isMovementBlocked.Value;
 
         public override void ResetFeature()
         {
-            if (IsServer)
+            if (IsOwner)
             {
                 _isMovementBlocked.Value = false;
             }

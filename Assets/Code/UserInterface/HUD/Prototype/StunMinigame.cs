@@ -51,7 +51,7 @@ namespace Code.UserInterface.HUD
             }
             
             _minigameRect.gameObject.SetActive(_will.OnMinigame);
-            _indicatorBar.fillAmount = 1 - _will.SweetSpotRatio;
+            _indicatorBar.fillAmount = 1 - _will.SweetSpotSpan;
             
             UpdateHandlePosition();
             UpdateIndicatorColor();

@@ -180,13 +180,22 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ShieldBash"",
+                    ""type"": ""Button"",
+                    ""id"": ""f19e913f-42e0-46de-b04e-4f82746f7422"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
                 {
                     ""name"": """",
                     ""id"": ""18fed195-54ce-4617-86c8-5f1539be9905"",
-                    ""path"": ""<Gamepad>/buttonSouth"",
+                    ""path"": ""<Gamepad>/leftStick/up"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Gamepad"",
@@ -263,7 +272,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""711a466e-ba3e-4be9-98f3-3ea0ba89d77d"",
-                    ""path"": ""<Gamepad>/buttonEast"",
+                    ""path"": ""<Gamepad>/rightShoulder"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Gamepad"",
@@ -328,8 +337,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""2ee997f8-32e6-469d-a573-d7ca72095f6f"",
-                    ""path"": ""<Gamepad>/rightTrigger"",
+                    ""id"": ""f876dc04-b909-4482-95d7-3b0d064b908d"",
+                    ""path"": ""<Gamepad>/leftTrigger"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Gamepad"",
@@ -350,8 +359,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""f876dc04-b909-4482-95d7-3b0d064b908d"",
-                    ""path"": ""<Gamepad>/leftTrigger"",
+                    ""id"": ""2ee997f8-32e6-469d-a573-d7ca72095f6f"",
+                    ""path"": ""<Gamepad>/rightTrigger"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Gamepad"",
@@ -375,7 +384,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""id"": ""fc737de5-0d3d-4af2-91e2-b7195b8e29dc"",
                     ""path"": ""<Gamepad>/rightStick"",
                     ""interactions"": """",
-                    ""processors"": """",
+                    ""processors"": ""StickDeadzone"",
                     ""groups"": "";Gamepad"",
                     ""action"": ""AimGamepad"",
                     ""isComposite"": false,
@@ -384,10 +393,10 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""cf08b0b2-8767-4b02-92ca-c8ec385fac6d"",
-                    ""path"": ""<Gamepad>/buttonWest"",
+                    ""path"": ""<Gamepad>/rightTrigger"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": """",
+                    ""groups"": "";Gamepad"",
                     ""action"": ""FreePlayer"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -400,6 +409,28 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": "";PC"",
                     ""action"": ""FreePlayer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1ec817fe-f2c4-4283-8fd9-7da7ac9b7718"",
+                    ""path"": ""<Gamepad>/rightTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Gamepad"",
+                    ""action"": ""ShieldBash"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7055c8b9-283a-4094-9030-b8a07732c04b"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";PC"",
+                    ""action"": ""ShieldBash"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -448,6 +479,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Gameplay_Throw = m_Gameplay.FindAction("Throw", throwIfNotFound: true);
         m_Gameplay_Shield = m_Gameplay.FindAction("Shield", throwIfNotFound: true);
         m_Gameplay_FreePlayer = m_Gameplay.FindAction("FreePlayer", throwIfNotFound: true);
+        m_Gameplay_ShieldBash = m_Gameplay.FindAction("ShieldBash", throwIfNotFound: true);
     }
 
     ~@PlayerControls()
@@ -538,6 +570,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Gameplay_Throw;
     private readonly InputAction m_Gameplay_Shield;
     private readonly InputAction m_Gameplay_FreePlayer;
+    private readonly InputAction m_Gameplay_ShieldBash;
     /// <summary>
     /// Provides access to input actions defined in input action map "Gameplay".
     /// </summary>
@@ -589,6 +622,10 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Gameplay/FreePlayer".
         /// </summary>
         public InputAction @FreePlayer => m_Wrapper.m_Gameplay_FreePlayer;
+        /// <summary>
+        /// Provides access to the underlying input action "Gameplay/ShieldBash".
+        /// </summary>
+        public InputAction @ShieldBash => m_Wrapper.m_Gameplay_ShieldBash;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -645,6 +682,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @FreePlayer.started += instance.OnFreePlayer;
             @FreePlayer.performed += instance.OnFreePlayer;
             @FreePlayer.canceled += instance.OnFreePlayer;
+            @ShieldBash.started += instance.OnShieldBash;
+            @ShieldBash.performed += instance.OnShieldBash;
+            @ShieldBash.canceled += instance.OnShieldBash;
         }
 
         /// <summary>
@@ -686,6 +726,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @FreePlayer.started -= instance.OnFreePlayer;
             @FreePlayer.performed -= instance.OnFreePlayer;
             @FreePlayer.canceled -= instance.OnFreePlayer;
+            @ShieldBash.started -= instance.OnShieldBash;
+            @ShieldBash.performed -= instance.OnShieldBash;
+            @ShieldBash.canceled -= instance.OnShieldBash;
         }
 
         /// <summary>
@@ -822,5 +865,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnFreePlayer(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ShieldBash" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnShieldBash(InputAction.CallbackContext context);
     }
 }

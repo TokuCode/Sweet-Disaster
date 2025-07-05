@@ -237,7 +237,7 @@ namespace Code.Gameplay.Character.Command
 
         public Result Perform(bool input)
         {
-            playerController.Reset();
+            playerController.Reset(input);
             return new Result { success = true };
         }
     }

@@ -21,8 +21,7 @@ namespace Code.Gameplay.Objects
 
         private void Update()
         {
-            if(!_shield.IsShieldActive) return;
-            
+            if(!gameObject.activeSelf) return;
             _spriteRenderer.color = _shieldColor.Evaluate(_shield.TemperatureProgress);
         }
 

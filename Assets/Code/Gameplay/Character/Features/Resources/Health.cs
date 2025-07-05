@@ -15,14 +15,14 @@ namespace Code.Gameplay.Character.Features
         private Movement move;
         
         [Header("Health Parameters")]
-        [SerializeField] private NetworkVariable<float> _health = new ();
+        [SerializeField] private NetworkVariable<float> _health = new (0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
         public float HealthAmount => _health.Value;
         [SerializeField] private float _baseHealth;
         public float BaseHealth => _baseHealth;
         public float HealthRatio => _health.Value / _baseHealth;
         
         [Header("Stun")]
-        [SerializeField] private NetworkVariable<bool> _isStunned = new ();
+        [SerializeField] private NetworkVariable<bool> _isStunned = new (false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
         public bool IsStunned => _isStunned.Value;
         [SerializeField] private float _stunMinDuration;
         [SerializeField] private float _stunDurationPerKnockback;
@@ -39,7 +39,7 @@ namespace Code.Gameplay.Character.Features
 
         public override void ResetFeature()
         {
-            if (IsServer)
+            if (IsOwner)
             {
                 _health.Value = 0;
                 _isStunned.Value = false;
@@ -59,7 +59,7 @@ namespace Code.Gameplay.Character.Features
 
         public override void UpdateFeature()
         {
-            if (!IsServer) return;
+            if (!IsOwner) return;
             
             if(_stunTimer > 0) _stunTimer -= Time.deltaTime;
             else if(_isStunned.Value) UnStun();
@@ -67,7 +67,7 @@ namespace Code.Gameplay.Character.Features
     
         private void Damage(float percentage)
         {
-            if (!IsServer) return;
+            if (!IsOwner) return;
             _health.Value += percentage * _baseHealth;
             OnHealthChangedEventArgs args = new ()
             {
@@ -88,7 +88,6 @@ namespace Code.Gameplay.Character.Features
             var forceDirection = Vector3.Slerp(force.normalized, handleDirection, _directionalInfluence);
             force = forceDirection * force.magnitude;
             
-            //if (IsOwner)
             _invoker.Knockback.Perform(force);
 
             float stunTime = _stunMinDuration + _stunDurationPerKnockback * (knockback + knockbackUp);
@@ -97,7 +96,7 @@ namespace Code.Gameplay.Character.Features
 
         public void Stun(float duration, float healthRatio)
         {
-            if(!IsServer) return;
+            if(!IsOwner) return;
             
             _isStunned.Value = true;
             _stunTimer = duration;
@@ -114,8 +113,7 @@ namespace Code.Gameplay.Character.Features
             _stunTimer = Mathf.Max(0, _stunTimer - duration);
             if (_stunTimer <= 0)
             {
-                if(IsServer) UnStun();
-                else RequestUnStunToServerRpc();
+                if(IsOwner) UnStun();
             }
         }
     
@@ -139,7 +137,7 @@ namespace Code.Gameplay.Character.Features
                 Knockback(direction, attackEvent.KnockbackForce, attackEvent.KnockbackUpForce, newHealthRatio);
             }
             
-            if(IsServer) AttackBus.Singleton.BroadcastEvent(attackEvent);
+            if(IsOwner) AttackBus.Singleton.BroadcastEvent(attackEvent);
         }
 
         public void RequestAttackInOwner(AttackEvent attackEvent)
