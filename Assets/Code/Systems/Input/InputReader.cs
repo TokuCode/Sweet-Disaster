@@ -30,6 +30,8 @@ namespace Code.Systems.Input
         
         public event Action OnShieldPressed;
 
+        public event Action OnShieldBash;
+
         [SerializeField] private bool _onGamepad;
         public bool OnGamepad => _onGamepad;
         
@@ -254,6 +256,13 @@ namespace Code.Systems.Input
                 Free = false;
         }
 
+        void PlayerControls.IGameplayActions.OnShieldBash(InputAction.CallbackContext context)
+        {
+            if(!control) return;
+            if (context.performed)
+                OnShieldBash?.Invoke();
+        }
+
         public void CachePlayerPosition(Vector3 playerPosition)
         {
             _playerPosition = playerPosition;
@@ -285,7 +294,8 @@ namespace Code.Systems.Input
             if(!OnGamepad) return;
             
             var playerAimPosition = _playerPosition + Vector3.up * _handleHeight;
-            HandleDirection = pointerPosition.normalized;
+            var directionActual = pointerPosition.normalized;
+            if(directionActual != Vector3.zero) HandleDirection = directionActual;
             if(HandleDirection == Vector3.zero) HandleDirection = Vector3.right;
             HandlePosition = HandleDirection * _handleDistance + playerAimPosition;
         }
