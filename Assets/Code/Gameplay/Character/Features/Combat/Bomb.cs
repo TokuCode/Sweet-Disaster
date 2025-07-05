@@ -59,6 +59,7 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private float _onShieldHitAccelerateTime;
         [SerializeField] private float _onMeleeHitAccelerateTime;
         [SerializeField] private float _onWillToLiveHitAccelerateTime;
+        [SerializeField] private float _onActiveReloadHitAccelerateTime;
 
         public void OnShootPressed() => StartThrowing();
         public void OnShootReleased() => EndThrowing();
@@ -97,6 +98,7 @@ namespace Code.Gameplay.Character.Features
             _dependencies.TryGetFeature(out will);
             health.OnStun += OnStun;
             will.OnMinigameSucces += () => AccelerateReload(GunBelt.Weapon.Will);
+            shoot.OnActiveReload += () => AccelerateReload(GunBelt.Weapon.Reloading);
             AttackBus.Singleton.Event += OnAttackGlobal;
             _bombReloadTimer = new(_bombReloadTime);
             _bombReloadTimer.OnTimerStop += ReloadBomb; 
@@ -257,6 +259,7 @@ namespace Code.Gameplay.Character.Features
                 GunBelt.Weapon.Shield => _onShieldHitAccelerateTime,
                 GunBelt.Weapon.Melee => _onMeleeHitAccelerateTime,
                 GunBelt.Weapon.Will => _onWillToLiveHitAccelerateTime,
+                GunBelt.Weapon.Reloading => _onActiveReloadHitAccelerateTime,
                 _ => 0f
             };
             

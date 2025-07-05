@@ -75,6 +75,8 @@ namespace Code.Gameplay.Character.Features
         [Header("Server Side")] 
         [SerializeField] private bool _reloadRequested;
 
+        public event Action OnActiveReload;
+        
         public float MovementImprecisionPerSpeedUnit
         {
             get => _movementImprecisionPerSpeedUnit;
@@ -312,16 +314,25 @@ namespace Code.Gameplay.Character.Features
             float progress = 1 - _reloadTimer.Value/_reloadTime;
             if (Mathf.Abs(progress - _activeReloadPosition) <= _activeReloadSpan / 2f)
             {
-                if(IsServer) StopReloading();
-                else RequestReloadStopToServerRpc();
+                if (IsServer)
+                {
+                    ActiveReloadAction();
+                }
+                else ActiveReloadSuccessServerRpc();
             }
             else _failedActiveReload = true;
         }
 
-        [ServerRpc]
-        private void RequestReloadStopToServerRpc()
+        private void ActiveReloadAction()
         {
             StopReloading();
+            OnActiveReload?.Invoke();
+        }
+
+        [ServerRpc]
+        private void ActiveReloadSuccessServerRpc()
+        {
+            ActiveReloadAction();
         }
         
 

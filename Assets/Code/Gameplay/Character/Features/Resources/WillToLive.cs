@@ -4,7 +4,6 @@ using Code.Helpers;
 using Code.Networking.ClientPrediction;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Code.Gameplay.Character.Features
 {

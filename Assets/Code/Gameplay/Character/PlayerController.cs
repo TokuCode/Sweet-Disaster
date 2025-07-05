@@ -23,8 +23,10 @@ namespace Code.Gameplay.Character
         
         public Rigidbody2D rigidbody { get; private set; }
         public CapsuleCollider2D collider { get; private set; }
-        
-        public int clientId { get; private set; }
+
+        [Header("Networking")]
+        [SerializeField] private int _clientId;
+        public int clientId => _clientId;
         [SerializeField] private int _playerNumber;
         public int PlayerNumber => _playerNumber;
         public NetworkVariable<bool> outOfBattle { get; } = new();
@@ -119,7 +121,7 @@ namespace Code.Gameplay.Character
             base.OnNetworkSpawn();
             if (IsOwner) 
             {
-                clientId = (int)NetworkManager.LocalClient.ClientId;
+                _clientId = (int)NetworkManager.LocalClient.ClientId;
                 OnPost?.Invoke(PlayerVisibility.Instance.PostPlayer(this, IsOwner));
                 SendCliendIdRpc(clientId);
             }
@@ -135,7 +137,7 @@ namespace Code.Gameplay.Character
 
         private void PostPlayer(int clientId)
         {
-            this.clientId = clientId;
+            _clientId = clientId;
             OnPost?.Invoke(PlayerVisibility.Instance.PostPlayer(this, IsOwner));
         }
 

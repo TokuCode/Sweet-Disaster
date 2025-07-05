@@ -582,6 +582,7 @@ MonoBehaviour:
   - {fileID: 1027848877173910424}
   - {fileID: 4303144466517633692}
   - {fileID: 3296703527897574207}
+  _clientId: 0
   _playerNumber: 0
   _followTarget: {fileID: 6022316762160544414}
   _gunTip: {fileID: 8692099931127174155}
@@ -902,7 +903,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   _minigameDurationPerHealthRatio: 0.825
-  _minStunDuration: 0.5
+  _minStunDuration: 0
   _sweetSpotRatio: 0.175
   _onSuccessTimeReductionRatio: 0.25
 --- !u!114 &3296703527897574207
