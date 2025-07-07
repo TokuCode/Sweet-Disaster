@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 88630e3171f94bf4685e6767d72180d0
+guid: 602bda2b6d03dfa41b0b76c76ca67d1c
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1211752811425926949
-    second: Brazo + ARMA gladys_0
+      213: -4373517237945029683
+    second: ESCUDO-CORA_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,12 +46,12 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
-  alignment: 0
-  spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 200
+  alignment: 9
+  spritePivot: {x: 0.8, y: 0.5}
+  spritePixelsToUnits: 180
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -113,23 +113,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Huevera
+      name: ESCUDO-CORA_0
       rect:
         serializedVersion: 2
-        x: 38
-        y: 101
-        width: 295
-        height: 140
-      alignment: 9
-      pivot: {x: 0.04255529, y: 0.7564138}
+        x: 0
+        y: 0
+        width: 167
+        height: 242
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: bd07067fc3dfe2fe0800000000000000
-      internalID: -1211752811425926949
+      spriteID: dcb2d357e352e43c0800000000000000
+      internalID: -4373517237945029683
       vertices: []
       indices: 
       edges: []
@@ -138,8 +138,8 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 9e84c28dfd6f44a4c84e486d3fdfea7a
-    internalID: 0
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 1537655665
     vertices: []
     indices: 
     edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Huevera: -1211752811425926949
+      ESCUDO-CORA_0: -4373517237945029683
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

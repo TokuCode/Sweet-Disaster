@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Gladys2
   runtimeAnimator: {fileID: 22100000, guid: 4743623638bd47147b2da1cd1dd47b46, type: 2}
-  armWithGun: {fileID: -829961613945574920, guid: ac65a3960f704ce46bb26b5a3bbbfcde, type: 3}
+  armWithGun: {fileID: -1211752811425926949, guid: 88630e3171f94bf4685e6767d72180d0, type: 3}
   armWithBomb: {fileID: -829961613945574920, guid: a2ab4ef3c69acba44b366aee341ec3f0, type: 3}
   armWithShield: {fileID: -829961613945574920, guid: 7eb9ed1dde95eb14da848fd601314cb8, type: 3}
   postGameImage: {fileID: 4254021271541456957, guid: 4547ce5307e88ac479f3efc873b9f03f, type: 3}
