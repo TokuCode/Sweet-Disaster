@@ -1,0 +1,141 @@
+﻿using System;
+using Code.Gameplay.Character.Framework;
+using Code.Helpers;
+using Code.Networking.ClientPrediction;
+using Unity.Netcode;
+using UnityEngine;
+
+namespace Code.Gameplay.Character.Features
+{
+    public class WillToLive : Feature
+    {
+        private Health _health;
+        
+        [Header("Stun Minigame")]
+        [SerializeField] private float _minigameDurationPerHealthRatio;
+        [SerializeField] private float _minStunDuration;
+        [SerializeField] private float _sweetSpotSpan;
+        public float SweetSpotSpan => _sweetSpotSpan;
+        private float _cachedStunDuration;
+        [SerializeField] private float _onSuccessTimeReductionRatio;
+        private CountdownTimer _minigameTimer;
+        private NetworkVariable<bool> _onMinigame = new(false, NetworkVariableReadPermission.Owner, NetworkVariableWritePermission.Owner);
+        public float MinigameProgress => 1 - _minigameTimer.Progress;
+        public bool OnMinigame => _onMinigame.Value;
+        private bool _cachedMinigameInput;
+        public bool CachedMinigameInput => _cachedMinigameInput;
+        public event Action OnMinigameFailed; 
+        public event Action OnMinigameSucces;
+
+        public override void ResetFeature()
+        {
+            if (IsOwner)
+            {
+                _onMinigame.Value = false;
+            }
+            _minigameTimer.Reset();
+            _cachedMinigameInput = false;
+            _cachedStunDuration = 0;
+        }
+
+        public override void InitializeFeature(Controller controller)
+        {
+            base.InitializeFeature(controller);
+            _dependencies.TryGetFeature(out _health);
+            _minigameTimer = new (_minigameDurationPerHealthRatio);
+            _health.OnStun += StartMinigame;
+            _health.OnUnStun += EndMinigame;
+        }
+
+        public override void UpdateFeature()
+        {
+            if(!IsOwner) return;
+            
+            if(!_onMinigame.Value) return;
+            
+            if(!_minigameTimer.IsRunning) _minigameTimer.Start();
+            _minigameTimer.Tick(Time.deltaTime);
+        }
+
+        public override void FixedUpdateFeature() { }
+
+        public override void Apply(ref InputPayload @event)
+        {
+            if (!IsOwner) return;
+
+            _cachedMinigameInput = @event.free;
+
+            if (!_onMinigame.Value) return;
+            
+            MinigameInput();
+        }
+
+        private void MinigameInput()
+        {
+            if (!_cachedMinigameInput || !_onMinigame.Value) return;
+
+            if (_minigameTimer.Progress <= _sweetSpotSpan)
+            {
+                _health.AccelerateStun(Mathf.Max(1f, _onSuccessTimeReductionRatio * _cachedStunDuration));
+                OnMinigameSucces?.Invoke();
+            }
+            else
+            {
+                OnMinigameFailed?.Invoke();
+            }
+            
+            _minigameTimer.Reset();
+            _minigameTimer.Start();
+        }
+
+        private void StartMinigame(float stunDuration, float healthRatio)
+        {
+            if(!IsOwner) return;
+            
+            if(stunDuration < _minStunDuration) return;
+            
+            _onMinigame.Value = true;
+            
+            StartMinigameAction(healthRatio, stunDuration);
+        }
+
+        private void EndMinigame()
+        {
+            if(!IsOwner) return;
+            
+            _onMinigame.Value = false;
+            
+            EndMinigameAction();
+        }
+
+        [ClientRpc]
+        private void StartMinigameOnClientRpc(float healthRatio, float stunDuration)
+        {
+            if(!IsOwner) return;
+
+            StartMinigameAction(healthRatio, stunDuration);
+        }
+
+        [ClientRpc]
+        private void EndMinigameOnClientRpc()
+        {
+            if(!IsOwner) return;
+                
+            EndMinigameAction();
+        }
+
+        private void StartMinigameAction(float healthRatio, float stunDuration)
+        {
+            _minigameTimer = new (_minigameDurationPerHealthRatio * Mathf.Max(1, healthRatio));
+            _minigameTimer.Start();
+            _cachedStunDuration = stunDuration;
+        }
+
+        private void EndMinigameAction()
+        {
+            _minigameTimer.Stop();
+            _cachedMinigameInput = false;
+            _cachedStunDuration = 0;
+        }
+    }
+}
