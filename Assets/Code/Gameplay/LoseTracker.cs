@@ -1,21 +1,14 @@
 using Unity.Netcode;
-using System.Collections.Generic;
 using System.Linq;
 using Code.Networking.Session;
-using Unity.Services.Multiplayer;
-using UnityEngine;
 using UnityEngine.SceneManagement;
-using System;
 using Code.Gameplay.Character;
-using Code.Helpers.UI;
 
 namespace Code.Gameplay
 {
     public class LoseTracker : NetworkBehaviour
     {
         public static LoseTracker Instance;
-
-        //public HashSet<ulong> LostPlayers = new();
         
         private SessionManager _sessionManager;
 
@@ -81,12 +74,6 @@ namespace Code.Gameplay
             };
             
             WinnersData.playerStatusDataStack.Push(playerStatusData);
-            
-            /*
-            Debug.Log($"[Sent] {playerStatusData.Lives}");
-            Debug.Log($"[Sent] {playerStatusData.Lives}");
-            Debug.Log($"[Received] {WinnersData.playerStatusDataStack.Peek().Lives}");
-            Debug.Log($"[Received] {WinnersData.playerStatusDataStack.Peek().AccumulatedDmg}");*/
         }
     }
 }
