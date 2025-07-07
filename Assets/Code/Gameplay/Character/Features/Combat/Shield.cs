@@ -244,7 +244,7 @@ namespace Code.Gameplay.Character.Features
                 Success = true,
                 SenderId = playerNumber,
                 ReceiverId = playerNumber,
-                Unblockeable = true
+                Unblockeable = false
             });
 
             _isOnCooldown.Value = true;
@@ -297,12 +297,14 @@ namespace Code.Gameplay.Character.Features
             bool blocked = angle <= _shieldAngle;
             @event.Success = !blocked;
 
-            if (blocked) HeatShield(@event.DamagePercentage);
-            
             _invoker.PlayerNumber.Request(out int clientId);
             bool selfAttack = @event.SenderId == clientId;
-            
-            if(blocked && !selfAttack) bomb.AccelerateReload(GunBelt.Weapon.Shield);
+
+            if (blocked && !selfAttack)
+            {
+                bomb.AccelerateReload(GunBelt.Weapon.Shield);
+                HeatShield(@event.DamagePercentage);
+            }
         }
 
         public void HeatShield(float damage)
