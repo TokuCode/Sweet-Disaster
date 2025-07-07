@@ -3,15 +3,14 @@ using System.Linq;
 using Code.UserInterface.LobbyUI;
 using UnityEngine;
 using System.Collections.Generic;
-using System.Threading;
 using Unity.Services.Multiplayer;
 using Code.Networking.Session;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
-using System.Threading.Tasks;
 using Code.Helpers.UI;
 using Code.Gameplay;
+using System.Collections;
 
 namespace Code.UserInterface.PostGameUI
 {
@@ -32,24 +31,26 @@ namespace Code.UserInterface.PostGameUI
         [SerializeField] private TextMeshProUGUI statusText;
 
         private NetworkList<ulong> _playersReadyToRestart = new(new List<ulong>());
+        private NetworkList<ulong> _playersReadyToReturn = new(new List<ulong>());
+
+        [SerializeField] private float checkReturnCooldown;
         
         private SessionManager _sessionManager;
-        private CancellationTokenSource  _cancellationTokenSource;
         
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
             
             playAgainButton.onClick.AddListener(OnPlayAgainPressed);
-            
+            returnToLobbyButton.onClick.AddListener(OnReturnToLobbyPressed);
             exitButton.onClick.AddListener(PerformReturnToMenu);
             
             _sessionManager = SessionManager.Instance;
-            _cancellationTokenSource = new CancellationTokenSource();
 
             if (!IsServer) return;
             
-            _playersReadyToRestart.OnListChanged += ListChanged;
+            _playersReadyToRestart.OnListChanged += RestartListChanged;
+            _playersReadyToReturn.OnListChanged += ReturnListChanged;
             PopulatePlayers();
             PopulatePlayersRpc();
         }
@@ -57,13 +58,12 @@ namespace Code.UserInterface.PostGameUI
         private void OnDisable()
         {
             playAgainButton.onClick.RemoveListener(OnPlayAgainPressed);
+            returnToLobbyButton.onClick.RemoveListener(OnReturnToLobbyPressed);
             exitButton.onClick.RemoveListener(PerformReturnToMenu);
             
-            _cancellationTokenSource.Cancel();
-            _cancellationTokenSource.Dispose();
-            
             if (!IsServer) return;
-            _playersReadyToRestart.OnListChanged -= ListChanged;
+            _playersReadyToRestart.OnListChanged -= RestartListChanged;
+            _playersReadyToReturn.OnListChanged -= ReturnListChanged;
         }
 
         private void PopulatePlayers()
@@ -112,31 +112,104 @@ namespace Code.UserInterface.PostGameUI
         
         private void OnPlayAgainPressed()
         {
-            if (IsServer) _playersReadyToRestart.Add(NetworkManager.LocalClientId);
-            if (IsClient && !IsHost) SendReadyStatusRpc();
-            
             playAgainButton.interactable = false;
             statusText.text = "Esperando a los jugadores...";
+            
+            if (IsServer) _playersReadyToRestart.Add(NetworkManager.LocalClientId);
+            if (IsClient && !IsHost) SendReadyToQuitStatusRpc();
+        }
+        
+        private void OnReturnToLobbyPressed()
+        {
+            returnToLobbyButton.interactable = false;
+            statusText.text = "Esperando a los jugadores...";
+            
+            if (IsServer) _playersReadyToReturn.Add(NetworkManager.LocalClientId);
+            if (IsClient && !IsHost) SendReadyToReturnStatusRpc();
         }
 
-        private void ListChanged(NetworkListEvent<ulong> listEvent)
+        private void RestartListChanged(NetworkListEvent<ulong> listEvent)
         {
             if (_playersReadyToRestart.Count < _sessionManager.ActiveSession.PlayerCount 
                 && _sessionManager.ActiveSession.PlayerCount > 1) return;
             NetworkManager.Singleton.SceneManager.LoadScene("MultiplayerTest", LoadSceneMode.Single);
         }
 
+        private void ReturnListChanged(NetworkListEvent<ulong> listEvent)
+        {
+            if (_playersReadyToReturn.Count < _sessionManager.ActiveSession.PlayerCount 
+                && _sessionManager.ActiveSession.PlayerCount > 1) return;
+            ResetCharacterProperty();
+            ResetCharacterPropertyRpc();
+        }
+
+        private void Update()
+        {
+            if (_sessionManager.ActiveSession == null) return;
+            if (!IsServer) return;
+
+            foreach (var player in _sessionManager.ActiveSession.Players)
+            {
+                if (!player.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var charProp)) return;
+                if (charProp.Value != String.Empty) return;
+            }
+            NetworkManager.Singleton.SceneManager.LoadScene("LobbyTest", LoadSceneMode.Single);
+        }
+
+        [Rpc(SendTo.NotMe)]
+        private void ResetCharacterPropertyRpc()
+        {
+            ResetCharacterProperty();
+        }
+
+        private async void ResetCharacterProperty()
+        {
+            try
+            {
+                _sessionManager.ActiveSession.CurrentPlayer.SetProperty(_sessionManager.PlayerCharacterKey,
+                    new PlayerProperty(String.Empty, VisibilityPropertyOptions.Member));
+
+                await _sessionManager.ActiveSession.SaveCurrentPlayerDataAsync();
+            }
+            catch (Exception e)
+            {
+#if UNITY_EDITOR
+                Debug.LogException(e);
+#endif
+                returnToLobbyButton.interactable = true;
+                statusText.text = String.Empty;
+                if (IsServer) _playersReadyToReturn.Remove(NetworkManager.LocalClientId);
+                if (IsClient && !IsHost) SendDeleteReadyToReturnRpc();
+                
+                UIUtilities.Instance.MessagePopUp("Hubo un error al reiniciar el personaje del jugador", true);
+            }
+        }
+
         [Rpc(SendTo.Server)]
-        private void SendReadyStatusRpc()
+        private void SendReadyToQuitStatusRpc()
         {
             _playersReadyToRestart.Add(NetworkManager.LocalClientId);
         }
 
         [Rpc(SendTo.Server)]
-        private void SendPlayerLeavingRpc()
+        private void SendReadyToReturnStatusRpc()
         {
-            var clientId = NetworkManager.ConnectedClientsIds.First(c => c == NetworkManager.LocalClientId);
+            _playersReadyToReturn.Add(NetworkManager.LocalClientId);
+        }
+
+        [Rpc(SendTo.Server)]
+        private void SendPlayerLeavingRpc(RpcParams rpcParams = default)
+        {
+            var clientId = rpcParams.Receive.SenderClientId;
             _playersReadyToRestart.Remove(clientId);
+            _playersReadyToReturn.Remove(clientId);
+        }
+
+        [Rpc(SendTo.Server)]
+        private void SendDeleteReadyToReturnRpc(RpcParams rpcParams = default)
+        {
+            var clientId = rpcParams.Receive.SenderClientId;
+            _playersReadyToReturn.Remove(clientId);
         }
         
         private void PerformReturnToMenu()
@@ -160,16 +233,6 @@ namespace Code.UserInterface.PostGameUI
             
             UIUtilities.Instance.MessagePopUp("El anfitrión abandonó la partida", true);
             UIUtilities.Instance.MessageOkBtn.onClick.AddListener(() => UIUtilities.Instance.LoadScene("MainMenu"));
-        }
-
-        private void PerformReturnToLobby()
-        {
-            
-        }
-
-        private void ReturnToLobby()
-        {
-            
         }
     }
 }

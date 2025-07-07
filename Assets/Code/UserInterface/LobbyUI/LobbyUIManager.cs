@@ -9,16 +9,18 @@ using System.Threading.Tasks;
 using Code.Helpers.UI;
 using Code.Helpers.Singleton;
 using System;
+using System.Collections;
 
 namespace Code.UserInterface.LobbyUI
 {
     public class LobbyUIManager : Singleton<LobbyUIManager>
     {
         [Header("Refreshables")] 
-		[SerializeField] private List<Refreshable> refreshables = new();
+        [SerializeField] private List<Refreshable> refreshables = new();
 
-        [Header("Lobby general")] 
+        [Header("Lobby general")]
         [SerializeField] private TextMeshProUGUI codeText;
+
         [SerializeField] private Button backButton;
         [SerializeField] private Button nextMapButton;
         [SerializeField] private Button prevMapButton;
@@ -29,6 +31,9 @@ namespace Code.UserInterface.LobbyUI
         private int _currentMapIndex;
 
         private SessionManager _sessionManager;
+
+        private bool _canSelectCharacter = true;
+        [SerializeField] private float buttonCooldown;
 
         protected override void Awake()
         {
@@ -109,6 +114,8 @@ namespace Code.UserInterface.LobbyUI
         
         private async Task<bool> TrySelectCharacter(string characterName)
         {
+            _canSelectCharacter = false;
+            
             bool isTaken = _sessionManager.ActiveSession.Players.Any(p =>
                 p.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var prop) &&
                 prop.Value == characterName);
@@ -120,18 +127,30 @@ namespace Code.UserInterface.LobbyUI
                 _sessionManager.ActiveSession.CurrentPlayer.SetProperty(_sessionManager.PlayerCharacterKey,
                     new PlayerProperty(characterName, VisibilityPropertyOptions.Member));
                 await _sessionManager.ActiveSession.SaveCurrentPlayerDataAsync();
+
+                StartCoroutine(WaitForCooldown());
                 return true;
             }
             catch (Exception e)
             {
+#if UNITY_EDITOR
                 Debug.LogException(e);
+#endif
                 UIUtilities.Instance.MessagePopUp("Hubo un problema guardando las propiedades del jugador", true);
+                StartCoroutine(WaitForCooldown());
                 return false;
             }
+        }
+
+        private IEnumerator WaitForCooldown()
+        {
+            yield return new WaitForSeconds(buttonCooldown);
+            _canSelectCharacter = true;
         }
         
         public async void OnCharacterSelected(CharacterButtonUI character)
         {
+            if (!_canSelectCharacter) return;
             bool success = await TrySelectCharacter(character.characterName);
             
 #if UNITY_EDITOR

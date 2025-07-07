@@ -2724,6 +2724,7 @@ MonoBehaviour:
   - saucer
   - tower
   mapImage: {fileID: 1244397944}
+  buttonCooldown: 0.6
 --- !u!4 &1241396025
 Transform:
   m_ObjectHideFlags: 0
