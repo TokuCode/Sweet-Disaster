@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
 using Code.Helpers.Singleton;
+using UnityEditor;
 
 namespace Code.Helpers.UI
 {
@@ -94,7 +95,14 @@ namespace Code.Helpers.UI
             rectTransform.anchoredPosition = initialPos;
             rectTransform.gameObject.SetActive(false);
         }
-        
-        public void Quit() => Application.Quit();
+
+        public void Quit()
+        {
+#if UNITY_EDITOR
+            EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
     }
 }

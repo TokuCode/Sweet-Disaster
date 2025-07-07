@@ -29,9 +29,6 @@ namespace Code.Networking.Session
 
             Color color = _playerColors.TryGetValue(colorName, out var colorProp) ? colorProp : Color.gray;
             
-            if (color == Color.gray)
-                Debug.LogWarning("Color couldn't be found, using default color");
-            
             return color;
         }
 
@@ -39,9 +36,6 @@ namespace Code.Networking.Session
         {
             string propertyValue = player.Properties.TryGetValue(propertyKey, out var prop) ?
                 prop.Value : String.Empty;
-
-            if (propertyValue == String.Empty)
-                Debug.LogWarning($"Value not found in property {propertyKey}");
             
             return propertyValue;
         }

@@ -58,7 +58,6 @@ namespace Code.UserInterface.PostGameUI
         {
             playAgainButton.onClick.RemoveListener(OnPlayAgainPressed);
             exitButton.onClick.RemoveListener(PerformReturnToMenu);
-            UIUtilities.Instance.MessageOkBtn.onClick.RemoveAllListeners();
             
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource.Dispose();
@@ -113,7 +112,7 @@ namespace Code.UserInterface.PostGameUI
         
         private void OnPlayAgainPressed()
         {
-            _playersReadyToRestart.Add(NetworkManager.LocalClientId);
+            if (IsServer) _playersReadyToRestart.Add(NetworkManager.LocalClientId);
             if (IsClient && !IsHost) SendReadyStatusRpc();
             
             playAgainButton.interactable = false;
@@ -122,7 +121,8 @@ namespace Code.UserInterface.PostGameUI
 
         private void ListChanged(NetworkListEvent<ulong> listEvent)
         {
-            if (_playersReadyToRestart.Count < _sessionManager.ActiveSession.PlayerCount) return;
+            if (_playersReadyToRestart.Count < _sessionManager.ActiveSession.PlayerCount 
+                && _sessionManager.ActiveSession.PlayerCount > 1) return;
             NetworkManager.Singleton.SceneManager.LoadScene("MultiplayerTest", LoadSceneMode.Single);
         }
 
@@ -130,6 +130,13 @@ namespace Code.UserInterface.PostGameUI
         private void SendReadyStatusRpc()
         {
             _playersReadyToRestart.Add(NetworkManager.LocalClientId);
+        }
+
+        [Rpc(SendTo.Server)]
+        private void SendPlayerLeavingRpc()
+        {
+            var clientId = NetworkManager.ConnectedClientsIds.First(c => c == NetworkManager.LocalClientId);
+            _playersReadyToRestart.Remove(clientId);
         }
         
         private void PerformReturnToMenu()
@@ -142,6 +149,7 @@ namespace Code.UserInterface.PostGameUI
         private void ReturnToMenu()
         {
             SessionManager.Instance.LeaveSession();
+            SendPlayerLeavingRpc();
             UIUtilities.Instance.LoadScene("MainMenu");
         }
 

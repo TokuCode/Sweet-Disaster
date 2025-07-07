@@ -13,11 +13,7 @@ namespace Code.Networking.Session
             _sessionManager.ActiveSession.PlayerHasLeft += OnPlayerLeft;
         }
 
-        private void OnDisable()
-        {
-            _sessionManager.ActiveSession.PlayerHasLeft -= OnPlayerLeft;
-            UIUtilities.Instance.MessageOkBtn.onClick.RemoveAllListeners();
-        }
+        private void OnDisable() => _sessionManager.ActiveSession.PlayerHasLeft -= OnPlayerLeft;
 
         private void OnPlayerLeft(string playerId)
         {
