@@ -5352,7 +5352,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 873056430}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Code.UserInterface.HUD.Settings, SweetDisaster.UI
         m_MethodName: ApplyJumpSettingsFromUI
         m_Mode: 1
@@ -5770,14 +5770,13 @@ GameObject:
   - component: {fileID: 873056428}
   - component: {fileID: 873056427}
   - component: {fileID: 873056426}
-  - component: {fileID: 873056430}
   m_Layer: 5
   m_Name: Development Options
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &873056426
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5862,25 +5861,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!114 &873056430
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 873056425}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5cce587aea3ce7a44873602ef8e2e67a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  settingsGo: {fileID: 1143216309}
-  idleAccelField: {fileID: 934244872}
-  maxSpeedField: {fileID: 2087962573}
-  impulseField: {fileID: 1664895022}
-  gravityField: {fileID: 662278891}
-  movementDispersionField: {fileID: 1238673138}
-  airDispersionField: {fileID: 1221102082}
 --- !u!1 &885971515
 GameObject:
   m_ObjectHideFlags: 0
@@ -6520,7 +6500,7 @@ GameObject:
   - component: {fileID: 995166363}
   - component: {fileID: 995166361}
   m_Layer: 0
-  m_Name: GameManager
+  m_Name: LoserTracker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6654,6 +6634,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 995338140}
   m_CullTransparentMesh: 1
+--- !u!1 &1019909437
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1019909438}
+  - component: {fileID: 1019909439}
+  m_Layer: 0
+  m_Name: Disconnection
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1019909438
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1019909437}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1019909439
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1019909437}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af6c0ac9ae78890429ccc25fa36c53f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1090601713
 GameObject:
   m_ObjectHideFlags: 0
@@ -7848,11 +7872,11 @@ RectTransform:
   m_Children:
   - {fileID: 1949823228}
   - {fileID: 1714225044}
-  - {fileID: 1447031061}
   - {fileID: 1917258020}
   - {fileID: 415872300}
   - {fileID: 1142797986}
   - {fileID: 292892528}
+  - {fileID: 1447031061}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -18199,6 +18223,7 @@ SceneRoots:
   - {fileID: 619394802}
   - {fileID: 1438334644}
   - {fileID: 694306576}
+  - {fileID: 1019909438}
   - {fileID: 318226529}
   - {fileID: 195915122}
   - {fileID: 200075174}

@@ -28,17 +28,6 @@ namespace Code.Gameplay.Character.Features
         private bool _cachedCrouchInput;
         private float _jumpCooldownTimer;
 
-        public float JumpImpulse
-        {
-            get => _jumpImpulse;
-            set => _jumpImpulse = value;
-        }
-        public float FallGravityMultiplier
-        {
-            get => _fallGravityMultiplier;
-            set => _fallGravityMultiplier = value;
-        }
-
         public override void ResetFeature()
         {
             _cachedCrouchInput = false;

@@ -28,6 +28,7 @@ namespace Code.UserInterface.HUD
         [SerializeField] private TMP_InputField movementDispersionField;
         [SerializeField] private TMP_InputField airDispersionField;
         
+        /*
         private void Update()
         {
             if (SessionManager.Instance == null) return;
@@ -40,11 +41,12 @@ namespace Code.UserInterface.HUD
                 Time.timeScale = settingsGo.activeInHierarchy ? 0 : 1;
             }
         }
+        */
 
         public void ApplyJumpSettingsFromUI()
         {
             ApplySettings();
-            ApplySettingsRpc();
+            //ApplySettingsRpc();
         }
 
         private void ApplySettings()
@@ -55,6 +57,7 @@ namespace Code.UserInterface.HUD
             if (!PlayerController.Singleton.Dependencies.TryGetFeature(out _jump)) return;
             if (!PlayerController.Singleton.Dependencies.TryGetFeature(out _shoot)) return;
             
+            /*
             if (float.TryParse(idleAccelField.text, out float idleAccel))
                 _speed.AccelerationIdle = idleAccel;
 
@@ -72,12 +75,15 @@ namespace Code.UserInterface.HUD
                 
             if (float.TryParse(airDispersionField.text, out float airDispersion))
                 _shoot.AirImprecision = airDispersion;
+                */
         }
         
+        /*
         [Rpc(SendTo.NotMe)]
         private void ApplySettingsRpc()
         {
             ApplySettings();
         }
+        */
     }
 }

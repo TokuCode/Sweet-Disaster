@@ -79,17 +79,6 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private bool _reloadRequested;
 
         public event Action OnActiveReload;
-        
-        public float MovementImprecisionPerSpeedUnit
-        {
-            get => _movementImprecisionPerSpeedUnit;
-            set => _movementImprecisionPerSpeedUnit = value;
-        }
-        public float AirImprecision
-        {
-            get => _airImprecision;
-            set => _airImprecision = value;
-        }
 
         public override void ResetFeature()
         {

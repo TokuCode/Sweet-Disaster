@@ -43,17 +43,6 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private float _acceleration;
         public float Acceleration => _acceleration;
 
-        public float AccelerationIdle
-        {
-            get => _accelerationIdle; 
-            set => _accelerationIdle = value;
-        }
-        public float MaxSpeedIdle
-        {
-            get => _maxSpeedIdle;
-            set => _maxSpeedIdle = value;
-        }
-
         public override void ResetFeature() { }
 
         public override void InitializeFeature(Controller controller)

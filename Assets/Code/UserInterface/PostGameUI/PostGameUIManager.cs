@@ -26,71 +26,45 @@ namespace Code.UserInterface.PostGameUI
 
         [Header("Buttons")]
         [SerializeField] private UnityEngine.UI.Button playAgainButton;
+        [SerializeField] private UnityEngine.UI.Button returnToLobbyButton;
         [SerializeField] private UnityEngine.UI.Button exitButton;
         
         [SerializeField] private TextMeshProUGUI statusText;
 
-        /*private NetworkList<bool> playersReadyToRestart = new(new[] { false, false, false, false }, 
-            NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);*/
-
-        //private List<string> playersReady = new();
+        private NetworkList<ulong> _playersReadyToRestart = new(new List<ulong>());
         
         private SessionManager _sessionManager;
         private CancellationTokenSource  _cancellationTokenSource;
-
-        private void Awake()
-        {
-            playAgainButton.onClick.AddListener(OnPlayAgainPressed);
-            exitButton.onClick.AddListener(Return);
-        }
-
-        public override async void OnNetworkSpawn()
+        
+        public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+            
+            playAgainButton.onClick.AddListener(OnPlayAgainPressed);
+            
+            exitButton.onClick.AddListener(PerformReturnToMenu);
             
             _sessionManager = SessionManager.Instance;
             _cancellationTokenSource = new CancellationTokenSource();
 
-            if (IsServer)
-            {
-                PopulatePlayers();
-                PopulatePlayersRpc();
-            }
+            if (!IsServer) return;
             
-            try
-            {
-                _sessionManager.ActiveSession.CurrentPlayer.SetProperty(
-                    _sessionManager.PlayerReadyToRestart,
-                    new PlayerProperty("false", VisibilityPropertyOptions.Member));
-                await _sessionManager.ActiveSession.SaveCurrentPlayerDataAsync();
-            }
-            catch (Exception e)
-            {
-                Debug.LogException(e);
-                UIUtilities.Instance.MessagePopUp("No se pudo actualizar las propiedades del jugador", true);
-            }
-        }
-        
-        public override void OnNetworkDespawn()
-        {
-            base.OnNetworkDespawn();
-            
-            //playAgainButton.onClick.RemoveListener(OnPlayAgainPressed);
-            //exitButton.onClick.RemoveListener(Return);
-            //UIUtilities.Instance.MessageOkBtn.onClick.RemoveAllListeners();
-            
-            //_cancellationTokenSource.Cancel();
-            //_cancellationTokenSource.Dispose();
+            _playersReadyToRestart.OnListChanged += ListChanged;
+            PopulatePlayers();
+            PopulatePlayersRpc();
         }
 
         private void OnDisable()
         {
             playAgainButton.onClick.RemoveListener(OnPlayAgainPressed);
-            exitButton.onClick.RemoveListener(Return);
+            exitButton.onClick.RemoveListener(PerformReturnToMenu);
             UIUtilities.Instance.MessageOkBtn.onClick.RemoveAllListeners();
             
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource.Dispose();
+            
+            if (!IsServer) return;
+            _playersReadyToRestart.OnListChanged -= ListChanged;
         }
 
         private void PopulatePlayers()
@@ -108,25 +82,21 @@ namespace Code.UserInterface.PostGameUI
                 var playerColor = _sessionManager.playerInfo.GetColor(player);
                 
                 playerSlots[i].SetSlot(playerName, playerColor);
-
-                //if (playerStatusData.IsWinner)
+                
                 if (i == 0)
                     winnerTitle.text = $"Ganador: {playerName}";
                 
                 playersPositionsText[i].text = (i + 1).ToString();
-
-                if (!playerStatusData.IsWinner)
+                
+                if (i > 0)
                 {
-                    if (i > 0)
+                    if (_cachedPlayerStatusData.Lives == playerStatusData.Lives 
+                        && Mathf.Approximately(_cachedPlayerStatusData.AccumulatedDmg, playerStatusData.AccumulatedDmg))
                     {
-                        if (_cachedPlayerStatusData.Lives == playerStatusData.Lives 
-                            && Mathf.Approximately(_cachedPlayerStatusData.AccumulatedDmg, playerStatusData.AccumulatedDmg))
-                        {
-                            if (_sessionManager.ActiveSession.PlayerCount == 2 || i == 1)
-                                winnerTitle.text = "Empate";
+                        if (_sessionManager.ActiveSession.PlayerCount == 2 || i == 1)
+                            winnerTitle.text = "Empate";
 
-                            playersPositionsText[i].text = i.ToString();
-                        }
+                        playersPositionsText[i].text = i.ToString();
                     }
                 }
                 
@@ -141,93 +111,57 @@ namespace Code.UserInterface.PostGameUI
             PopulatePlayers();
         }
         
-        private async void OnPlayAgainPressed()
+        private void OnPlayAgainPressed()
         {
-            try
-            {
-                _sessionManager.ActiveSession.CurrentPlayer.SetProperty(_sessionManager.PlayerReadyToRestart,
-                    new PlayerProperty("true", VisibilityPropertyOptions.Member));
-                await _sessionManager.ActiveSession.SaveCurrentPlayerDataAsync();
-            }
-            catch (Exception e)
-            {
-                Debug.LogException(e);
-                UIUtilities.Instance.MessagePopUp("Ha ocurrido un error al actualizar las propiedades del jugador.", false);
-            }
-
-            /*if (IsOwner && IsClient)
-            {
-                SendReadyStatusRpc();
-                Debug.Log(playersReady);
-            }*/
+            _playersReadyToRestart.Add(NetworkManager.LocalClientId);
+            if (IsClient && !IsHost) SendReadyStatusRpc();
             
             playAgainButton.interactable = false;
             statusText.text = "Esperando a los jugadores...";
-            CheckAllReadyToRestart();
+        }
+
+        private void ListChanged(NetworkListEvent<ulong> listEvent)
+        {
+            if (_playersReadyToRestart.Count < _sessionManager.ActiveSession.PlayerCount) return;
+            NetworkManager.Singleton.SceneManager.LoadScene("MultiplayerTest", LoadSceneMode.Single);
         }
 
         [Rpc(SendTo.Server)]
         private void SendReadyStatusRpc()
         {
-            //playersReady.Add(_sessionManager.ActiveSession.CurrentPlayer.Id);
+            _playersReadyToRestart.Add(NetworkManager.LocalClientId);
         }
         
-        private async void CheckAllReadyToRestart()
+        private void PerformReturnToMenu()
         {
-            Debug.Log("Checking if it should restart...");
-            var session = _sessionManager.ActiveSession;
-            var readyKey = _sessionManager.PlayerReadyToRestart;
-            var token = _cancellationTokenSource.Token;
-
-            try
-            {
-                while (!token.IsCancellationRequested)
-                {
-                    bool allReady = session.Players.All(player =>
-                        player.Properties.TryGetValue(readyKey, out var readyProp) &&
-                        readyProp.Value == "true"
-                    );
-
-                    if (allReady && session.PlayerCount > 1)
-                    {
-                        Debug.Log("All players are ready. Restarting game...");
-                    
-                        if (_sessionManager.ActiveSession.IsHost)
-                            NetworkManager.Singleton.SceneManager.LoadScene("MultiplayerTest", LoadSceneMode.Single);
-                        
-                        break;
-                    }
-
-                    Debug.Log("One of the players is not ready to restart.");
-                    await Task.Delay(1000); // check every second
-                }
-            }
-            catch (TaskCanceledException)
-            {
-                Debug.Log("Restart check cancelled.");
-            }
-        }
-        
-        private void Return()
-        {
-            ReturnToLobby();
+            ReturnToMenu();
             if (!_sessionManager.ActiveSession.IsHost) return;
-            ReturnToLobbyRpc();
+            ReturnToMenuRpc();
         }
 
-        private void ReturnToLobby()
+        private void ReturnToMenu()
         {
             SessionManager.Instance.LeaveSession();
             UIUtilities.Instance.LoadScene("MainMenu");
         }
 
         [Rpc(SendTo.NotMe)]
-        private void ReturnToLobbyRpc()
+        private void ReturnToMenuRpc()
         {
             SessionManager.Instance.LeaveSession();
             
             UIUtilities.Instance.MessagePopUp("El anfitrión abandonó la partida", true);
             UIUtilities.Instance.MessageOkBtn.onClick.AddListener(() => UIUtilities.Instance.LoadScene("MainMenu"));
-        } 
+        }
+
+        private void PerformReturnToLobby()
+        {
+            
+        }
+
+        private void ReturnToLobby()
+        {
+            
+        }
     }
 }

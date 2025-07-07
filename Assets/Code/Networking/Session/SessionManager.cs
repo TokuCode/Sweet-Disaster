@@ -24,7 +24,9 @@ namespace Code.Networking.Session
             set
             {
                 _activeSession = value;
+#if UNITY_EDITOR
                 Debug.Log($"Active session: {_activeSession}");
+#endif
             }
         }
 
@@ -34,13 +36,11 @@ namespace Code.Networking.Session
         
         // Session properties keys
         public readonly string MapPropertyKey = "map";
-		public readonly string WinnerPropertyKey = "winner";
         
         // Player properties keys
         public readonly string PlayerNameKey = "playerName";
         public readonly string PlayerColorKey = "playerColor";
         public readonly string PlayerCharacterKey = "playerCharacter";
-        public readonly string PlayerReadyToRestart = "playerReadyToRestart";
         
         public Dictionary<string, ulong> PlayerIdToClientId => playerIdToClientId;
 
@@ -76,7 +76,6 @@ namespace Code.Networking.Session
                 
                     SessionProperties = new Dictionary<string, SessionProperty>
                     {
-						{ WinnerPropertyKey, new SessionProperty("None", VisibilityPropertyOptions.Member) },
                         { MapPropertyKey, new SessionProperty("classic", VisibilityPropertyOptions.Member) }
                     },
                     
@@ -142,7 +141,6 @@ namespace Code.Networking.Session
                 { PlayerNameKey, new PlayerProperty(playerInfo.GetRandomName(), VisibilityPropertyOptions.Member) },
                 { PlayerColorKey, new PlayerProperty(playerInfo.GetAvailableColorName(), VisibilityPropertyOptions.Member) },
                 { PlayerCharacterKey, new PlayerProperty(String.Empty, VisibilityPropertyOptions.Member) },
-                { PlayerReadyToRestart, new PlayerProperty("false",  VisibilityPropertyOptions.Member) }
             };
         }
     }
