@@ -25,7 +25,7 @@ namespace Code.Helpers.UI
         
         // Public members
         public float TransitionDuration => transitionDuration;
-        public GameObject MessageGameObject => messageGameObject;
+        public Button MessageOkBtn => okBtn;
         public CanvasGroup TransitionPanel => transitionPanel;
 
         private void Start()

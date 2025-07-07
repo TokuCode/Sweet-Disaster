@@ -38,12 +38,15 @@ namespace Code.UserInterface.PostGameUI
         private SessionManager _sessionManager;
         private CancellationTokenSource  _cancellationTokenSource;
 
+        private void Awake()
+        {
+            playAgainButton.onClick.AddListener(OnPlayAgainPressed);
+            exitButton.onClick.AddListener(Return);
+        }
+
         public override async void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
-            
-            playAgainButton.onClick.AddListener(OnPlayAgainPressed);
-            exitButton.onClick.AddListener(ReturnToLobby);
             
             _sessionManager = SessionManager.Instance;
             _cancellationTokenSource = new CancellationTokenSource();
@@ -72,8 +75,19 @@ namespace Code.UserInterface.PostGameUI
         {
             base.OnNetworkDespawn();
             
+            //playAgainButton.onClick.RemoveListener(OnPlayAgainPressed);
+            //exitButton.onClick.RemoveListener(Return);
+            //UIUtilities.Instance.MessageOkBtn.onClick.RemoveAllListeners();
+            
+            //_cancellationTokenSource.Cancel();
+            //_cancellationTokenSource.Dispose();
+        }
+
+        private void OnDisable()
+        {
             playAgainButton.onClick.RemoveListener(OnPlayAgainPressed);
-            exitButton.onClick.RemoveListener(ReturnToLobby);
+            exitButton.onClick.RemoveListener(Return);
+            UIUtilities.Instance.MessageOkBtn.onClick.RemoveAllListeners();
             
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource.Dispose();
@@ -95,7 +109,8 @@ namespace Code.UserInterface.PostGameUI
                 
                 playerSlots[i].SetSlot(playerName, playerColor);
 
-                if (playerStatusData.IsWinner)
+                //if (playerStatusData.IsWinner)
+                if (i == 0)
                     winnerTitle.text = $"Ganador: {playerName}";
                 
                 playersPositionsText[i].text = (i + 1).ToString();
@@ -193,11 +208,26 @@ namespace Code.UserInterface.PostGameUI
             }
         }
         
+        private void Return()
+        {
+            ReturnToLobby();
+            if (!_sessionManager.ActiveSession.IsHost) return;
+            ReturnToLobbyRpc();
+        }
+
         private void ReturnToLobby()
         {
             SessionManager.Instance.LeaveSession();
-            NetworkManager.Singleton.Shutdown();
             UIUtilities.Instance.LoadScene("MainMenu");
         }
+
+        [Rpc(SendTo.NotMe)]
+        private void ReturnToLobbyRpc()
+        {
+            SessionManager.Instance.LeaveSession();
+            
+            UIUtilities.Instance.MessagePopUp("El anfitrión abandonó la partida", true);
+            UIUtilities.Instance.MessageOkBtn.onClick.AddListener(() => UIUtilities.Instance.LoadScene("MainMenu"));
+        } 
     }
 }
