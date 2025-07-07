@@ -201,7 +201,8 @@ namespace Code.Gameplay.Character.Features
         {
             var direction = InputReader.Instance.HandleDirection;
             _invoker.GunTipPosition.Request(out var position);
-            var throwForce = direction.normalized * Mathf.Lerp(_throwMinForce, _throwMaxForce, Mathf.Clamp01(_throwChargeTimer / _throwChargeTimeSeconds));
+            _invoker.Velocity.Request(out var velocity);
+            var throwForce = direction.normalized * Mathf.Lerp(_throwMinForce, _throwMaxForce, Mathf.Clamp01(_throwChargeTimer / _throwChargeTimeSeconds)) + (Vector3)velocity;
             
             ThrowAction(position, direction, throwForce, out int id);
             _invoker.PlayerNumber.Request(out int clientId);
