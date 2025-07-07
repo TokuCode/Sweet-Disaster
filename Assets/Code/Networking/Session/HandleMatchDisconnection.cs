@@ -13,7 +13,11 @@ namespace Code.Networking.Session
             _sessionManager.ActiveSession.PlayerHasLeft += OnPlayerLeft;
         }
 
-        private void OnDisable() => _sessionManager.ActiveSession.PlayerHasLeft -= OnPlayerLeft;
+        private void OnDisable()
+        {
+            if (_sessionManager.ActiveSession == null) return;
+            _sessionManager.ActiveSession.PlayerHasLeft -= OnPlayerLeft;
+        }
 
         private void OnPlayerLeft(string playerId)
         {
