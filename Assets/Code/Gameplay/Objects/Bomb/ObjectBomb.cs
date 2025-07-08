@@ -14,6 +14,7 @@ public class ObjectBomb : NetworkBehaviour
 {
     private const float maxLatencyMiliseconds = 300;
     
+    [SerializeField] private SpriteRenderer _spriteRenderer;
     [SerializeField] private int _bounceCount; 
     [SerializeField] private bool started;
     [SerializeField] private float _initTime;
@@ -83,6 +84,14 @@ public class ObjectBomb : NetworkBehaviour
         
         _persistenceTimer.Tick(Time.deltaTime);
         _initTimer.Tick(Time.deltaTime);
+        AlignVisual();
+    }
+
+    private void AlignVisual()
+    {
+        var direction = _rigidbody2D.linearVelocity.normalized;
+        if(direction == Vector2.zero) return;
+        _spriteRenderer.transform.up = direction;
     }
 
     public BombStatePayload GetState()

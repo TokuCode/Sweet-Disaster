@@ -1283,10 +1283,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _box: {fileID: 199978243}
-  _left: 5
-  _right: 5
-  _top: 5
-  _bottom: 5
+  _left: 25
+  _right: 25
+  _top: 12.5
+  _bottom: 12.5
   _boxColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!61 &199978243
 BoxCollider2D:
@@ -1362,10 +1362,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _box: {fileID: 199978243}
-  _left: 7.5
-  _right: 7.5
-  _top: 7.5
-  _bottom: 7.5
+  _left: 25
+  _right: 25
+  _top: 12.5
+  _bottom: 12.5
   _boxColor: {r: 1, g: 0.4627451, b: 0, a: 1}
 --- !u!1 &200075171
 GameObject:
@@ -3258,7 +3258,7 @@ MonoBehaviour:
   _baseTargetRadius: 12.5
   _baseTargetWeight: 1
   _radiusBase: 3
-  _radiusGrowth: 10
+  _radiusGrowth: 12.5
   _baseWeight: 2
   _focusWeight: 3
 --- !u!4 &557548776

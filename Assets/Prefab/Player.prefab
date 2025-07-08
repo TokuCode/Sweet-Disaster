@@ -758,7 +758,7 @@ MonoBehaviour:
   _bulletPrefab: {fileID: 3392542828733932666, guid: 164d47ae8f05cd143be5125ce73b26e3, type: 3}
   _baseImprecision: 0
   _imprecision: 0
-  _imprecisionToAngleFactor: 15
+  _imprecisionToAngleFactor: 10
   _airImprecision: 0.5
   _movementImprecisionPerSpeedUnit: 0.25
   _recoilForce: 2.5
@@ -802,11 +802,11 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _throwChargeTimeSeconds: 0.45
   _throwChargeTimer: 0
-  _throwMinForce: 5
+  _throwMinForce: 10
   _throwMaxForce: 30
   _isThrowing: 0
   _timeOnMaxThrowCharge: 0.15
-  _cooldownTimeSeconds: 1.5
+  _cooldownTimeSeconds: 1
   _cooldownTimer: 0
   _cooldownAmpPerTemperatureProgress: 2
   _isOnCooldown: 0

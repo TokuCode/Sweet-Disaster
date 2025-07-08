@@ -1,4 +1,5 @@
 ﻿using Code.Gameplay.Character.Features;
+using Code.Systems.Input;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -23,6 +24,17 @@ namespace Code.Gameplay.Objects
         {
             if(!gameObject.activeSelf) return;
             _spriteRenderer.color = _shieldColor.Evaluate(_shield.TemperatureProgress);
+            UpdateLocalScale();
+        }
+
+        private void UpdateLocalScale()
+        {
+            var sign = Mathf.Sign((_bomb.transform.position - transform.position).x);
+            
+            if(sign == 0) return;
+            var localScale = _spriteRenderer.transform.localScale;
+            localScale.x = sign;
+            _spriteRenderer.transform.localScale = localScale;
         }
 
         public void OnBlock(int senderId, float heatDamage)
