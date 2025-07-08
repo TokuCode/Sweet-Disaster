@@ -291,7 +291,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 48, y: 27}
+  m_Size: {x: 56, y: 31.5}
   m_EdgeRadius: 0
 --- !u!114 &6365915281502179433
 MonoBehaviour:
@@ -915,8 +915,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _minigameDurationPerHealthRatio: 0.625
-  _minStunDuration: 0
+  _minigameDuration: 0.75
+  _minigameExtraDurationPerRatio: 0.25
   _sweetSpotSpan: 0.2
   _onSuccessTimeReductionRatio: 0.33
 --- !u!114 &3296703527897574207

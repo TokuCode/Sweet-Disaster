@@ -193,14 +193,14 @@ MonoBehaviour:
   _ownerPlayerNumber: 0
   _poolConfigObjects:
   - prefab: {fileID: 3392542828733932666, guid: 164d47ae8f05cd143be5125ce73b26e3, type: 3}
-    prewarmCount: 24
+    prewarmCount: 96
     prefabId:
       Part1: 3770557096
       Part2: 1082732653
       Part3: 3859855505
       Part4: 2102966229
   - prefab: {fileID: 6612687119068740015, guid: a189366a9cb40e049a06199f5a62fc44, type: 3}
-    prewarmCount: 12
+    prewarmCount: 48
     prefabId:
       Part1: 2496579132
       Part2: 1080489509
@@ -3726,7 +3726,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   _portraitPrefab: {fileID: 7963343510983890411, guid: cb763e1907222d74dbd680074a1ee7ae, type: 3}
+  _playerPositionPrefab: {fileID: 2107858360084399185, guid: 9d447e25651035847813a01fc31117c6, type: 3}
   _portraitContainer: {fileID: 1917258020}
+  _playerPositionContainer: {fileID: 1228858489}
 --- !u!4 &630549892
 Transform:
   m_ObjectHideFlags: 0
@@ -15985,11 +15987,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PooledPrefabsList:
   - prefab: {fileID: 6928477528844167981, guid: 9158474330c64654b9e55c6886418bc6, type: 3}
-    prewarmCount: 12
-  - prefab: {fileID: 6928477528844167981, guid: bec6567e9bde3ad458da93c48b407884, type: 3}
-    prewarmCount: 12
-  - prefab: {fileID: 6928477528844167981, guid: 55ad7e64b616f2442a37b99dc01ea618, type: 3}
     prewarmCount: 48
+  - prefab: {fileID: 6928477528844167981, guid: bec6567e9bde3ad458da93c48b407884, type: 3}
+    prewarmCount: 48
+  - prefab: {fileID: 6928477528844167981, guid: 55ad7e64b616f2442a37b99dc01ea618, type: 3}
+    prewarmCount: 96
 --- !u!4 &1763634306
 Transform:
   m_ObjectHideFlags: 0
