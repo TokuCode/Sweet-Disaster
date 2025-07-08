@@ -162,7 +162,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AutoUnparentOnAwake: 1
-  maxPlayers: 4
+  maxPlayers: 2
   playerInfo: {fileID: 12765083}
 --- !u!4 &12765085
 Transform:
