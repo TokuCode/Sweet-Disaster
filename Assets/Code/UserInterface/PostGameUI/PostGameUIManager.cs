@@ -10,7 +10,6 @@ using Unity.Netcode;
 using UnityEngine.SceneManagement;
 using Code.Helpers.UI;
 using Code.Gameplay;
-using System.Collections;
 
 namespace Code.UserInterface.PostGameUI
 {
@@ -21,6 +20,7 @@ namespace Code.UserInterface.PostGameUI
         [SerializeField] private List<PlayerSlotUI> playerSlots;
         [SerializeField] private List<TextMeshProUGUI> playersPositionsText;
 
+        private int _numberOfPlayers;
         private WinnersData.PlayerStatusData _cachedPlayerStatusData;
 
         [Header("Buttons")]
@@ -32,8 +32,6 @@ namespace Code.UserInterface.PostGameUI
 
         private NetworkList<ulong> _playersReadyToRestart = new(new List<ulong>());
         private NetworkList<ulong> _playersReadyToReturn = new(new List<ulong>());
-
-        [SerializeField] private float checkReturnCooldown;
         
         private SessionManager _sessionManager;
         
@@ -48,7 +46,8 @@ namespace Code.UserInterface.PostGameUI
             _sessionManager = SessionManager.Instance;
 
             if (!IsServer) return;
-            
+
+            _numberOfPlayers = WinnersData.playerStatusDataStack.Count;
             _playersReadyToRestart.OnListChanged += RestartListChanged;
             _playersReadyToReturn.OnListChanged += ReturnListChanged;
             PopulatePlayers();
@@ -130,14 +129,14 @@ namespace Code.UserInterface.PostGameUI
 
         private void RestartListChanged(NetworkListEvent<ulong> listEvent)
         {
-            if (_playersReadyToRestart.Count < _sessionManager.ActiveSession.PlayerCount 
+            if (_playersReadyToRestart.Count < _numberOfPlayers
                 && _sessionManager.ActiveSession.PlayerCount > 1) return;
             NetworkManager.Singleton.SceneManager.LoadScene("MultiplayerTest", LoadSceneMode.Single);
         }
 
         private void ReturnListChanged(NetworkListEvent<ulong> listEvent)
         {
-            if (_playersReadyToReturn.Count < _sessionManager.ActiveSession.PlayerCount 
+            if (_playersReadyToReturn.Count < _numberOfPlayers
                 && _sessionManager.ActiveSession.PlayerCount > 1) return;
             ResetCharacterProperty();
             ResetCharacterPropertyRpc();

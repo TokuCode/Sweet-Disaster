@@ -84,8 +84,9 @@ namespace Code.Networking.Session
                 }.WithRelayNetwork();
                 
                 ActiveSession = await MultiplayerService.Instance.CreateSessionAsync(options); // Create the session as host
+#if UNITY_EDITOR
                 Debug.Log($"Session {ActiveSession.Id} created! Join code: {ActiveSession.Code}");
-
+#endif
                 if (!ActiveSession.IsHost) return;
                 NetworkManager.Singleton.SceneManager.LoadScene("LobbyTest", LoadSceneMode.Single);
             }
@@ -106,8 +107,9 @@ namespace Code.Networking.Session
                 
                 ActiveSession.CurrentPlayer.SetProperties(SetPlayerProperties());
                 await ActiveSession.SaveCurrentPlayerDataAsync();
-                
+#if UNITY_EDITOR
                 Debug.Log($"Session {ActiveSession.Id} joined");
+#endif
             }
             catch (Exception e)
             {
