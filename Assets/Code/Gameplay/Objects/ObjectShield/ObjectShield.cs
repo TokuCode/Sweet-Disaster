@@ -29,11 +29,11 @@ namespace Code.Gameplay.Objects
 
         private void UpdateLocalScale()
         {
-            var sign = Mathf.Sign((_bomb.transform.position - transform.position).x);
+            var sign = Mathf.Sign((transform.position - _bomb.transform.position).x);
             
             if(sign == 0) return;
             var localScale = _spriteRenderer.transform.localScale;
-            localScale.x = sign;
+            localScale.y = sign;
             _spriteRenderer.transform.localScale = localScale;
         }
 
