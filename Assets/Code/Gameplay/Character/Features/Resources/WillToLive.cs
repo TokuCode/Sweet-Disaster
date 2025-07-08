@@ -12,8 +12,8 @@ namespace Code.Gameplay.Character.Features
         private Health _health;
         
         [Header("Stun Minigame")]
-        [SerializeField] private float _minigameDurationPerHealthRatio;
-        [SerializeField] private float _minStunDuration;
+        [SerializeField] private float _minigameDuration;
+        [SerializeField] private float _minigameExtraDurationPerRatio;
         [SerializeField] private float _sweetSpotSpan;
         public float SweetSpotSpan => _sweetSpotSpan;
         private float _cachedStunDuration;
@@ -42,7 +42,7 @@ namespace Code.Gameplay.Character.Features
         {
             base.InitializeFeature(controller);
             _dependencies.TryGetFeature(out _health);
-            _minigameTimer = new (_minigameDurationPerHealthRatio);
+            _minigameTimer = new (_minigameDuration);
             _health.OnStun += StartMinigame;
             _health.OnUnStun += EndMinigame;
         }
@@ -92,7 +92,7 @@ namespace Code.Gameplay.Character.Features
         {
             if(!IsOwner) return;
             
-            if(stunDuration < _minStunDuration) return;
+            if(stunDuration < _minigameDuration) return;
             
             _onMinigame.Value = true;
             
@@ -126,7 +126,8 @@ namespace Code.Gameplay.Character.Features
 
         private void StartMinigameAction(float healthRatio, float stunDuration)
         {
-            _minigameTimer = new (_minigameDurationPerHealthRatio * Mathf.Max(1, healthRatio));
+            float minigameDuration = _minigameDuration + _minigameExtraDurationPerRatio * Mathf.Max(0, healthRatio - 1);
+            _minigameTimer.Reset(minigameDuration);
             _minigameTimer.Start();
             _cachedStunDuration = stunDuration;
         }

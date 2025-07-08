@@ -13,9 +13,11 @@ namespace Code.UserInterface.HUD
         private bool _playersLoaded;
         private bool _portraitsLoaded;
         [SerializeField] private GameObject _portraitPrefab;
+        [SerializeField] private GameObject _playerPositionPrefab;
         
         [Header("UI Elements")]
         [SerializeField] private Transform _portraitContainer;
+        [SerializeField] private Transform _playerPositionContainer;
 
         public override void OnNetworkSpawn()
         {
@@ -31,7 +33,7 @@ namespace Code.UserInterface.HUD
         {
             if (PlayerVisibility.Instance.Players.Count == _playerCount && _playersLoaded && !_portraitsLoaded)
             {
-                SpawnPortraits();
+                SpawnPlayerElements();
                 _portraitsLoaded = true;
             }
         }
@@ -42,21 +44,29 @@ namespace Code.UserInterface.HUD
             _playersLoaded = true;
         }
 
-        public void SpawnPortraits()
+        private void SpawnPlayerElements()
         {
             var players = new List<PlayerPublicInfo>(PlayerVisibility.Instance.Players);
             MergeSortUtil<PlayerPublicInfo>.MergeSort(players);
             foreach (var player in players)
             {
                 SpawnPortrait(player);
+                SpawnPositionIndicator(player);
             }
         }
 
-        public void SpawnPortrait(PlayerPublicInfo playerInfo)
+        private void SpawnPortrait(PlayerPublicInfo playerInfo)
         {
             var spawned = Instantiate(_portraitPrefab, _portraitContainer);
             var portrait = spawned.GetComponent<PlayerPortrait>();
             portrait.CachePlayerInfo(playerInfo);
+        }
+
+        private void SpawnPositionIndicator(PlayerPublicInfo playerInfo)
+        {
+            var spawned = Instantiate(_playerPositionPrefab, _playerPositionContainer);
+            var indicator = spawned.GetComponent<PlayerPositionIndicator>();
+            indicator.CachePlayerInfo(playerInfo);
         }
     }
 }
