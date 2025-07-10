@@ -1,4 +1,5 @@
 using Code.Helpers.UI;
+using Unity.Services.Multiplayer;
 using UnityEngine;
 
 namespace Code.Networking.Session
@@ -21,10 +22,13 @@ namespace Code.Networking.Session
 
         private void OnPlayerLeft(string playerId)
         {
+            _sessionManager.LeaveSession();
+            UIUtilities.Instance.MessagePopUp("Un jugador ha abandonado la partida, la partida será cancelada", true);
+            UIUtilities.Instance.MessageOkBtn.onClick.AddListener(() => UIUtilities.Instance.LoadScene("MainMenu"));
+            
             if (playerId != _sessionManager.ActiveSession.Host) return;
             
             _sessionManager.LeaveSession();
-            
             UIUtilities.Instance.MessagePopUp("El anfitrión ha abandonado la partida, la partida será cancelada", true);
             UIUtilities.Instance.MessageOkBtn.onClick.AddListener(() => UIUtilities.Instance.LoadScene("MainMenu"));
         }

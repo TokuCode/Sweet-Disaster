@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Code.Audio.Character;
 using Code.Gameplay.Character.Framework;
 using Code.Gameplay.Objects;
 using Code.Helpers;
@@ -102,6 +103,8 @@ namespace Code.Gameplay.Character.Features
 
         private void MeleeAction()
         {
+            gameObject.GetComponent<CharacterAudioHandler>().NetworkPlay("Shield");
+            
             _invoker.GunTipPosition.Request(out var position);
             _invoker.CenterPosition.Request(out var centerPosition);
             float radius = Mathf.Lerp(_minRadius, _maxRadius, shield.TemperatureProgress);

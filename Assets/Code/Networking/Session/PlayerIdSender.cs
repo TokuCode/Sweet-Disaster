@@ -25,7 +25,6 @@ namespace Code.Networking.Session
             var clientId = NetworkManager.LocalClient.ClientId;
             if(SessionManager.Instance.PlayerIdToClientId.TryAdd(playerId, clientId))
                 Debug.Log($"[Client] Self Registered: {playerId} with clientId: {clientId}");
-            Debug.Log($"[Client] Sending PlayerId: {playerId} to server...");
             SendPlayerIdRpc(playerId);
         }
 

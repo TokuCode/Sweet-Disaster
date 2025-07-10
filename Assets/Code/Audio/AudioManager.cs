@@ -1,20 +1,16 @@
 using UnityEngine;
 using System.Collections.Generic;
-using Unity.Netcode;
-using Unity.Collections;
+using Code.Helpers.Singleton;
 
 namespace Code.Audio
 {
-    public class AudioManager : NetworkBehaviour
+    public class AudioManager : Singleton<AudioManager>
     {
-        public static AudioManager Instance;
-        
         [SerializeField] private List<AudioInfo> audios;
 
-        private void Awake()
+        protected override void Awake()
         {
-            if (Instance == null) Instance = this;
-            else Destroy(gameObject);
+            base.Awake();
             
             foreach (var audioInfo in audios)
             {
@@ -29,13 +25,6 @@ namespace Code.Audio
                 if (audioInfo.playOnAwake) audioInfo.source.Play();
             }
         }
-
-        private void Start()
-        {
-            NetworkPlay("Music");
-        }
-
-        private void OnDisable() => Destroy(gameObject);
 
         private AudioInfo GetAudio(string audioName)
         {
@@ -72,15 +61,6 @@ namespace Code.Audio
         {
             var audioInfo = GetAudio(audioName);
             audioInfo?.source.UnPause();
-        }
-        
-        public void NetworkPlay(string audioName) => PlayRpc((FixedString32Bytes)audioName);
-
-        [Rpc(SendTo.Everyone)]
-        private void PlayRpc(FixedString32Bytes fixedAudioName)
-        {
-            var audioName = fixedAudioName.ToString();
-            Play(audioName);
         }
     }
 }

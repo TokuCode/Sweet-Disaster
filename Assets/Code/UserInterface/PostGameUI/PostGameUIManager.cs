@@ -10,6 +10,7 @@ using Unity.Netcode;
 using UnityEngine.SceneManagement;
 using Code.Helpers.UI;
 using Code.Gameplay;
+using Unity.Collections;
 
 namespace Code.UserInterface.PostGameUI
 {
@@ -197,9 +198,11 @@ namespace Code.UserInterface.PostGameUI
         }
 
         [Rpc(SendTo.Server)]
-        private void SendPlayerLeavingRpc(RpcParams rpcParams = default)
+        private void SendPlayerLeavingRpc(FixedString32Bytes playerId, RpcParams rpcParams = default)
         {
+            Debug.Log(playerId.ToString());
             var clientId = rpcParams.Receive.SenderClientId;
+            _sessionManager.PlayerIdToClientId.Remove(playerId.ToString());
             _playersReadyToRestart.Remove(clientId);
             _playersReadyToReturn.Remove(clientId);
         }
@@ -220,8 +223,8 @@ namespace Code.UserInterface.PostGameUI
 
         private void ReturnToMenu()
         {
+            SendPlayerLeavingRpc(_sessionManager.ActiveSession.CurrentPlayer.Id);
             SessionManager.Instance.LeaveSession();
-            SendPlayerLeavingRpc();
             UIUtilities.Instance.LoadScene("MainMenu");
         }
 

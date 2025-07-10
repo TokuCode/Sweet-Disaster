@@ -65,11 +65,11 @@ namespace Code.Gameplay.Character.Features
             {
                 CrouchAction();
             }
-            else if(_isCrouching && !crouchInput && !physics.HeadBlocked)
+            else if(_isCrouching && !crouchInput /*&& !physics.HeadBlocked*/)
             {
                 UncrouchAction();
             }
-            else if(_isCrouching && !canCrouch && !_startingCrouch && !physics.HeadBlocked)
+            else if(_isCrouching && !canCrouch && !_startingCrouch /*&& !physics.HeadBlocked*/)
             {
                 UncrouchAction();
             }
@@ -82,7 +82,7 @@ namespace Code.Gameplay.Character.Features
             _startingCrouch = true;
             _isCrouching = true;
             
-            _invoker.LocalScale.Perform(new(localScale.x, _initialYScale * _crouchHeightMultiplier));
+            //_invoker.LocalScale.Perform(new(localScale.x, _initialYScale * _crouchHeightMultiplier));
             _invoker.Size.Perform(new(_initialXSize * _crouchHeightMultiplier, _initialYSize * _crouchHeightMultiplier));
         }
         
@@ -92,7 +92,7 @@ namespace Code.Gameplay.Character.Features
             
             _isCrouching = false;
             
-            _invoker.LocalScale.Perform(new(localScale.x, _initialYScale));
+            //_invoker.LocalScale.Perform(new(localScale.x, _initialYScale));
             _invoker.Size.Perform(new(_initialXSize, _initialYSize));
         }
 

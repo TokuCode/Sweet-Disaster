@@ -76,7 +76,7 @@ namespace Code.Networking.Session
                 
                     SessionProperties = new Dictionary<string, SessionProperty>
                     {
-                        { MapPropertyKey, new SessionProperty("classic", VisibilityPropertyOptions.Member) }
+                        { MapPropertyKey, new SessionProperty("Classic", VisibilityPropertyOptions.Member) }
                     },
                     
                     PlayerProperties = SetPlayerProperties()
@@ -99,6 +99,8 @@ namespace Code.Networking.Session
         
         public async void JoinSessionByCode(string code)
         {
+            IsPracticeMode = false;
+            
             try
             {
                 UIUtilities.Instance.MessagePopUp("Uniéndose a la sesión...", false); ;
@@ -124,6 +126,7 @@ namespace Code.Networking.Session
             try
             {
                 ShouldRetrievePing = false;
+                playerIdToClientId.Clear();
                 await ActiveSession.LeaveAsync();
             }
             catch

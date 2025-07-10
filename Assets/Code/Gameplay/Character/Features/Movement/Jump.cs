@@ -2,6 +2,7 @@
 using Code.Helpers;
 using Code.Networking.ClientPrediction;
 using UnityEngine;
+using Code.Audio.Character;
 
 namespace Code.Gameplay.Character.Features
 {
@@ -76,6 +77,8 @@ namespace Code.Gameplay.Character.Features
         
         private void JumpAction()
         {
+            gameObject.GetComponent<CharacterAudioHandler>().NetworkPlay("Jump");
+            
             float compensation = 0;
             if (_invoker.Velocity.Request(out var velocity).success)
             {

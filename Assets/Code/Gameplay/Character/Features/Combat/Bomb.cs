@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Remoting.Messaging;
+using Code.Audio.Character;
 using Code.Gameplay.Character.Framework;
 using Code.Gameplay.Objects;
 using Code.Helpers;
@@ -61,6 +62,9 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private float _onMeleeHitAccelerateTime;
         [SerializeField] private float _onWillToLiveHitAccelerateTime;
         [SerializeField] private float _onActiveReloadHitAccelerateTime;
+
+        [Header("Animation")]
+        [SerializeField] private Animator armAnimator;
 
         public void OnShootPressed() => StartThrowing();
         public void OnShootReleased() => EndThrowing();
@@ -211,6 +215,9 @@ namespace Code.Gameplay.Character.Features
         
         private void ThrowAction(Vector3 position, Vector3 direction, Vector3 throwForce, out int bombId)
         {
+            armAnimator.Play("HornoAnim");
+            gameObject.GetComponent<CharacterAudioHandler>().NetworkPlay("Bomb");
+            
             var rotation = DirectionToRotation.GetRotation(direction);
             
             _bombNo = NonNetworkObjectPool.Singleton.GetNetworkObject(_bombPrefab, position, rotation, out bombId);

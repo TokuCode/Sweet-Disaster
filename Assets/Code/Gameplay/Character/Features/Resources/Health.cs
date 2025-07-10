@@ -1,4 +1,5 @@
 ﻿using System;
+using Code.Audio.Character;
 using Code.Gameplay.Character.Framework;
 using Code.Helpers;
 using UnityEngine;
@@ -98,6 +99,7 @@ namespace Code.Gameplay.Character.Features
         {
             if(!IsOwner) return;
             
+            gameObject.GetComponent<CharacterAudioHandler>().NetworkPlay("Stun");
             _isStunned.Value = true;
             _stunTimer = duration;
             

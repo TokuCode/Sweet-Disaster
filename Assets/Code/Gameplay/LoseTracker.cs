@@ -3,6 +3,7 @@ using System.Linq;
 using Code.Networking.Session;
 using UnityEngine.SceneManagement;
 using Code.Gameplay.Character;
+using UnityEngine;
 
 namespace Code.Gameplay
 {
@@ -44,7 +45,7 @@ namespace Code.Gameplay
                 .Select(c => c.ClientId)
                 .Except(excludedIds)
                 .ToList();
-
+            
             if (remainingIds.Count == 1)
             {
                 var remainingPlayerInfo = PlayerVisibility.Instance.Players.FirstOrDefault(playerInfo => playerInfo.player.clientId == (int)remainingIds[0]);
@@ -55,7 +56,6 @@ namespace Code.Gameplay
                     reporter.ReportDefeat();
                 }
             }
-
             else if (remainingIds.Count == 0)
             {
                 if (_sessionManager.ActiveSession.IsHost && !_sessionManager.IsPracticeMode)
@@ -64,7 +64,7 @@ namespace Code.Gameplay
         }
 
         [Rpc(SendTo.Everyone)]
-        private void SendPlayerDataToStackRpc(ulong clientId, int lives, float damage, bool isWinner = false)
+        private void SendPlayerDataToStackRpc(ulong clientId, int lives, float damage)
         {
             var playerStatusData = new WinnersData.PlayerStatusData
             {

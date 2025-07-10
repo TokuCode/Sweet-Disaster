@@ -375,6 +375,7 @@ GameObject:
   - component: {fileID: 3296703527897574207}
   - component: {fileID: 2112320117977785655}
   - component: {fileID: 8232651690692534789}
+  - component: {fileID: 2974384415077422878}
   m_Layer: 9
   m_Name: Player
   m_TagString: P1
@@ -765,6 +766,7 @@ MonoBehaviour:
   _recoilImpulseAngle: 45
   _damageAmpPerTemperature: 1
   _reloadRequested: 0
+  armAnimator: {fileID: 2476863694498710079}
 --- !u!114 &573164576663406118
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -820,6 +822,7 @@ MonoBehaviour:
   _onMeleeHitAccelerateTime: 3.5
   _onWillToLiveHitAccelerateTime: 1
   _onActiveReloadHitAccelerateTime: 0.2
+  armAnimator: {fileID: 2476863694498710079}
 --- !u!114 &419103442011533078
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -850,6 +853,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   animatorController: {fileID: 5929247552665864318}
+  arms: {fileID: 6517777765589681843}
 --- !u!114 &1990175814712795858
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -956,7 +960,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6295644469921195904}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 65bef25e5e236bd41b4582ca58d20b2d, type: 3}
   m_Name: 
@@ -977,6 +981,60 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   colorIndicator: {fileID: 7311318009976808056}
   player: {fileID: 5059216841921135527}
+--- !u!114 &2974384415077422878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6295644469921195904}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47997b9ef2db2a6419822a7548df3dbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  audios:
+  - name: Jump
+    clip: {fileID: 8300000, guid: cfc9e9c8b8e378747afc57a1bd405e24, type: 3}
+    loop: 0
+    playOnAwake: 0
+    volume: 1
+    pitch: 1
+    source: {fileID: 0}
+    mixer: {fileID: -5688860443903840712, guid: ca3bbcec211e5724eaa8a4c61e0f4e68, type: 2}
+  - name: Stun
+    clip: {fileID: 8300000, guid: 5ac5960f0d30eef498a6493d9f75732b, type: 3}
+    loop: 0
+    playOnAwake: 0
+    volume: 1
+    pitch: 1
+    source: {fileID: 0}
+    mixer: {fileID: -5688860443903840712, guid: ca3bbcec211e5724eaa8a4c61e0f4e68, type: 2}
+  - name: Bomb
+    clip: {fileID: 8300000, guid: 478a0578ee8a1334b876a0ee774c4dac, type: 3}
+    loop: 0
+    playOnAwake: 0
+    volume: 1
+    pitch: 1
+    source: {fileID: 0}
+    mixer: {fileID: -5688860443903840712, guid: ca3bbcec211e5724eaa8a4c61e0f4e68, type: 2}
+  - name: Shield
+    clip: {fileID: 8300000, guid: f1134501d8c0a4e448f66a752135c0e7, type: 3}
+    loop: 0
+    playOnAwake: 0
+    volume: 1
+    pitch: 1
+    source: {fileID: 0}
+    mixer: {fileID: -5688860443903840712, guid: ca3bbcec211e5724eaa8a4c61e0f4e68, type: 2}
+  - name: Egg
+    clip: {fileID: 8300000, guid: 05cdefe3c33d19b42864359f42e3dc8a, type: 3}
+    loop: 0
+    playOnAwake: 0
+    volume: 1
+    pitch: 1
+    source: {fileID: 0}
+    mixer: {fileID: -5688860443903840712, guid: ca3bbcec211e5724eaa8a4c61e0f4e68, type: 2}
 --- !u!1 &7921267680419083028
 GameObject:
   m_ObjectHideFlags: 0
@@ -987,6 +1045,8 @@ GameObject:
   m_Component:
   - component: {fileID: 6665744144607911163}
   - component: {fileID: 6517777765589681843}
+  - component: {fileID: 2476863694498710079}
+  - component: {fileID: 7825773494226161374}
   - component: {fileID: 6622139713518152615}
   m_Layer: 0
   m_Name: Brazos
@@ -1060,12 +1120,49 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 2.18, y: 1.02}
+  m_Size: {x: 1.475, y: 0.7}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!95 &2476863694498710079
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7921267680419083028}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: eb448d781eb9be04ca28c7855b4366de, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &7825773494226161374
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7921267680419083028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d719027540629b04f9078ddcdf3005f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  TransitionStateInfoList: []
+  m_Animator: {fileID: 2476863694498710079}
 --- !u!114 &6622139713518152615
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1079,7 +1176,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  NetworkTransformExpanded: 1
+  NetworkTransformExpanded: 0
   AutoOwnerAuthorityTickOffset: 1
   PositionInterpolationType: 0
   RotationInterpolationType: 0
