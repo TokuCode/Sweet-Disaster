@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 using Code.Networking.Session;
@@ -6,7 +5,7 @@ using Unity.Netcode;
 
 namespace Code.UserInterface.LobbyUI
 {
-    public class StartGameButton : Refreshable
+    public class LobbyStartButton : MonoBehaviour
     {
         [SerializeField] private Button startGameButton;
         
@@ -16,17 +15,33 @@ namespace Code.UserInterface.LobbyUI
         {
             _sessionManager = SessionManager.Instance;
             startGameButton.onClick.AddListener(StartGame);
+
+            _sessionManager.ActiveSession.PlayerPropertiesChanged += UpdateButtonState;
         }
 
-        private void OnDisable() => startGameButton.onClick.RemoveListener(StartGame);
+        private void OnDisable()
+        {
+            startGameButton.onClick.RemoveListener(StartGame);
+            _sessionManager.ActiveSession.PlayerPropertiesChanged -= UpdateButtonState;
+        }
+        
+        private bool AllPlayersHaveSelectedCharacters()
+        {
+            foreach (var player in _sessionManager.ActiveSession.Players)
+            {
+                if (string.IsNullOrEmpty(_sessionManager.playerInfo.GetPropertyValue(player, _sessionManager.PlayerCharacterKey)))
+                    return false;
+            }
+            return true;
+        }
 
-        public override void Refresh()
+        private void UpdateButtonState()
         {
             if ((_sessionManager.ActiveSession.IsHost && _sessionManager.ActiveSession.PlayerCount > 1) ||
                 (_sessionManager.ActiveSession.IsHost && _sessionManager.ActiveSession.PlayerCount == 1 && _sessionManager.IsPracticeMode))
-                startGameButton.interactable = LobbyUIManager.Instance.AllPlayersHaveSelectedCharacters();
+                startGameButton.interactable = AllPlayersHaveSelectedCharacters();
         }
-
+        
         private void StartGame()
         {
             if (!_sessionManager.ActiveSession.IsHost) return;

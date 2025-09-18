@@ -153,7 +153,7 @@ namespace Code.UserInterface.PostGameUI
                 if (!player.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var charProp)) return;
                 if (charProp.Value != String.Empty) return;
             }
-            NetworkManager.Singleton.SceneManager.LoadScene("LobbyTest", LoadSceneMode.Single);
+            NetworkManager.Singleton.SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
         }
 
         [Rpc(SendTo.NotMe)]

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using Image = UnityEngine.UI.Image;
 
@@ -19,5 +20,23 @@ namespace Code.Gameplay
         
         // Gameplay UI
         public Sprite characterIcon;
+
+        public Skins[] skinsArray; // 0 is default
+        
+        // Skins
+        [Serializable]
+        public struct Skins
+        {
+            public string skinName;
+            
+            // In game animations
+            public RuntimeAnimatorController runtimeAnimator;
+            public Sprite armWithGun;
+            public Sprite armWithBomb;
+            public Sprite armWithShield;
+            
+            // Lobby splash art
+            public Sprite lobbySplashImage;
+        }
     }
 }

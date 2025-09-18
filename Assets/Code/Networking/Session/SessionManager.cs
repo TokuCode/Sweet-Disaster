@@ -88,7 +88,7 @@ namespace Code.Networking.Session
                 Debug.Log($"Session {ActiveSession.Id} created! Join code: {ActiveSession.Code}");
 #endif
                 if (!ActiveSession.IsHost) return;
-                NetworkManager.Singleton.SceneManager.LoadScene("LobbyTest", LoadSceneMode.Single);
+                NetworkManager.Singleton.SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
             }
             catch (Exception e)
             {

@@ -19,3 +19,10 @@ MonoBehaviour:
   armWithShield: {fileID: -829961613945574920, guid: 7eb9ed1dde95eb14da848fd601314cb8, type: 3}
   postGameImage: {fileID: 4254021271541456957, guid: 4547ce5307e88ac479f3efc873b9f03f, type: 3}
   characterIcon: {fileID: 4254021271541456957, guid: 4547ce5307e88ac479f3efc873b9f03f, type: 3}
+  skinsArray:
+  - skinName: Gladys
+    runtimeAnimator: {fileID: 22100000, guid: 4743623638bd47147b2da1cd1dd47b46, type: 2}
+    armWithGun: {fileID: -1211752811425926949, guid: 88630e3171f94bf4685e6767d72180d0, type: 3}
+    armWithBomb: {fileID: 21300000, guid: 062b5c095a0acfa4a83222dfd60360d5, type: 3}
+    armWithShield: {fileID: -829961613945574920, guid: 7eb9ed1dde95eb14da848fd601314cb8, type: 3}
+    lobbySplashImage: {fileID: -8422864265830050195, guid: b5d2e9b606cd91c49ab9c434d15e20d0, type: 3}
