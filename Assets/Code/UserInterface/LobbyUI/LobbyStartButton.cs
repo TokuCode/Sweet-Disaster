@@ -22,6 +22,7 @@ namespace Code.UserInterface.LobbyUI
         private void OnDisable()
         {
             startGameButton.onClick.RemoveListener(StartGame);
+            if (_sessionManager.ActiveSession == null) return;
             _sessionManager.ActiveSession.PlayerPropertiesChanged -= UpdateButtonState;
         }
         
