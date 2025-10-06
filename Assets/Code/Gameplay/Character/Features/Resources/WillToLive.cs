@@ -1,7 +1,9 @@
 ﻿using System;
 using Code.Gameplay.Character.Framework;
+using Code.Gameplay.Tutorial;
 using Code.Helpers;
 using Code.Networking.ClientPrediction;
+using Code.Networking.Session;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -77,6 +79,13 @@ namespace Code.Gameplay.Character.Features
             if (_minigameTimer.Progress <= _sweetSpotSpan)
             {
                 _health.AccelerateStun(Mathf.Max(1f, _onSuccessTimeReductionRatio * _cachedStunDuration));
+
+                if (SessionManager.Instance.IsPracticeMode)
+                {
+                    if (TutorialActions.Instance.currentIndex == 17 && TutorialActions.Instance.waitForTrigger)
+                        TutorialActions.Instance.PlayerHasBrokenOutOfStun = true;
+                }
+                
                 OnMinigameSucces?.Invoke();
             }
             else

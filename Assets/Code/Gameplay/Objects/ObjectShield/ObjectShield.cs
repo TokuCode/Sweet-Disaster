@@ -1,4 +1,6 @@
 ﻿using Code.Gameplay.Character.Features;
+using Code.Gameplay.Tutorial;
+using Code.Networking.Session;
 using Code.Systems.Input;
 using Unity.Netcode;
 using UnityEngine;
@@ -40,6 +42,13 @@ namespace Code.Gameplay.Objects
         public void OnBlock(int senderId, float heatDamage)
         {
             _bomb.RequestBlockReloadAccelerate(GunBelt.Weapon.Shield, senderId);
+            
+            if (SessionManager.Instance.IsPracticeMode)
+            {
+                if (TutorialActions.Instance.currentIndex == 12 && TutorialActions.Instance.waitForTrigger)
+                    TutorialActions.Instance.PlayerHasBlockedAShot = true;
+            }
+            
             _shield.HeatShield(heatDamage);
         }
     }

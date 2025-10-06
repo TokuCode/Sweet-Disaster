@@ -84,14 +84,17 @@ namespace Code.Gameplay
                 return;
             }
 
+            string characterName;
+
             // Get the player's selected character
             if (!sessionPlayer.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var characterProp))
             {
+                characterName = "Ceci";
                 Debug.LogError($"Character not selected for player: {sessionPlayer.Id}");
-                return;
+                //return;
             }
 
-            string characterName = characterProp.Value;
+            characterName = characterProp?.Value;
             CharacterScriptable character = GetCharacter(characterName);
 
             // Spawn the player

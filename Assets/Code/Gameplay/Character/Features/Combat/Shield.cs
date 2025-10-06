@@ -1,7 +1,9 @@
 ﻿using Code.Gameplay.Character.Framework;
 using Code.Gameplay.Objects;
+using Code.Gameplay.Tutorial;
 using Code.Helpers.Pipeline;
 using Code.Networking.ClientPrediction;
+using Code.Networking.Session;
 using Code.Systems.Attack;
 using Code.Systems.Input;
 using Code.Systems.NetworkObjectPool;
@@ -270,6 +272,12 @@ namespace Code.Gameplay.Character.Features
 
             _isOnCooldown.Value = true;
             TryDeactivateShield();
+
+            if (SessionManager.Instance.IsPracticeMode)
+            {
+                if (TutorialActions.Instance.currentIndex == 14 && TutorialActions.Instance.waitForTrigger)
+                    TutorialActions.Instance.PlayerHasDoneAShieldBash = true;
+            }
         }
 
         [ServerRpc]
@@ -315,6 +323,7 @@ namespace Code.Gameplay.Character.Features
         private void HeatShieldAction(float damagePercentage)
         {
             if(!IsOwner) return;
+            
             _shieldTemperature.Value = Mathf.Min(_shieldTemperature.Value + _heatPerDamagePercentage * damagePercentage * 100, _maxShieldTemperature);
             if (_shieldTemperature.Value >= _maxShieldTemperature && !_isOnCooldown.Value) SelfShieldExplosion();
         }

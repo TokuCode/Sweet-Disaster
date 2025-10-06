@@ -1,5 +1,7 @@
 ﻿using Code.Gameplay.Character.Framework;
+using Code.Gameplay.Tutorial;
 using Code.Networking.ClientPrediction;
+using Code.Networking.Session;
 using UnityEngine;
 
 namespace Code.Gameplay.Character.Features
@@ -77,6 +79,12 @@ namespace Code.Gameplay.Character.Features
 
         private void CrouchAction()
         {
+            if (SessionManager.Instance.IsPracticeMode)
+            {
+                if (TutorialActions.Instance.currentIndex == 2 && TutorialActions.Instance.waitForTrigger)
+                    TutorialActions.Instance.PlayerHasCrouched = true;
+            }
+            
             if(!_invoker.LocalScale.Request(out Vector3 localScale).success) return;
 
             _startingCrouch = true;

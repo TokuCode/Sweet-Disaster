@@ -46,7 +46,7 @@ namespace Code.UserInterface.LobbyUI
         private void StartGame()
         {
             if (!_sessionManager.ActiveSession.IsHost) return;
-            NetworkManager.Singleton.SceneManager.LoadScene("MultiplayerTest", UnityEngine.SceneManagement.LoadSceneMode.Single);
+            NetworkManager.Singleton.SceneManager.LoadScene(_sessionManager.IsPracticeMode? "Tutorial" : "MultiplayerTest", UnityEngine.SceneManagement.LoadSceneMode.Single);
         }
     }
 }

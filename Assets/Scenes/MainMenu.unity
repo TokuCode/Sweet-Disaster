@@ -3211,7 +3211,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Modo Pr\xE1ctica"
+  m_text: Tutorial
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 47a9f9bb31c80b8498ab358b398976a3, type: 2}
   m_sharedMaterial: {fileID: -7424618885506574003, guid: 47a9f9bb31c80b8498ab358b398976a3, type: 2}
@@ -5447,7 +5447,7 @@ MonoBehaviour:
     Prefabs:
       NetworkPrefabsLists:
       - {fileID: 11400000, guid: 132b70e4ee9e5274eb9bbf777bf55301, type: 2}
-    TickRate: 30
+    TickRate: 64
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0
     ConnectionData: 

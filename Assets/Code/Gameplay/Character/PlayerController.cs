@@ -62,10 +62,10 @@ namespace Code.Gameplay.Character
 
         [Header("Netcode")] 
         [SerializeField] private float _reconciliationCooldownTime = 1f;
-        [SerializeField] private float _reconciliationThreshold = 2.5f;
+        [SerializeField] private float _reconciliationThreshold = 10f;
         [SerializeField] private float _extrapolationLimit = .5f;
         [SerializeField] private float _extrapolationMultiplier = 1.2f;
-        [SerializeField] private float _extrapolationMinLatency = .25f;
+        [SerializeField] private float _extrapolationMinLatency = .3f;
         private CountdownTimer _reconciliationTimer;
         private CountdownTimer _extrapolationTimer;
         StatePayload _extrapolationState;

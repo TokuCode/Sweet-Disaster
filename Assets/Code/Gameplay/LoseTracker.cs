@@ -34,7 +34,7 @@ namespace Code.Gameplay
 
             if (_sessionManager.ActiveSession.IsHost && _sessionManager.IsPracticeMode)
             {
-                NetworkManager.SceneManager.LoadScene("MultiplayerTest", LoadSceneMode.Single);
+                NetworkManager.SceneManager.LoadScene("Tutorial", LoadSceneMode.Single);
                 return;
             }
             

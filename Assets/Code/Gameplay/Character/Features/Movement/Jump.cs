@@ -3,6 +3,8 @@ using Code.Helpers;
 using Code.Networking.ClientPrediction;
 using UnityEngine;
 using Code.Audio.Character;
+using Code.Gameplay.Tutorial;
+using Code.Networking.Session;
 
 namespace Code.Gameplay.Character.Features
 {
@@ -77,6 +79,12 @@ namespace Code.Gameplay.Character.Features
         
         private void JumpAction()
         {
+            if (SessionManager.Instance.IsPracticeMode)
+            {
+                if (TutorialActions.Instance.currentIndex == 2 && TutorialActions.Instance.waitForTrigger)
+                    TutorialActions.Instance.PlayerHasJumped = true;
+            }
+            
             gameObject.GetComponent<CharacterAudioHandler>().NetworkPlay("Jump");
             
             float compensation = 0;
