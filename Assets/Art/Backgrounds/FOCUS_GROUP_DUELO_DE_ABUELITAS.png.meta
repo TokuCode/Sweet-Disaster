@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      FOCUS_GROUP_DUELO_DE_ABUELITAS_0: 8181188583614528956
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      START_page_CLEAN_SOLO_FONDO_final_0: -4003595639347083423
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
