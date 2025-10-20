@@ -23,14 +23,9 @@ namespace Code.Systems.Input
         public event Action OnThrowPressed;
         public event Action OnThrowReleased;
         
-        public event Action OnMeleePressed;
-        public event Action OnMeleeReleased;
-        
         public event Action OnReloadPressed;
         
         public event Action OnShieldPressed;
-
-        public event Action OnShieldBash;
 
         [SerializeField] private bool _onGamepad;
         public bool OnGamepad => _onGamepad;
@@ -216,25 +211,6 @@ namespace Code.Systems.Input
             }        
         }
 
-        public void OnMelee(InputAction.CallbackContext context)
-        {
-            if (!control)
-            {
-                return;
-            }
-            
-            if (context.performed)
-            {
-                OnMeleePressed?.Invoke(); 
-                Melee = true;
-            }
-            else if (context.canceled)
-            {
-                OnMeleeReleased?.Invoke();
-                Melee = false;
-            }        
-        }
-
         public void OnShield(InputAction.CallbackContext context)
         {
             if (!control) return;
@@ -247,20 +223,13 @@ namespace Code.Systems.Input
                 Shield = false;
         }
 
-        public void OnFreePlayer(InputAction.CallbackContext context)
+        public void OnWakeUp(InputAction.CallbackContext context)
         {
             if (!control) return;
             if(context.performed)
                 Free = true;
             else if (context.canceled)
                 Free = false;
-        }
-
-        void PlayerControls.IGameplayActions.OnShieldBash(InputAction.CallbackContext context)
-        {
-            if(!control) return;
-            if (context.performed)
-                OnShieldBash?.Invoke();
         }
 
         public void CachePlayerPosition(Vector3 playerPosition)
@@ -298,6 +267,12 @@ namespace Code.Systems.Input
             if(directionActual != Vector3.zero) HandleDirection = directionActual;
             if(HandleDirection == Vector3.zero) HandleDirection = Vector3.right;
             HandlePosition = HandleDirection * _handleDistance + playerAimPosition;
+        }
+
+        public void UpdateRebinds(string json)
+        {
+            Debug.Log("UpdateRebinds: \n" + json);
+            inputActions.asset.LoadBindingOverridesFromJson(json);
         }
     }
 }

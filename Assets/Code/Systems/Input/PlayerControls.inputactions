@@ -1,4 +1,5 @@
 {
+    "version": 1,
     "name": "PlayerControls",
     "maps": [
         {
@@ -87,18 +88,9 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "FreePlayer",
+                    "name": "Wake Up",
                     "type": "Button",
                     "id": "33faed44-3b7c-47fe-9da3-7b43d7aaf0c9",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "ShieldBash",
-                    "type": "Button",
-                    "id": "f19e913f-42e0-46de-b04e-4f82746f7422",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -311,7 +303,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
-                    "action": "FreePlayer",
+                    "action": "Wake Up",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -322,29 +314,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";PC",
-                    "action": "FreePlayer",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "1ec817fe-f2c4-4283-8fd9-7da7ac9b7718",
-                    "path": "<Gamepad>/rightTrigger",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Gamepad",
-                    "action": "ShieldBash",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "7055c8b9-283a-4094-9030-b8a07732c04b",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";PC",
-                    "action": "ShieldBash",
+                    "action": "Wake Up",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

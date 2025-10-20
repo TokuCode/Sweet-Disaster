@@ -174,18 +174,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""FreePlayer"",
+                    ""name"": ""Wake Up"",
                     ""type"": ""Button"",
                     ""id"": ""33faed44-3b7c-47fe-9da3-7b43d7aaf0c9"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""ShieldBash"",
-                    ""type"": ""Button"",
-                    ""id"": ""f19e913f-42e0-46de-b04e-4f82746f7422"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -398,7 +389,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Gamepad"",
-                    ""action"": ""FreePlayer"",
+                    ""action"": ""Wake Up"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -409,29 +400,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";PC"",
-                    ""action"": ""FreePlayer"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""1ec817fe-f2c4-4283-8fd9-7da7ac9b7718"",
-                    ""path"": ""<Gamepad>/rightTrigger"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";Gamepad"",
-                    ""action"": ""ShieldBash"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""7055c8b9-283a-4094-9030-b8a07732c04b"",
-                    ""path"": ""<Mouse>/leftButton"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";PC"",
-                    ""action"": ""ShieldBash"",
+                    ""action"": ""Wake Up"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -479,8 +448,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Gameplay_Reload = m_Gameplay.FindAction("Reload", throwIfNotFound: true);
         m_Gameplay_Throw = m_Gameplay.FindAction("Throw", throwIfNotFound: true);
         m_Gameplay_Shield = m_Gameplay.FindAction("Shield", throwIfNotFound: true);
-        m_Gameplay_FreePlayer = m_Gameplay.FindAction("FreePlayer", throwIfNotFound: true);
-        m_Gameplay_ShieldBash = m_Gameplay.FindAction("ShieldBash", throwIfNotFound: true);
+        m_Gameplay_WakeUp = m_Gameplay.FindAction("Wake Up", throwIfNotFound: true);
     }
 
     ~@PlayerControls()
@@ -570,8 +538,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Gameplay_Reload;
     private readonly InputAction m_Gameplay_Throw;
     private readonly InputAction m_Gameplay_Shield;
-    private readonly InputAction m_Gameplay_FreePlayer;
-    private readonly InputAction m_Gameplay_ShieldBash;
+    private readonly InputAction m_Gameplay_WakeUp;
     /// <summary>
     /// Provides access to input actions defined in input action map "Gameplay".
     /// </summary>
@@ -620,13 +587,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @Shield => m_Wrapper.m_Gameplay_Shield;
         /// <summary>
-        /// Provides access to the underlying input action "Gameplay/FreePlayer".
+        /// Provides access to the underlying input action "Gameplay/WakeUp".
         /// </summary>
-        public InputAction @FreePlayer => m_Wrapper.m_Gameplay_FreePlayer;
-        /// <summary>
-        /// Provides access to the underlying input action "Gameplay/ShieldBash".
-        /// </summary>
-        public InputAction @ShieldBash => m_Wrapper.m_Gameplay_ShieldBash;
+        public InputAction @WakeUp => m_Wrapper.m_Gameplay_WakeUp;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -680,12 +643,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Shield.started += instance.OnShield;
             @Shield.performed += instance.OnShield;
             @Shield.canceled += instance.OnShield;
-            @FreePlayer.started += instance.OnFreePlayer;
-            @FreePlayer.performed += instance.OnFreePlayer;
-            @FreePlayer.canceled += instance.OnFreePlayer;
-            @ShieldBash.started += instance.OnShieldBash;
-            @ShieldBash.performed += instance.OnShieldBash;
-            @ShieldBash.canceled += instance.OnShieldBash;
+            @WakeUp.started += instance.OnWakeUp;
+            @WakeUp.performed += instance.OnWakeUp;
+            @WakeUp.canceled += instance.OnWakeUp;
         }
 
         /// <summary>
@@ -724,12 +684,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Shield.started -= instance.OnShield;
             @Shield.performed -= instance.OnShield;
             @Shield.canceled -= instance.OnShield;
-            @FreePlayer.started -= instance.OnFreePlayer;
-            @FreePlayer.performed -= instance.OnFreePlayer;
-            @FreePlayer.canceled -= instance.OnFreePlayer;
-            @ShieldBash.started -= instance.OnShieldBash;
-            @ShieldBash.performed -= instance.OnShieldBash;
-            @ShieldBash.canceled -= instance.OnShieldBash;
+            @WakeUp.started -= instance.OnWakeUp;
+            @WakeUp.performed -= instance.OnWakeUp;
+            @WakeUp.canceled -= instance.OnWakeUp;
         }
 
         /// <summary>
@@ -860,18 +817,11 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnShield(InputAction.CallbackContext context);
         /// <summary>
-        /// Method invoked when associated input action "FreePlayer" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// Method invoked when associated input action "Wake Up" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnFreePlayer(InputAction.CallbackContext context);
-        /// <summary>
-        /// Method invoked when associated input action "ShieldBash" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnShieldBash(InputAction.CallbackContext context);
+        void OnWakeUp(InputAction.CallbackContext context);
     }
 }

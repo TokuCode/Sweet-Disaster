@@ -62,7 +62,7 @@ namespace Code.Gameplay.Character.Features
             _dependencies.TryGetFeature(out bomb);
             _dependencies.TryGetFeature(out crouch);
             _dependencies.TryGetFeature(out health);
-            if(IsOwner) InputReader.Instance.OnShieldBash += TryMelee;
+            if(IsOwner) InputReader.Instance.OnShootPressed += TryMelee;
             _cooldownTimer = new (_cooldown);
             _cooldownTimer.OnTimerStop += ResetMelee;
         }
