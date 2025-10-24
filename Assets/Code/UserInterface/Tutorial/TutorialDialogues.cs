@@ -10,6 +10,8 @@ namespace Code.UserInterface.Tutorial
 {
     public class TutorialDialogues : Singleton<TutorialDialogues>
     {
+        [SerializeField] private GameObject bindings;
+        
         [SerializeField] private string[] dialogueTexts;
         [SerializeField] private TMP_Text textContainer;
         [SerializeField] private float textSpeed;
@@ -54,9 +56,12 @@ namespace Code.UserInterface.Tutorial
         
         private void Start()
         {
-            PlayerPrefs.SetInt("TutorialPlayed", 1);
-            StartCoroutine(GetPlayer());
-            StartCoroutine(ShowDialogue());
+            if (PlayerPrefs.GetInt("TutorialPlayed") == 0)
+            {
+                StartCoroutine(GetPlayer());
+                StartCoroutine(ShowDialogue());
+                PlayerPrefs.SetInt("TutorialPlayed", 1);
+            }
         }
 
         private IEnumerator GetPlayer()
@@ -101,6 +106,7 @@ namespace Code.UserInterface.Tutorial
                 {
                     player.GetComponent<Movement>().UnblockMovement();
                     gameObject.SetActive(false);
+                    bindings.SetActive(true);
                 }
                 
                 if (currentIndex < dialogueTexts.Length)

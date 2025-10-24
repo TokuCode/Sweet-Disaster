@@ -15,7 +15,7 @@ MonoBehaviour:
   Path: Assets/FMOD/SweetDisaster/Build/Desktop/Music.bank
   Name: Music
   StudioPath: bank:/Music
-  lastModified: 638953870761552335
+  lastModified: 638954867502615240
   FileSizes:
   - Name: Desktop
     Value: 494
@@ -35,7 +35,7 @@ MonoBehaviour:
   Path: Assets/FMOD/SweetDisaster/Build/Desktop/SFX.bank
   Name: SFX
   StudioPath: bank:/SFX
-  lastModified: 638953870761552335
+  lastModified: 638954867502625037
   FileSizes:
   - Name: Desktop
     Value: 494
@@ -64,7 +64,7 @@ MonoBehaviour:
   - {fileID: 695778279720965871}
   StringsBanks:
   - {fileID: 3544498163530590627}
-  cacheTime: 638953870761552335
+  cacheTime: 638954867502625037
   cacheVersion: 131624
 --- !u!114 &695778279720965871
 MonoBehaviour:
@@ -81,7 +81,7 @@ MonoBehaviour:
   Path: Assets/FMOD/SweetDisaster/Build/Desktop/Master.bank
   Name: Master
   StudioPath: bank:/Master
-  lastModified: 638953870761532148
+  lastModified: 638954867502605248
   FileSizes:
   - Name: Desktop
     Value: 1486
@@ -101,7 +101,7 @@ MonoBehaviour:
   Path: Assets/FMOD/SweetDisaster/Build/Desktop/Ambience.bank
   Name: Ambience
   StudioPath: bank:/Ambience
-  lastModified: 638953870761532148
+  lastModified: 638954867502595058
   FileSizes:
   - Name: Desktop
     Value: 494
@@ -121,7 +121,7 @@ MonoBehaviour:
   Path: Assets/FMOD/SweetDisaster/Build/Desktop/Master.strings.bank
   Name: Master.strings
   StudioPath: bank:/Master.strings
-  lastModified: 638953870761552335
+  lastModified: 638954867502615240
   FileSizes:
   - Name: Desktop
     Value: 952

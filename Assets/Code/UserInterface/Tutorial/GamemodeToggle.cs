@@ -6,14 +6,21 @@ namespace Code.UserInterface
 {
     public class GamemodeToggle : MonoBehaviour
     {
-        [SerializeField] private Button onlineModeButton;
+        [SerializeField] private GameObject bindings;
+        [SerializeField] private GameObject tutorial;
 
         private void OnEnable()
         {
             if (PlayerPrefs.GetInt("TutorialPlayed") == 1)
-                onlineModeButton.interactable = true;
+            {
+                tutorial.SetActive(false);
+                bindings.SetActive(true);
+            }
             else
-                onlineModeButton.interactable = false;
+            {
+                tutorial.SetActive(true);
+                bindings.SetActive(false);
+            }
         }
     }
 }

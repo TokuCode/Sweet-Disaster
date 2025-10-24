@@ -39,8 +39,11 @@ namespace Code.Gameplay.Objects
 
         void Move(float delta)
         {
-            foreach (var layer in parallaxLayers) 
-                layer.Move(delta);
+            foreach (var layer in parallaxLayers)
+            {
+                layer.MoveX(delta);
+                layer.MoveY(delta);
+            }
         }
     }
 }
