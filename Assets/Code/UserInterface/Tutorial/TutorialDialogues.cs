@@ -54,6 +54,7 @@ namespace Code.UserInterface.Tutorial
         
         private void Start()
         {
+            PlayerPrefs.SetInt("TutorialPlayed", 1);
             StartCoroutine(GetPlayer());
             StartCoroutine(ShowDialogue());
         }
