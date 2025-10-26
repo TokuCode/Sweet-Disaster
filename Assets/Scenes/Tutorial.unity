@@ -21260,7 +21260,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Code.Gameplay::Code.Gameplay.Objects.ParallaxLayer
   parallaxFactorX: 1
-  parallaxFactorY: 1
+  parallaxFactorY: 0
 --- !u!114 &1837999828
 MonoBehaviour:
   m_ObjectHideFlags: 0
