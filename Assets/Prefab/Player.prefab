@@ -52,6 +52,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -73,6 +75,7 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
@@ -142,6 +145,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -163,6 +168,7 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
@@ -354,8 +360,8 @@ GameObject:
   - component: {fileID: 1528993995768348853}
   - component: {fileID: 4239236430110313552}
   - component: {fileID: 7325530532397030553}
-  - component: {fileID: 1183291485477030185}
-  - component: {fileID: 3462405267471088}
+  - component: {fileID: 4862327888522542192}
+  - component: {fileID: 4176179122219903540}
   - component: {fileID: 5059216841921135527}
   - component: {fileID: 2005473438425743590}
   - component: {fileID: 4167940418973771865}
@@ -491,7 +497,7 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
---- !u!114 &1183291485477030185
+--- !u!114 &4862327888522542192
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -502,11 +508,11 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5c851e3e554a3f849bc51aec4ccff439, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: SweetDisaster.Networking::Code.Networking.ClientPrediction.ClientNetworkTransform
   ShowTopMostFoldoutHeaderGroup: 1
   NetworkTransformExpanded: 1
   AutoOwnerAuthorityTickOffset: 1
-  PositionInterpolationType: 0
+  PositionInterpolationType: 2
   RotationInterpolationType: 0
   ScaleInterpolationType: 0
   PositionLerpSmoothing: 1
@@ -514,8 +520,8 @@ MonoBehaviour:
   RotationLerpSmoothing: 1
   RotationMaxInterpolationTime: 0.1
   ScaleLerpSmoothing: 1
-  ScaleMaxInterpolationTime: 0.1
-  AuthorityMode: 0
+  ScaleMaxInterpolationTime: 0.01
+  AuthorityMode: 1
   TickSyncChildren: 0
   UseUnreliableDeltas: 0
   SyncPositionX: 1
@@ -538,7 +544,7 @@ MonoBehaviour:
   Interpolate: 1
   SlerpPosition: 0
   authority: 1
---- !u!114 &3462405267471088
+--- !u!114 &4176179122219903540
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -549,7 +555,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 80d7c879794dfda4687da0e400131852, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkRigidbody2D
   ShowTopMostFoldoutHeaderGroup: 1
   NetworkRigidbodyBaseExpanded: 0
   UseRigidBodyForMotion: 1
@@ -589,10 +595,28 @@ MonoBehaviour:
   _gunTip: {fileID: 8692099931127174155}
   _render: {fileID: 8787853860257289433}
   _viewBox: {fileID: 6365915281502179433}
+  _clientStateBuffer:
+    buffer: []
+  _clientInputBuffer:
+    buffer: []
+  _lastServerState:
+    tick: 0
+    networkObjectId: 0
+    position: {x: 0, y: 0, z: 0}
+    velocity: {x: 0, y: 0}
+    localYScale: 0
+  _lastProcessedState:
+    tick: 0
+    networkObjectId: 0
+    position: {x: 0, y: 0, z: 0}
+    velocity: {x: 0, y: 0}
+    localYScale: 0
+  _serverStateBuffer:
+    buffer: []
   _reconciliationCooldownTime: 1
-  _reconciliationThreshold: 10
+  _reconciliationThreshold: 100
   _extrapolationLimit: 0.5
-  _extrapolationMultiplier: 1.2
+  _extrapolationMultiplier: 1
   _extrapolationMinLatency: 0.3
 --- !u!114 &2005473438425743590
 MonoBehaviour:
@@ -1091,6 +1115,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1112,6 +1138,7 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1

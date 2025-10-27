@@ -1,8 +1,12 @@
-﻿namespace Code.Networking.ClientPrediction
+﻿using System;
+using UnityEngine;
+
+namespace Code.Networking.ClientPrediction
 {
+    [Serializable]
     public class CircularBuffer<T>
     {
-        T[] buffer;
+        [SerializeField] T[] buffer;
         int bufferSize;
         
         public CircularBuffer(int bufferSize) 
