@@ -43,7 +43,8 @@ namespace Code.Gameplay.Character
             string colorName = playerProps.Properties.TryGetValue(SessionManager.Instance.PlayerColorKey, out var playerColorProp) ? playerColorProp.Value : string.Empty;
             string characterName = playerProps.Properties.TryGetValue(SessionManager.Instance.PlayerCharacterKey, out var characterProp) ? characterProp.Value : string.Empty;
             
-            Color playerColor = _playerColors.TryGetValue(colorName, out var colorProp) ? colorProp : Color.white;
+            //Color playerColor = _playerColors.TryGetValue(colorName, out var colorProp) ? colorProp : Color.white;
+            Color playerColor = SessionManager.Instance.playerInfo.GetColor(playerProps);
             CharacterScriptable scriptable = _spawner.GetCharacter(characterName);
             Sprite characterIcon = scriptable.characterIcon;
             

@@ -1,4 +1,5 @@
 using System;
+using Code.Networking.Session;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,15 +12,24 @@ namespace Code.UserInterface
 
         private void OnEnable()
         {
-            if (PlayerPrefs.GetInt("TutorialPlayed") == 1)
+            if (SessionManager.Instance.IsPracticeMode)
             {
-                tutorial.SetActive(false);
-                bindings.SetActive(true);
+                if (PlayerPrefs.GetInt("TutorialPlayed") == 1)
+                {
+                    tutorial.SetActive(false);
+                    bindings.SetActive(true);
+                }
+                else
+                {
+                    tutorial.SetActive(true);
+                    bindings.SetActive(false);
+                }
             }
             else
             {
-                tutorial.SetActive(true);
+                tutorial.SetActive(false);
                 bindings.SetActive(false);
+                FindFirstObjectByType<PlayerIdSender>().enabled = false;
             }
         }
     }

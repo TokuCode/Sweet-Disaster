@@ -7,12 +7,14 @@ namespace Code.Networking.Session
 {
     public class PlayerInfo : MonoBehaviour
     {
+        public string playerDisplayName;
+        
         private readonly Dictionary<string, Color> _playerColors = new()
         {
-            { "blue", Color.blue },
-            { "red", Color.red },
-            { "yellow", Color.yellow },
-            { "green", Color.green }
+            { "blue", Color.royalBlue },
+            { "red", Color.indianRed },
+            { "yellow", Color.softYellow },
+            { "green", Color.lightGreen }
         };
         
         private readonly string[] _randomNames =

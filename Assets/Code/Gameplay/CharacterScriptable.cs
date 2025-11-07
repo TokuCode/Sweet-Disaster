@@ -20,6 +20,10 @@ namespace Code.Gameplay
         
         // Gameplay UI
         public Sprite characterIcon;
+        public Sprite portraitOutline;
+        public Sprite portraitNameTag;
+        public Sprite portraitFrame;
+        public Sprite arrow;
 
         public Skins[] skinsArray; // 0 is default
         

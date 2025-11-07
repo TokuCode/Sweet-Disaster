@@ -90,8 +90,8 @@ namespace Code.UserInterface.LobbyUI
         {
             if (playerId == id)
             {
-                SetAlpha(.5f);
-                SetAlphaRpc(.5f);
+                SetAlpha(.8f);
+                SetAlphaRpc(.8f);
             }
         }
 

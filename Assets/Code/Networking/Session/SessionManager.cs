@@ -9,6 +9,7 @@ using UnityEngine;
 using Code.Helpers.UI;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace Code.Networking.Session
 {
@@ -88,7 +89,26 @@ namespace Code.Networking.Session
                 Debug.Log($"Session {ActiveSession.Id} created! Join code: {ActiveSession.Code}");
 #endif
                 if (!ActiveSession.IsHost) return;
-                NetworkManager.Singleton.SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
+
+                if (IsPracticeMode)
+                {
+                    try
+                    {
+                        ActiveSession.CurrentPlayer.SetProperty(PlayerCharacterKey,
+                            new PlayerProperty("Gladys", VisibilityPropertyOptions.Member));
+                        await ActiveSession.SaveCurrentPlayerDataAsync();
+                        NetworkManager.Singleton.SceneManager.LoadScene("MultiplayerTest", LoadSceneMode.Single);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogException(e);
+                        UIUtilities.Instance.MessagePopUp("No se pudo crear la sesión", true);
+                    }
+                }
+                else
+                {
+                    NetworkManager.Singleton.SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
+                }
             }
             catch (Exception e)
             {
@@ -143,7 +163,7 @@ namespace Code.Networking.Session
         {
             return new Dictionary<string, PlayerProperty>
             {
-                { PlayerNameKey, new PlayerProperty(playerInfo.GetRandomName(), VisibilityPropertyOptions.Member) },
+                { PlayerNameKey, new PlayerProperty(IsPracticeMode ? "Gladys" : playerInfo.playerDisplayName, VisibilityPropertyOptions.Member) },
                 { PlayerColorKey, new PlayerProperty(playerInfo.GetAvailableColorName(), VisibilityPropertyOptions.Member) },
                 { PlayerCharacterKey, new PlayerProperty(String.Empty, VisibilityPropertyOptions.Member) },
             };

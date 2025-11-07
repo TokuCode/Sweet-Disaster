@@ -5,6 +5,7 @@ using TMPro;
 using Code.Helpers.Singleton;
 using Code.Gameplay.Tutorial;
 using Code.Gameplay.Character.Features;
+using Code.Networking.Session;
 
 namespace Code.UserInterface.Tutorial
 {
@@ -25,6 +26,12 @@ namespace Code.UserInterface.Tutorial
         protected override void Awake()
         {
             base.Awake();
+            
+            if (!SessionManager.Instance.IsPracticeMode)
+            {
+                Destroy(gameObject);
+                return;
+            }
             
             TutorialActions.Instance.OnPlayerJumpedOrCrouched += CheckMovement;
             TutorialActions.Instance.OnPlayerShotABot += CheckAction;
