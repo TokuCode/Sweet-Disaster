@@ -6,6 +6,7 @@ using Code.Helpers.Singleton;
 using Code.Gameplay.Tutorial;
 using Code.Gameplay.Character.Features;
 using Code.Networking.Session;
+using Code.Systems.Input;
 
 namespace Code.UserInterface.Tutorial
 {
@@ -66,8 +67,8 @@ namespace Code.UserInterface.Tutorial
             if (PlayerPrefs.GetInt("TutorialPlayed") == 0)
             {
                 StartCoroutine(GetPlayer());
-                StartCoroutine(ShowDialogue());
-                PlayerPrefs.SetInt("TutorialPlayed", 1);
+                StartCoroutine(ShowDialogue()); 
+                //PlayerPrefs.SetInt("TutorialPlayed", 1);
             }
         }
 
@@ -88,7 +89,8 @@ namespace Code.UserInterface.Tutorial
 
         private IEnumerator ShowDialogue()
         {
-            player.GetComponent<Movement>().BlockMovement();
+            //player.GetComponent<Movement>().BlockMovement();
+            InputReader.Instance.SetControl(false);
             
             textContainer.text = "";
 
@@ -101,7 +103,8 @@ namespace Code.UserInterface.Tutorial
             if (ShouldWait(currentIndex))
             {
                 waitForTrigger = true;
-                player.GetComponent<Movement>().UnblockMovement();
+                //player.GetComponent<Movement>().UnblockMovement();
+                InputReader.Instance.SetControl(true);
             }
             else
             {
@@ -111,7 +114,8 @@ namespace Code.UserInterface.Tutorial
                 
                 if (currentIndex >= dialogueTexts.Length)
                 {
-                    player.GetComponent<Movement>().UnblockMovement();
+                    //player.GetComponent<Movement>().UnblockMovement();
+                    InputReader.Instance.SetControl(true);
                     gameObject.SetActive(false);
                     bindings.SetActive(true);
                 }

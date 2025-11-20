@@ -11,10 +11,10 @@ namespace Code.Networking.Session
         
         private readonly Dictionary<string, Color> _playerColors = new()
         {
-            { "blue", Color.royalBlue },
-            { "red", Color.indianRed },
-            { "yellow", Color.softYellow },
-            { "green", Color.lightGreen }
+            { "blue", Color.orange },
+            { "red", Color.red },
+            { "yellow", Color.yellow },
+            { "green", Color.green }
         };
         
         private readonly string[] _randomNames =

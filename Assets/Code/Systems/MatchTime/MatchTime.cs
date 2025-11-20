@@ -1,4 +1,5 @@
 ﻿using System;
+using Code.Networking.Session;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -36,7 +37,7 @@ namespace Code.Systems.MatchTime
         private void Update()
         {
             if(!IsServer || !started) return;
-            
+            if (SessionManager.Instance.IsPracticeMode) return;
             TickTimer(Time.deltaTime);
         }
 

@@ -4,6 +4,7 @@ using Code.Gameplay.Character.Features;
 using Code.Gameplay.Character.Framework;
 using Code.Gameplay.Objects.ObjectBox;
 using Code.Networking.ClientPrediction;
+using Code.Networking.Session;
 using Unity.Netcode;
 using Unity.Services.Matchmaker.Models;
 using UnityEngine;
@@ -56,7 +57,8 @@ namespace Code.Gameplay.Character
             {
                 if(_respawning || _respawningProcess || _stocks.Value <= 0) return;
                 
-                _stocks.Value--;
+                if (!SessionManager.Instance.IsPracticeMode)
+                    _stocks.Value--;
 
                 if (_stocks.Value <= 0) ReportDefeat();
                 else ScheduleRespawn();

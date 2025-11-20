@@ -1,5 +1,6 @@
 using System;
 using Code.Gameplay.Tutorial;
+using Code.Networking.Session;
 using UnityEngine;
 
 namespace Code.UserInterface.Tutorial
@@ -10,6 +11,8 @@ namespace Code.UserInterface.Tutorial
         
         private void OnTriggerEnter2D(Collider2D other)
         {
+            if (!SessionManager.Instance.IsPracticeMode) return;
+            
             if (other.gameObject.CompareTag("P1") && TutorialDialogues.Instance.GetIndex() == indexNumber && 
                 TutorialActions.Instance.waitForTrigger)
             {

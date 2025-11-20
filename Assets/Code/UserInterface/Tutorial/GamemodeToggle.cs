@@ -10,8 +10,9 @@ namespace Code.UserInterface
         [SerializeField] private GameObject bindings;
         [SerializeField] private GameObject tutorial;
 
-        private void OnEnable()
+        private void Start()
         {
+            PlayerPrefs.SetInt("TutorialPlayed", 1);
             if (SessionManager.Instance.IsPracticeMode)
             {
                 if (PlayerPrefs.GetInt("TutorialPlayed") == 1)

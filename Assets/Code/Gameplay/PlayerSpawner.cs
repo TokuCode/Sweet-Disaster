@@ -19,6 +19,7 @@ namespace Code.Gameplay
 
         [Header("Spawn Points")]
         [SerializeField] private List<Transform> _spawnPoints;
+        [SerializeField] private Transform tutorialSpawnPoint;
 
         private List<int> _spawnPointIndexes = new();
         [SerializeField] private List<string> _tags;
@@ -55,7 +56,7 @@ namespace Code.Gameplay
                 SelectMap(mapProperty.Value);
                 SetMapClientRpc(mapProperty.Value);
             }
-
+            
             for (int i = 0; i < _sessionManager.ActiveSession.Players.Count; i++)
             {
                 var  sessionPlayer = _sessionManager.ActiveSession.Players[i];
@@ -100,6 +101,8 @@ namespace Code.Gameplay
             // Spawn the player
             
             Transform spawnPoint = _spawnPoints[GetRandomIndexNotFromPrevious()];
+            if (_sessionManager.IsPracticeMode) spawnPoint = tutorialSpawnPoint;
+            
             GameObject playerObj = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
             
             playerObj.tag = _tags[_index % _tags.Count];

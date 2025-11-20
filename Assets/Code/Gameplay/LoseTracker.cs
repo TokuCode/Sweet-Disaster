@@ -32,11 +32,11 @@ namespace Code.Gameplay
         {
             if (!IsServer) return;
 
-            if (_sessionManager.ActiveSession.IsHost && _sessionManager.IsPracticeMode)
+            /*if (_sessionManager.ActiveSession.IsHost && _sessionManager.IsPracticeMode)
             {
-                NetworkManager.SceneManager.LoadScene("Tutorial", LoadSceneMode.Single);
+                NetworkManager.SceneManager.LoadScene("MultiplayerTest", LoadSceneMode.Single);
                 return;
-            }
+            }*/
             
             SendPlayerDataToStackRpc(clientId, lives, damage);
             

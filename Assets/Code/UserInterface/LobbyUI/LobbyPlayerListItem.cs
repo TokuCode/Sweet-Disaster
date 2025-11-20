@@ -33,6 +33,9 @@ namespace Code.UserInterface.LobbyUI
         private int _currentCharacterIndex;
         private int _currentSkinIndex;
         
+        public NetworkVariable<int> CharacterIndex = new(writePerm: NetworkVariableWritePermission.Server);
+        public NetworkVariable<int> SkinIndex = new(writePerm: NetworkVariableWritePermission.Server);
+        
         // Swap buttons
         [SerializeField] private Button nextButton;
         [SerializeField] private Button prevButton;
@@ -74,7 +77,12 @@ namespace Code.UserInterface.LobbyUI
             splash.sprite = characters[0].skinsArray[0].lobbySplashImage;
             splash.preserveAspect = true;
             characterName.text = characters[0].skinsArray[0].skinName;
-
+            
+            CharacterIndex.OnValueChanged += (oldVal, newVal) => UpdateCharacterUI(newVal, SkinIndex.Value);
+            SkinIndex.OnValueChanged += (oldVal, newVal) => UpdateCharacterUI(CharacterIndex.Value, newVal);
+            // Apply immediately on join
+            UpdateCharacterUI(CharacterIndex.Value, SkinIndex.Value);
+            
             _sessionManager.ActiveSession.PlayerPropertiesChanged += CheckCharacterAvailability;
             _sessionManager.ActiveSession.PlayerLeaving += OnPlayerLeft;
         }
@@ -121,7 +129,8 @@ namespace Code.UserInterface.LobbyUI
             }
             
             UpdateCharacterUI(_currentCharacterIndex, _currentSkinIndex);
-            UpdateCharacterUIRpc(_currentCharacterIndex, _currentSkinIndex);
+            RequestChangeCharacterRpc(_currentCharacterIndex, _currentSkinIndex);
+            //UpdateCharacterUIRpc(_currentCharacterIndex, _currentSkinIndex);
         }
         
         private void UpdateCharacterUI(int charIndex, int skinIndex)
@@ -132,6 +141,13 @@ namespace Code.UserInterface.LobbyUI
             splash.sprite = skin.lobbySplashImage;
             splash.preserveAspect = true;
             characterName.text = skin.skinName;
+        }
+        
+        [Rpc(SendTo.Server)]
+        private void RequestChangeCharacterRpc(int charIndex, int skinIndex)
+        {
+            CharacterIndex.Value = charIndex;
+            SkinIndex.Value = skinIndex;
         }
 
         [Rpc(SendTo.NotMe)]

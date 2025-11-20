@@ -130,15 +130,17 @@ namespace Code.UserInterface.PostGameUI
 
         private void RestartListChanged(NetworkListEvent<ulong> listEvent)
         {
-            if (_playersReadyToRestart.Count < _numberOfPlayers
-                && _sessionManager.ActiveSession.PlayerCount > 1) return;
+            Debug.Log($"_playersReadyToRestart.Count {_playersReadyToRestart.Count} , _numberOfPlayers {_numberOfPlayers}, _sessionManager.ActiveSession.PlayerCount {_sessionManager.ActiveSession.PlayerCount}");
+            if (_playersReadyToRestart.Count < _numberOfPlayers) return;
+            if (_sessionManager.ActiveSession.PlayerCount < 2) return;
             NetworkManager.Singleton.SceneManager.LoadScene("MultiplayerTest", LoadSceneMode.Single);
         }
 
         private void ReturnListChanged(NetworkListEvent<ulong> listEvent)
         {
-            if (_playersReadyToReturn.Count < _numberOfPlayers
-                && _sessionManager.ActiveSession.PlayerCount > 1) return;
+            Debug.Log($"_playersReadyToRestart.Count {_playersReadyToRestart.Count} , _numberOfPlayers {_numberOfPlayers}, _sessionManager.ActiveSession.PlayerCount {_sessionManager.ActiveSession.PlayerCount}");
+            if (_playersReadyToRestart.Count < _numberOfPlayers) return;
+            if (_sessionManager.ActiveSession.PlayerCount < 2) return;
             ResetCharacterProperty();
             ResetCharacterPropertyRpc();
         }
