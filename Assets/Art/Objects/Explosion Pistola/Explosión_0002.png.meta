@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: b5d2e9b606cd91c49ab9c434d15e20d0
+guid: 56e8265c381808546971a80a5b396d25
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -8422864265830050195
-    second: gladyslobby.jpg_0
+      213: -2649220501155458025
+    second: "Explosi\xF3n_0002_0"
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,9 +46,9 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
@@ -97,19 +97,6 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: WebGL
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
     buildTarget: Android
     maxTextureSize: 2048
     resizeAlgorithm: 0
@@ -126,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: gladyslobby.jpg_0
+      name: "Explosi\xF3n_0002_0"
       rect:
         serializedVersion: 2
-        x: 175
-        y: 0
-        width: 748
-        height: 1080
+        x: 74
+        y: 109
+        width: 68
+        height: 61
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d665ed39399fb1b80800000000000000
-      internalID: -8422864265830050195
+      spriteID: 71452f88df31c3bd0800000000000000
+      internalID: -2649220501155458025
       vertices: []
       indices: 
       edges: []
@@ -151,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      gladyslobby.jpg_0: -8422864265830050195
+      "Explosi\xF3n_0002_0": -2649220501155458025
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

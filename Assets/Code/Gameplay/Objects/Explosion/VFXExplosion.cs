@@ -1,5 +1,4 @@
-﻿using System;
-using Code.Helpers;
+﻿using Code.Helpers;
 using DG.Tweening;
 using UnityEngine;
 
