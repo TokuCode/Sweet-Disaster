@@ -83,7 +83,7 @@ namespace Code.UserInterface.PostGameUI
                 playerSlots[i].SetSlot(playerName, playerColor);
                 
                 if (i == 0)
-                    winnerTitle.text = $"Ganador: {playerName}";
+                    winnerTitle.text = $"{playerName}";
                 
                 playersPositionsText[i].text = (i + 1).ToString();
                 
