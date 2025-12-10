@@ -5,6 +5,9 @@ using UnityEngine;
 using Code.Audio.Character;
 using Code.Gameplay.Tutorial;
 using Code.Networking.Session;
+using Code.Systems.NetworkObjectPool;
+using Code.Gameplay.Objects;
+using Unity.Netcode;
 
 namespace Code.Gameplay.Character.Features
 {
@@ -22,6 +25,10 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private float _fastFallGravityMultiplier; 
         [SerializeField] private float _lowJumpGravityMultiplier;
         [SerializeField] private float _maxFallSpeed;
+        
+        [Header("VFX")]
+        [SerializeField] private GameObject _vfx;
+        [SerializeField] private Vector3 vfxPosition;
         
         [Header("Runtime")]
         [SerializeField] private bool _onDeparture;
@@ -86,6 +93,8 @@ namespace Code.Gameplay.Character.Features
             }
             
             gameObject.GetComponent<CharacterAudioHandler>().NetworkPlay("Jump");
+            JumpVFX();
+            JumpVFXRpc();
             
             float compensation = 0;
             if (_invoker.Velocity.Request(out var velocity).success)
@@ -93,6 +102,19 @@ namespace Code.Gameplay.Character.Features
                 if(!check.OnSlope) compensation = -velocity.y;
             }
             _invoker.AddForce.Perform(new(Vector2.up, _jumpImpulse + compensation, ForceMode2D.Impulse));
+        }
+
+        private void JumpVFX()
+        {
+            var go = ObjectPoolManager.Instance.Get(_vfx, transform.localPosition + vfxPosition, Quaternion.identity);
+            go.SetActive(true);
+            go.GetComponentInChildren<AttackVFX>().InitNoRadius();
+        }
+
+        [Rpc(SendTo.NotMe)]
+        private void JumpVFXRpc()
+        {
+            JumpVFX();
         }
 
         private void VariableJumpGravity()

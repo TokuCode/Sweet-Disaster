@@ -698,6 +698,8 @@ MonoBehaviour:
   _fastFallGravityMultiplier: 7.5
   _lowJumpGravityMultiplier: 2.5
   _maxFallSpeed: 20
+  _vfx: {fileID: 1890377178234138807, guid: 4b5a37ef3d9252b43b23770d76d56451, type: 3}
+  vfxPosition: {x: 0, y: 0.6, z: 0}
   _onDeparture: 0
 --- !u!114 &2026413833703698187
 MonoBehaviour:

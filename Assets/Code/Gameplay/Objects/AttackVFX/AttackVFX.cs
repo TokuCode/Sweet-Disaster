@@ -21,6 +21,11 @@ namespace Code.Gameplay.Objects
             StartCoroutine(FadeSequence());
         }
 
+        public void InitNoRadius()
+        {
+            StartCoroutine(FadeSequence());
+        }
+
         private IEnumerator FadeSequence()
         {
             float elapsedTime = 0;
