@@ -122,6 +122,17 @@
                 },
                 {
                     "name": "",
+                    "id": "3502e89b-1850-484a-ae61-c56ed18aa988",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "1b494cbe-fe13-4804-adc0-b0421b32fc36",
                     "path": "<Gamepad>/leftStick/down",
                     "interactions": "",
