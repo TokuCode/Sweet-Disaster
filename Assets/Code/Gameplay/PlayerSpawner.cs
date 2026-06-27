@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Code.Gameplay.Character;
 using Code.Networking.Session;
 using Unity.Netcode;
-using Unity.Services.Multiplayer;
 using Code.Gameplay.Character.Visuals;
 using Code.Networking;
 
@@ -58,12 +57,11 @@ namespace Code.Gameplay
                 SetMapClientRpc(mapName);
             }
 
-            var players = _sessionManager.GetPlayers();
+            var players = _sessionManager.GetSessionPlayers();
 
             for (int i = 0; i < players.Count; i++)
             {
-                var sessionPlayer = players[i];
-                SpawnPlayer(sessionPlayer, i);
+                SpawnPlayer(players[i], i);
             }
         }
 
@@ -79,30 +77,16 @@ namespace Code.Gameplay
             }
         }
 		
-        private void SpawnPlayer(IReadOnlyPlayer sessionPlayer, int playerNumber)
+        private void SpawnPlayer(SessionPlayerData sessionPlayer, int playerNumber)
         {
-            // Map authentication ID to client ID
-            if (!SessionManager.Instance.PlayerIdToClientId.TryGetValue(sessionPlayer.Id, out ulong clientId))
-            {
-                Debug.LogError($"Client ID not found for authentication ID: {clientId}");
-                return;
-            }
+            ulong clientId = sessionPlayer.ClientId;
 
-            string characterName;
+            string characterName = string.IsNullOrEmpty(sessionPlayer.CharacterName)
+                ? "Ceci"
+                : sessionPlayer.CharacterName;
 
-            // Get the player's selected character
-            if (!sessionPlayer.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var characterProp))
-            {
-                characterName = "Ceci";
-                Debug.LogError($"Character not selected for player: {sessionPlayer.Id}");
-                //return;
-            }
-
-            characterName = characterProp?.Value;
             CharacterScriptable character = GetCharacter(characterName);
 
-            // Spawn the player
-            
             Transform spawnPoint = _spawnPoints[GetRandomIndexNotFromPrevious()];
             if (_sessionManager.IsPracticeMode) spawnPoint = tutorialSpawnPoint;
             

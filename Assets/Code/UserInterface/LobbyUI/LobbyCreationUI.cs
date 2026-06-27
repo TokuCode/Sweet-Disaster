@@ -25,19 +25,19 @@ namespace Code.UserInterface.LobbyUI
             joinSessionButton.onClick.AddListener(() => SessionManager.Instance.JoinSessionByCode(codeInputField.text));
             applyNameButton.onClick.AddListener(() =>
             {
-                SessionManager.Instance.playerInfo.playerDisplayName = nameInputField.text;
+                SessionManager.Instance.LocalPlayerDisplayName = nameInputField.text;
             });
         }
 
         private void Start()
         {
-            nameInputField.text = SessionManager.Instance.playerInfo.playerDisplayName;
+            nameInputField.text = SessionManager.Instance.LocalPlayerDisplayName;
         }
 
         private void Update()
         {
             //if (createSessionButton.interactable && joinSessionButton.interactable) return;
-            if (SessionManager.Instance.playerInfo.playerDisplayName != String.Empty)
+            if (SessionManager.Instance.HasLocalPlayerDisplayName)
             {
                 createSessionButton.interactable = true;
                 joinSessionButton.interactable = true;

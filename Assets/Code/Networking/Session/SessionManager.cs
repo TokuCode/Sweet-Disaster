@@ -51,7 +51,7 @@ namespace Code.Networking.Session
             }
         }
 
-        public PlayerInfo playerInfo;
+        [SerializeField] private PlayerInfo playerInfo;
         public bool IsPracticeMode { get; private set; }
         public bool ShouldRetrievePing { get; private set; } = true;
         
@@ -63,7 +63,7 @@ namespace Code.Networking.Session
         public readonly string PlayerColorKey = "playerColor";
         public readonly string PlayerCharacterKey = "playerCharacter";
         
-        public Dictionary<string, ulong> PlayerIdToClientId => playerIdToClientId;
+        //public Dictionary<string, ulong> PlayerIdToClientId => playerIdToClientId;
 
         private async void Start() => await InitializeServices();
 
@@ -84,6 +84,7 @@ namespace Code.Networking.Session
         
         public async void StartSessionAsHost(bool isPracticeMode)
         {
+            ConnectionMode = SessionConnectionMode.Online;
             IsPracticeMode = isPracticeMode;
             
             try
@@ -139,6 +140,7 @@ namespace Code.Networking.Session
         
         public async void JoinSessionByCode(string code)
         {
+            ConnectionMode = SessionConnectionMode.Online;
             IsPracticeMode = false;
             
             try
@@ -227,17 +229,6 @@ namespace Code.Networking.Session
         // Events
         
         public event Action SessionChanged;
-        
-        private void RegisterSessionCallbacks()
-        {
-            if (ActiveSession == null)
-                return;
-
-            ActiveSession.Changed += OnSessionChanged;
-            ActiveSession.PlayerHasLeft += OnPlayerHasLeft;
-            ActiveSession.PlayerLeaving += OnPlayerLeaving;
-            ActiveSession.PlayerPropertiesChanged += OnPlayerPropertiesChanged;
-        }
 
         private void OnSessionChanged()
         {
@@ -288,7 +279,7 @@ namespace Code.Networking.Session
 
             foreach (var sessionPlayer in ActiveSession.Players)
             {
-                if (!PlayerIdToClientId.TryGetValue(sessionPlayer.Id, out ulong mappedClientId))
+                if (!playerIdToClientId.TryGetValue(sessionPlayer.Id, out ulong mappedClientId))
                     continue;
 
                 if (mappedClientId != clientId)
@@ -456,5 +447,66 @@ namespace Code.Networking.Session
             await ActiveSession.SaveCurrentPlayerDataAsync();
             return true;
         }
+        
+        public List<SessionPlayerData> GetSessionPlayers()
+        {
+            var result = new List<SessionPlayerData>();
+
+            if (ActiveSession == null)
+                return result;
+
+            foreach (var player in ActiveSession.Players)
+            {
+                if (!TryGetClientIdFromPlayerId(player.Id, out ulong clientId))
+                {
+                    Debug.LogWarning($"Client ID not found for player ID: {player.Id}");
+                    continue;
+                }
+
+                result.Add(new SessionPlayerData
+                {
+                    PlayerId = player.Id,
+                    ClientId = clientId,
+                    PlayerName = GetPlayerName(player),
+                    PlayerColor = GetPlayerColor(player),
+                    CharacterName = GetPlayerCharacter(player),
+                    IsHost = IsHostPlayer(player.Id),
+                    IsCurrentPlayer = IsCurrentPlayer(player.Id)
+                });
+            }
+
+            return result;
+        }
+        
+        public string LocalPlayerDisplayName
+        {
+            get
+            {
+                if (playerInfo == null)
+                    return string.Empty;
+
+                return playerInfo.playerDisplayName;
+            }
+            set
+            {
+                if (playerInfo == null)
+                    return;
+
+                playerInfo.playerDisplayName = value;
+            }
+        }
+
+        public bool HasLocalPlayerDisplayName => !string.IsNullOrEmpty(LocalPlayerDisplayName);
+        
+        public SessionConnectionMode ConnectionMode { get; private set; } = SessionConnectionMode.Online;
+
+        public bool IsOnlineMode => ConnectionMode == SessionConnectionMode.Online;
+        public bool IsLanMode => ConnectionMode == SessionConnectionMode.Lan;
+    }
+    
+    public enum SessionConnectionMode
+    {
+        Online,
+        Lan
     }
 }
