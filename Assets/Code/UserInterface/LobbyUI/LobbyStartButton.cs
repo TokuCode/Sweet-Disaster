@@ -16,21 +16,21 @@ namespace Code.UserInterface.LobbyUI
             _sessionManager = SessionManager.Instance;
             startGameButton.onClick.AddListener(StartGame);
 
-            _sessionManager.ActiveSession.PlayerPropertiesChanged += UpdateButtonState;
+            _sessionManager.PlayerPropertiesChanged += UpdateButtonState;
         }
 
         private void OnDisable()
         {
             startGameButton.onClick.RemoveListener(StartGame);
-            if (_sessionManager.ActiveSession == null) return;
-            _sessionManager.ActiveSession.PlayerPropertiesChanged -= UpdateButtonState;
+            if (!_sessionManager.HasActiveSession) return;
+            _sessionManager.PlayerPropertiesChanged -= UpdateButtonState;
         }
         
         private bool AllPlayersHaveSelectedCharacters()
         {
-            foreach (var player in _sessionManager.ActiveSession.Players)
+            foreach (var player in _sessionManager.GetPlayers())
             {
-                if (string.IsNullOrEmpty(_sessionManager.playerInfo.GetPropertyValue(player, _sessionManager.PlayerCharacterKey)))
+                if (string.IsNullOrEmpty(_sessionManager.GetPlayerCharacter(player)))
                     return false;
             }
             return true;
@@ -38,14 +38,14 @@ namespace Code.UserInterface.LobbyUI
 
         private void UpdateButtonState()
         {
-            if ((_sessionManager.ActiveSession.IsHost && _sessionManager.ActiveSession.PlayerCount > 1) ||
-                (_sessionManager.ActiveSession.IsHost && _sessionManager.ActiveSession.PlayerCount == 1 && _sessionManager.IsPracticeMode))
+            if ((_sessionManager.IsLocalPlayerSessionHost && _sessionManager.PlayerCount > 1) ||
+                (_sessionManager.IsLocalPlayerSessionHost && _sessionManager.PlayerCount == 1 && _sessionManager.IsPracticeMode))
                 startGameButton.interactable = AllPlayersHaveSelectedCharacters();
         }
         
         private void StartGame()
         {
-            if (!_sessionManager.ActiveSession.IsHost) return;
+            if (!_sessionManager.IsLocalPlayerSessionHost) return;
             NetworkManager.Singleton.SceneManager.LoadScene(_sessionManager.IsPracticeMode? "Tutorial" : "MultiplayerTest", UnityEngine.SceneManagement.LoadSceneMode.Single);
         }
     }

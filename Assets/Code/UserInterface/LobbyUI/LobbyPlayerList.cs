@@ -22,26 +22,26 @@ namespace Code.UserInterface.LobbyUI
         private void Start()
         {
             UpdatePlayerList();
-            _sessionManager.ActiveSession.Changed += UpdatePlayerList;
+            _sessionManager.SessionChanged += UpdatePlayerList;
         }
 
         private void OnDisable()
         {
-            if (_sessionManager.ActiveSession == null) return;
-            _sessionManager.ActiveSession.Changed -= UpdatePlayerList;
+            if (!_sessionManager.HasActiveSession) return;
+            _sessionManager.SessionChanged -= UpdatePlayerList;
         }
 
         private void UpdatePlayerList()
         {
-            var players = _sessionManager.ActiveSession.Players.ToList();
+            var players = _sessionManager.GetPlayers().ToList();
 
             foreach (var item in lobbyPlayerListItems)
                 item.ResetItem();
             
             for (int i = 0; i < players.Count; i++)
             {
-                string playerName = _sessionManager.playerInfo.GetPropertyValue(players[i], _sessionManager.PlayerNameKey);
-                Color playerColor = _sessionManager.playerInfo.GetColor(players[i]);
+                string playerName = _sessionManager.GetPlayerName(players[i]);
+                Color playerColor = _sessionManager.GetPlayerColor(players[i]);
                 
                 lobbyPlayerListItems[i].Set(players[i].Id, playerName, playerColor);
             }

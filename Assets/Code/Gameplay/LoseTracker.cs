@@ -31,12 +31,6 @@ namespace Code.Gameplay
         public void ReportPlayerLoss(ulong clientId, int lives, float damage)
         {
             if (!IsServer) return;
-
-            /*if (_sessionManager.ActiveSession.IsHost && _sessionManager.IsPracticeMode)
-            {
-                NetworkManager.SceneManager.LoadScene("MultiplayerTest", LoadSceneMode.Single);
-                return;
-            }*/
             
             SendPlayerDataToStackRpc(clientId, lives, damage);
             
@@ -58,7 +52,7 @@ namespace Code.Gameplay
             }
             else if (remainingIds.Count == 0)
             {
-                if (_sessionManager.ActiveSession.IsHost && !_sessionManager.IsPracticeMode)
+                if (_sessionManager.IsLocalPlayerSessionHost && !_sessionManager.IsPracticeMode)
                     NetworkManager.SceneManager.LoadScene("PostGame", LoadSceneMode.Single);
             }
         }

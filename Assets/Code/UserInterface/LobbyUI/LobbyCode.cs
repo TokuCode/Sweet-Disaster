@@ -11,7 +11,7 @@ namespace Code.UserInterface.LobbyUI
         
         private void Start()
         {
-            codeText.text = SessionManager.Instance.ActiveSession.Code;
+            codeText.text = SessionManager.Instance.JoinDisplayCode;
         }
         
         public void CopyToClipboard() => GUIUtility.systemCopyBuffer = codeText.text;

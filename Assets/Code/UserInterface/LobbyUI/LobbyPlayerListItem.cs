@@ -6,10 +6,8 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using Unity.Netcode;
 using System.Threading.Tasks;
-using Unity.Services.Multiplayer;
 using System;
 using Code.Helpers.UI;
-using System.Linq;
 
 namespace Code.UserInterface.LobbyUI
 {
@@ -46,7 +44,7 @@ namespace Code.UserInterface.LobbyUI
             nameText.text = playerName;
             outlineColor.color = color;
 
-            if (playerId != SessionManager.Instance.ActiveSession.CurrentPlayer.Id) return;
+            if (!SessionManager.Instance.IsCurrentPlayer(playerId)) return;
             
             nextButton.gameObject.SetActive(true);
             prevButton.gameObject.SetActive(true);
@@ -83,15 +81,15 @@ namespace Code.UserInterface.LobbyUI
             // Apply immediately on join
             UpdateCharacterUI(CharacterIndex.Value, SkinIndex.Value);
             
-            _sessionManager.ActiveSession.PlayerPropertiesChanged += CheckCharacterAvailability;
-            _sessionManager.ActiveSession.PlayerLeaving += OnPlayerLeft;
+            _sessionManager.PlayerPropertiesChanged += CheckCharacterAvailability;
+            _sessionManager.PlayerLeaving += OnPlayerLeft;
         }
 
         public override void OnNetworkDespawn()
         {
-            if (_sessionManager.ActiveSession == null) return;
-            _sessionManager.ActiveSession.PlayerPropertiesChanged -= CheckCharacterAvailability;
-            _sessionManager.ActiveSession.PlayerLeaving -= OnPlayerLeft;
+            if (!_sessionManager.HasActiveSession) return;
+            _sessionManager.PlayerPropertiesChanged -= CheckCharacterAvailability;
+            _sessionManager.PlayerLeaving -= OnPlayerLeft;
         }
 
         private void OnPlayerLeft(string id)
@@ -158,9 +156,8 @@ namespace Code.UserInterface.LobbyUI
 
         public void CheckCharacterAvailability()
         {
-            bool isTaken = _sessionManager.ActiveSession.Players.Any(p =>
-                p.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var prop) &&
-                prop.Value == characters[_currentCharacterIndex].characterName);
+            string selectedCharacter = characters[_currentCharacterIndex].characterName;
+            bool isTaken = _sessionManager.IsCharacterTaken(selectedCharacter);
 
             lockButton.interactable = !isTaken;
         }
@@ -196,20 +193,9 @@ namespace Code.UserInterface.LobbyUI
         
         private async Task<bool> TrySelectCharacter(string characterName)
         {
-            bool isTaken = _sessionManager.ActiveSession.Players.Any(p =>
-                p.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var prop) &&
-                prop.Value == characterName);
-
-            if (isTaken) return false;
-
             try
             {
-                _sessionManager.ActiveSession.CurrentPlayer.SetProperty(_sessionManager.PlayerCharacterKey,
-                    new PlayerProperty(characterName, VisibilityPropertyOptions.Member));
-                await _sessionManager.ActiveSession.SaveCurrentPlayerDataAsync();
-                
-                //StartCoroutine(WaitForCooldown());
-                return true;
+                return await _sessionManager.TrySelectCurrentPlayerCharacterAsync(characterName);
             }
             catch (Exception e)
             {
@@ -217,7 +203,6 @@ namespace Code.UserInterface.LobbyUI
                 Debug.LogException(e);
 #endif
                 UIUtilities.Instance.MessagePopUp("Hubo un problema guardando las propiedades del jugador", true);
-                //StartCoroutine(WaitForCooldown());
                 return false;
             }
         }

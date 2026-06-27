@@ -23,7 +23,7 @@ namespace Code.UserInterface.LobbyUI
         private void PerformReturnToMenu()
         {
             ReturnToMenu();
-            if (!SessionManager.Instance.ActiveSession.IsHost) return;
+            if (!SessionManager.Instance.IsLocalPlayerSessionHost) return;
             ReturnToMenuRpc();
         }
         
@@ -38,15 +38,16 @@ namespace Code.UserInterface.LobbyUI
 
         private void ReturnToMenu()
         {
-            SendPlayerLeavingRpc(SessionManager.Instance.ActiveSession.CurrentPlayer.Id);
+            if (SessionManager.Instance.TryGetCurrentPlayerId(out string playerId))
+                SendPlayerLeavingRpc(playerId);
             SessionManager.Instance.LeaveSession();
         }
 
         [Rpc(SendTo.Server)]
         private void SendPlayerLeavingRpc(FixedString32Bytes playerId, RpcParams rpcParams = default)
         {
-            Debug.Log(playerId.ToString());
-            SessionManager.Instance.PlayerIdToClientId.Remove(playerId.ToString());
+            string playerIdString = playerId.ToString();
+            SessionManager.Instance.RemovePlayerClientId(playerIdString);
         }
 
         private void OnDisable()

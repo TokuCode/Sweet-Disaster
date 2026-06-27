@@ -11,20 +11,30 @@ namespace Code.Networking.Session
             
             RegisterPlayerId();
 
-            SessionManager.Instance.ActiveSession.Changed += OnPlayerJoined;
+            SessionManager.Instance.SessionChanged += OnPlayerJoined;
         }
 
         public override void OnNetworkDespawn()
         {
-            SessionManager.Instance.ActiveSession.Changed -= OnPlayerJoined;
+            SessionManager.Instance.SessionChanged -= OnPlayerJoined;
         }
 
         private void RegisterPlayerId()
         {
-            string playerId = SessionManager.Instance.ActiveSession.CurrentPlayer.Id;
-            var clientId = NetworkManager.LocalClient.ClientId;
-            if(SessionManager.Instance.PlayerIdToClientId.TryAdd(playerId, clientId))
+            if (SessionManager.Instance == null)
+                return;
+
+            if (!SessionManager.Instance.TryGetCurrentPlayerId(out string playerId))
+            {
+                Debug.LogWarning("Could not register player ID because current player ID is missing.");
+                return;
+            }
+
+            ulong clientId = NetworkManager.LocalClient.ClientId;
+
+            if (SessionManager.Instance.TryRegisterPlayerClientId(playerId, clientId))
                 Debug.Log($"[Client] Self Registered: {playerId} with clientId: {clientId}");
+
             SendPlayerIdRpc(playerId);
         }
 
@@ -32,12 +42,15 @@ namespace Code.Networking.Session
         {
             RegisterPlayerId();
         }
-
+        
         [Rpc(SendTo.NotMe)]
         private void SendPlayerIdRpc(string playerId, RpcParams rpcParams = default)
         {
             ulong clientId = rpcParams.Receive.SenderClientId;
-            if(!SessionManager.Instance.PlayerIdToClientId.TryAdd(playerId, clientId)) return;
+
+            if (!SessionManager.Instance.TryRegisterPlayerClientId(playerId, clientId))
+                return;
+
             Debug.Log($"Registered PlayerId {playerId} with ClientId {clientId}");
         }
     }

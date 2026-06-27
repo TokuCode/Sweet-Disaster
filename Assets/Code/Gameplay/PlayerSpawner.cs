@@ -45,21 +45,24 @@ namespace Code.Gameplay
         private void SpawnAllPlayers(string sceneName, UnityEngine.SceneManagement.LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
         {
             if (!IsServer) return;
-            if (_sessionManager == null || _sessionManager.ActiveSession == null)
+
+            if (_sessionManager == null || !_sessionManager.HasActiveSession)
             {
-                Debug.LogError("SessionManager or ActiveSession is missing!");
+                Debug.LogError("SessionManager or active session is missing!");
                 return;
             }
-            
-            if(_sessionManager.ActiveSession.Properties.TryGetValue(_sessionManager.MapPropertyKey, out SessionProperty mapProperty))
+
+            if (_sessionManager.TryGetSessionProperty(_sessionManager.MapPropertyKey, out string mapName))
             {
-                SelectMap(mapProperty.Value);
-                SetMapClientRpc(mapProperty.Value);
+                SelectMap(mapName);
+                SetMapClientRpc(mapName);
             }
-            
-            for (int i = 0; i < _sessionManager.ActiveSession.Players.Count; i++)
+
+            var players = _sessionManager.GetPlayers();
+
+            for (int i = 0; i < players.Count; i++)
             {
-                var  sessionPlayer = _sessionManager.ActiveSession.Players[i];
+                var sessionPlayer = players[i];
                 SpawnPlayer(sessionPlayer, i);
             }
         }

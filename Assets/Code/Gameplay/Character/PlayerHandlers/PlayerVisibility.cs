@@ -37,14 +37,16 @@ namespace Code.Gameplay.Character
         public PlayerPublicInfo PostPlayer(PlayerController player, bool isPlayer)
         {
             ulong clientId = (ulong)player.clientId;
-            var playerProps = SessionManager.Instance.ActiveSession.Players.First(playerProp => SessionManager.Instance.PlayerIdToClientId[playerProp.Id] == clientId);
             
-            string playerName = playerProps.Properties.TryGetValue(SessionManager.Instance.PlayerNameKey, out var playerNameProp) ? playerNameProp.Value : string.Empty;
-            string colorName = playerProps.Properties.TryGetValue(SessionManager.Instance.PlayerColorKey, out var playerColorProp) ? playerColorProp.Value : string.Empty;
-            string characterName = playerProps.Properties.TryGetValue(SessionManager.Instance.PlayerCharacterKey, out var characterProp) ? characterProp.Value : string.Empty;
+            if (!SessionManager.Instance.TryGetPlayerByClientId(clientId, out var playerProps))
+            {
+                Debug.LogWarning($"Could not find session player for clientId: {clientId}");
+            }
+
+            string playerName = SessionManager.Instance.GetPlayerName(playerProps);
+            Color playerColor = SessionManager.Instance.GetPlayerColor(playerProps);
+            string characterName = SessionManager.Instance.GetPlayerCharacter(playerProps);
             
-            //Color playerColor = _playerColors.TryGetValue(colorName, out var colorProp) ? colorProp : Color.white;
-            Color playerColor = SessionManager.Instance.playerInfo.GetColor(playerProps);
             CharacterScriptable scriptable = _spawner.GetCharacter(characterName);
             Sprite characterIcon = scriptable.characterIcon;
             

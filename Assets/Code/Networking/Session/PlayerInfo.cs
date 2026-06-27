@@ -46,9 +46,9 @@ namespace Code.Networking.Session
         {
             var takenColors = new HashSet<string>();
 
-            if (SessionManager.Instance.ActiveSession != null)
+            if (SessionManager.Instance.HasActiveSession)
             {
-                foreach (var player in SessionManager.Instance.ActiveSession.Players)
+                foreach (var player in SessionManager.Instance.GetPlayers())
                     takenColors.Add(GetPropertyValue(player, SessionManager.Instance.PlayerColorKey));
             }
             foreach (var colorName in _playerColors.Keys)
@@ -63,9 +63,9 @@ namespace Code.Networking.Session
         {
             var takenNames = new HashSet<string>();
 
-            if (SessionManager.Instance.ActiveSession != null)
+            if (SessionManager.Instance.HasActiveSession)
             {
-                foreach (var player in SessionManager.Instance.ActiveSession.Players)
+                foreach (var player in SessionManager.Instance.GetPlayers())
                     takenNames.Add(GetPropertyValue(player, SessionManager.Instance.PlayerNameKey));
             }
             

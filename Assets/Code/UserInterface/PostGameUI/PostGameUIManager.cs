@@ -1,9 +1,7 @@
 using System;
-using System.Linq;
 using Code.UserInterface.LobbyUI;
 using UnityEngine;
 using System.Collections.Generic;
-using Unity.Services.Multiplayer;
 using Code.Networking.Session;
 using TMPro;
 using Unity.Netcode;
@@ -68,17 +66,18 @@ namespace Code.UserInterface.PostGameUI
 
         private void PopulatePlayers()
         {
-            for (int i = 0; i < _sessionManager.ActiveSession.PlayerCount; i++)
+            for (int i = 0; i < _sessionManager.PlayerCount; i++)
             {
                 var playerStatusData = WinnersData.playerStatusDataStack.Pop();
-                
-                var playerId = _sessionManager.PlayerIdToClientId.FirstOrDefault(p => p.Value == playerStatusData.ClientId).Key;
-                var player = _sessionManager.ActiveSession.Players.FirstOrDefault(p => p.Id == playerId);
-                
-                if (player == null) return;
 
-                var playerName = _sessionManager.playerInfo.GetPropertyValue(player, _sessionManager.PlayerNameKey);
-                var playerColor = _sessionManager.playerInfo.GetColor(player);
+                if (!_sessionManager.TryGetPlayerByClientId(playerStatusData.ClientId, out var player))
+                {
+                    Debug.LogWarning($"Could not find session player for clientId: {playerStatusData.ClientId}");
+                    return;
+                }
+
+                var playerName = _sessionManager.GetPlayerName(player);
+                var playerColor = _sessionManager.GetPlayerColor(player);
                 
                 playerSlots[i].SetSlot(playerName, playerColor);
                 
@@ -92,7 +91,7 @@ namespace Code.UserInterface.PostGameUI
                     if (_cachedPlayerStatusData.Lives == playerStatusData.Lives 
                         && Mathf.Approximately(_cachedPlayerStatusData.AccumulatedDmg, playerStatusData.AccumulatedDmg))
                     {
-                        if (_sessionManager.ActiveSession.PlayerCount == 2 || i == 1)
+                        if (_sessionManager.PlayerCount == 2 || i == 1)
                             winnerTitle.text = "Empate";
 
                         playersPositionsText[i].text = i.ToString();
@@ -130,31 +129,29 @@ namespace Code.UserInterface.PostGameUI
 
         private void RestartListChanged(NetworkListEvent<ulong> listEvent)
         {
-            Debug.Log($"_playersReadyToRestart.Count {_playersReadyToRestart.Count} , _numberOfPlayers {_numberOfPlayers}, _sessionManager.ActiveSession.PlayerCount {_sessionManager.ActiveSession.PlayerCount}");
+            Debug.Log($"_playersReadyToRestart.Count {_playersReadyToRestart.Count} , _numberOfPlayers {_numberOfPlayers}, _sessionManager.PlayerCount {_sessionManager.PlayerCount}");
             if (_playersReadyToRestart.Count < _numberOfPlayers) return;
-            if (_sessionManager.ActiveSession.PlayerCount < 2) return;
+            if (_sessionManager.PlayerCount < 2) return;
             NetworkManager.Singleton.SceneManager.LoadScene("MultiplayerTest", LoadSceneMode.Single);
         }
 
         private void ReturnListChanged(NetworkListEvent<ulong> listEvent)
         {
-            Debug.Log($"_playersReadyToRestart.Count {_playersReadyToRestart.Count} , _numberOfPlayers {_numberOfPlayers}, _sessionManager.ActiveSession.PlayerCount {_sessionManager.ActiveSession.PlayerCount}");
+            Debug.Log($"_playersReadyToRestart.Count {_playersReadyToRestart.Count} , _numberOfPlayers {_numberOfPlayers}, _sessionManager.PlayerCount {_sessionManager.PlayerCount}");
             if (_playersReadyToRestart.Count < _numberOfPlayers) return;
-            if (_sessionManager.ActiveSession.PlayerCount < 2) return;
+            if (_sessionManager.PlayerCount < 2) return;
             ResetCharacterProperty();
             ResetCharacterPropertyRpc();
         }
 
         private void Update()
         {
-            if (_sessionManager.ActiveSession == null) return;
+            if (!_sessionManager.HasActiveSession) return;
             if (!IsServer) return;
 
-            foreach (var player in _sessionManager.ActiveSession.Players)
-            {
-                if (!player.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var charProp)) return;
-                if (charProp.Value != String.Empty) return;
-            }
+            if (!_sessionManager.HaveAllPlayersClearedCharacterSelection())
+                return;
+
             NetworkManager.Singleton.SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
         }
 
@@ -168,10 +165,10 @@ namespace Code.UserInterface.PostGameUI
         {
             try
             {
-                _sessionManager.ActiveSession.CurrentPlayer.SetProperty(_sessionManager.PlayerCharacterKey,
-                    new PlayerProperty(String.Empty, VisibilityPropertyOptions.Member));
+                bool success = await _sessionManager.TryClearCurrentPlayerCharacterAsync();
 
-                await _sessionManager.ActiveSession.SaveCurrentPlayerDataAsync();
+                if (!success)
+                    throw new Exception("Could not clear current player character.");
             }
             catch (Exception e)
             {
@@ -179,7 +176,8 @@ namespace Code.UserInterface.PostGameUI
                 Debug.LogException(e);
 #endif
                 returnToLobbyButton.interactable = true;
-                statusText.text = String.Empty;
+                statusText.text = string.Empty;
+
                 if (IsServer) _playersReadyToReturn.Remove(NetworkManager.LocalClientId);
                 if (IsClient && !IsHost) SendDeleteReadyToReturnRpc();
                 
@@ -202,9 +200,12 @@ namespace Code.UserInterface.PostGameUI
         [Rpc(SendTo.Server)]
         private void SendPlayerLeavingRpc(FixedString32Bytes playerId, RpcParams rpcParams = default)
         {
-            Debug.Log(playerId.ToString());
+            string playerIdString = playerId.ToString();
+            Debug.Log(playerIdString);
+
             var clientId = rpcParams.Receive.SenderClientId;
-            _sessionManager.PlayerIdToClientId.Remove(playerId.ToString());
+
+            _sessionManager.RemovePlayerClientId(playerIdString);
             _playersReadyToRestart.Remove(clientId);
             _playersReadyToReturn.Remove(clientId);
         }
@@ -219,13 +220,17 @@ namespace Code.UserInterface.PostGameUI
         private void PerformReturnToMenu()
         {
             ReturnToMenu();
-            if (!_sessionManager.ActiveSession.IsHost) return;
+            if (!_sessionManager.IsLocalPlayerSessionHost) return;
             ReturnToMenuRpc();
         }
 
         private void ReturnToMenu()
         {
-            SendPlayerLeavingRpc(_sessionManager.ActiveSession.CurrentPlayer.Id);
+            if (_sessionManager.TryGetCurrentPlayerId(out string playerId))
+            {
+                SendPlayerLeavingRpc(playerId);
+            }
+
             SessionManager.Instance.LeaveSession();
             UIUtilities.Instance.LoadScene("MainMenu");
         }

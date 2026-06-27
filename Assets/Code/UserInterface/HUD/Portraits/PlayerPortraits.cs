@@ -40,7 +40,7 @@ namespace Code.UserInterface.HUD
 
         private void SetPlayerCount(string sceneName, UnityEngine.SceneManagement.LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
         {
-            _playerCount = SessionManager.Instance.ActiveSession.Players.Count;
+            _playerCount = SessionManager.Instance.GetPlayers().Count;
             _playersLoaded = true;
         }
 

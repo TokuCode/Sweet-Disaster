@@ -10,6 +10,7 @@ using Code.Helpers.UI;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Linq;
 
 namespace Code.Networking.Session
 {
@@ -24,7 +25,26 @@ namespace Code.Networking.Session
             get => _activeSession;
             set
             {
+                if (_activeSession != null)
+                {
+                    _activeSession.Changed -= OnSessionChanged;
+                    _activeSession.PlayerHasLeft -= OnPlayerHasLeft;
+
+                    _activeSession.PlayerPropertiesChanged -= OnPlayerPropertiesChanged;
+                    _activeSession.PlayerLeaving -= OnPlayerLeaving;
+                }
+
                 _activeSession = value;
+
+                if (_activeSession != null)
+                {
+                    _activeSession.Changed += OnSessionChanged;
+                    _activeSession.PlayerHasLeft += OnPlayerHasLeft;
+
+                    _activeSession.PlayerPropertiesChanged += OnPlayerPropertiesChanged;
+                    _activeSession.PlayerLeaving += OnPlayerLeaving;
+                }
+
 #if UNITY_EDITOR
                 Debug.Log($"Active session: {_activeSession}");
 #endif
@@ -167,6 +187,274 @@ namespace Code.Networking.Session
                 { PlayerColorKey, new PlayerProperty(playerInfo.GetAvailableColorName(), VisibilityPropertyOptions.Member) },
                 { PlayerCharacterKey, new PlayerProperty(String.Empty, VisibilityPropertyOptions.Member) },
             };
+        }
+        
+        // Wrapper methods to hide online logic from other scripts
+        
+        public IReadOnlyList<IReadOnlyPlayer> GetPlayers()
+        {
+            if (ActiveSession == null)
+                return Array.Empty<IReadOnlyPlayer>();
+            return ActiveSession.Players;
+        }
+
+        public int PlayerCount => ActiveSession?.PlayerCount ?? 0;
+
+        public bool IsLocalPlayerSessionHost => ActiveSession != null && ActiveSession.IsHost;
+
+        public IReadOnlyPlayer GetPlayer(string playerId)
+        {
+            return ActiveSession.Players.FirstOrDefault(p => p.Id == playerId);
+        }
+        
+        // Player info helper methods wrapped here?
+        
+        public string GetPlayerName(IReadOnlyPlayer player)
+        {
+            return playerInfo.GetPropertyValue(player, PlayerNameKey);
+        }
+
+        public Color GetPlayerColor(IReadOnlyPlayer player)
+        {
+            return playerInfo.GetColor(player);
+        }
+
+        public string GetPlayerCharacter(IReadOnlyPlayer player)
+        {
+            return playerInfo.GetPropertyValue(player, PlayerCharacterKey);
+        }
+        
+        // Events
+        
+        public event Action SessionChanged;
+        
+        private void RegisterSessionCallbacks()
+        {
+            if (ActiveSession == null)
+                return;
+
+            ActiveSession.Changed += OnSessionChanged;
+            ActiveSession.PlayerHasLeft += OnPlayerHasLeft;
+            ActiveSession.PlayerLeaving += OnPlayerLeaving;
+            ActiveSession.PlayerPropertiesChanged += OnPlayerPropertiesChanged;
+        }
+
+        private void OnSessionChanged()
+        {
+            SessionChanged?.Invoke();
+        }
+        
+        public event Action<string> PlayerLeft;
+        
+        private void OnPlayerHasLeft(string playerId)
+        {
+            PlayerLeft?.Invoke(playerId);
+        }
+
+        private void OnDisable()
+        {
+            if (ActiveSession != null)
+            {
+                ActiveSession.Changed -= OnSessionChanged;
+                ActiveSession.PlayerHasLeft -= OnPlayerHasLeft;
+            }
+        }
+        
+        public string HostPlayerId
+        {
+            get
+            {
+                if (ActiveSession == null)
+                    return string.Empty;
+
+                return ActiveSession.Host;
+            }
+        }
+
+        public bool IsHostPlayer(string playerId)
+        {
+            if (string.IsNullOrEmpty(playerId))
+                return false;
+
+            return playerId == HostPlayerId;
+        }
+        
+        public bool TryGetPlayerByClientId(ulong clientId, out IReadOnlyPlayer player)
+        {
+            player = null;
+
+            if (ActiveSession == null)
+                return false;
+
+            foreach (var sessionPlayer in ActiveSession.Players)
+            {
+                if (!PlayerIdToClientId.TryGetValue(sessionPlayer.Id, out ulong mappedClientId))
+                    continue;
+
+                if (mappedClientId != clientId)
+                    continue;
+
+                player = sessionPlayer;
+                return true;
+            }
+
+            return false;
+        }
+        
+        public bool HasActiveSession => ActiveSession != null;
+
+        public bool TryGetSessionProperty(string key, out string value)
+        {
+            value = string.Empty;
+
+            if (ActiveSession == null)
+                return false;
+
+            if (!ActiveSession.Properties.TryGetValue(key, out SessionProperty property))
+                return false;
+
+            value = property.Value;
+            return true;
+        }
+        
+        public bool TryGetCurrentPlayerId(out string playerId)
+        {
+            playerId = string.Empty;
+
+            if (ActiveSession?.CurrentPlayer == null)
+                return false;
+
+            playerId = ActiveSession.CurrentPlayer.Id;
+            return !string.IsNullOrEmpty(playerId);
+        }
+
+        public bool TryRegisterPlayerClientId(string playerId, ulong clientId)
+        {
+            if (string.IsNullOrEmpty(playerId))
+                return false;
+
+            if (playerIdToClientId.TryGetValue(playerId, out ulong existingClientId))
+            {
+                if (existingClientId == clientId)
+                    return false;
+
+                playerIdToClientId[playerId] = clientId;
+                return true;
+            }
+
+            playerIdToClientId.Add(playerId, clientId);
+            return true;
+        }
+
+        public bool TryGetClientIdFromPlayerId(string playerId, out ulong clientId)
+        {
+            return playerIdToClientId.TryGetValue(playerId, out clientId);
+        }
+
+        public void RemovePlayerClientId(string playerId)
+        {
+            if (string.IsNullOrEmpty(playerId))
+                return;
+
+            playerIdToClientId.Remove(playerId);
+        }
+        
+        public string JoinDisplayCode
+        {
+            get
+            {
+                if (ActiveSession == null)
+                    return string.Empty;
+
+                return ActiveSession.Code;
+            }
+        }
+        
+        public event Action PlayerPropertiesChanged;
+        public event Action<string> PlayerLeaving;
+        
+        private void OnPlayerPropertiesChanged()
+        {
+            this.PlayerPropertiesChanged?.Invoke();
+        }
+
+        private void OnPlayerLeaving(string playerId)
+        {
+            this.PlayerLeaving?.Invoke(playerId);
+        }
+        
+        public bool IsCurrentPlayer(string playerId)
+        {
+            if (string.IsNullOrEmpty(playerId))
+                return false;
+
+            if (!TryGetCurrentPlayerId(out string currentPlayerId))
+                return false;
+
+            return playerId == currentPlayerId;
+        }
+        
+        public bool IsCharacterTaken(string characterName)
+        {
+            if (string.IsNullOrEmpty(characterName))
+                return false;
+
+            if (ActiveSession == null)
+                return false;
+
+            return ActiveSession.Players.Any(player =>
+                player.Properties.TryGetValue(PlayerCharacterKey, out var prop) &&
+                prop.Value == characterName);
+        }
+        
+        public async Task<bool> TrySelectCurrentPlayerCharacterAsync(string characterName)
+        {
+            if (string.IsNullOrEmpty(characterName))
+                return false;
+
+            if (ActiveSession?.CurrentPlayer == null)
+                return false;
+
+            if (IsCharacterTaken(characterName))
+                return false;
+
+            ActiveSession.CurrentPlayer.SetProperty(
+                PlayerCharacterKey,
+                new PlayerProperty(characterName, VisibilityPropertyOptions.Member));
+
+            await ActiveSession.SaveCurrentPlayerDataAsync();
+
+            return true;
+        }
+        
+        public bool HaveAllPlayersClearedCharacterSelection()
+        {
+            if (ActiveSession == null)
+                return false;
+
+            foreach (var player in ActiveSession.Players)
+            {
+                if (!player.Properties.TryGetValue(PlayerCharacterKey, out var charProp))
+                    return false;
+
+                if (!string.IsNullOrEmpty(charProp.Value))
+                    return false;
+            }
+
+            return true;
+        }
+
+        public async Task<bool> TryClearCurrentPlayerCharacterAsync()
+        {
+            if (ActiveSession?.CurrentPlayer == null)
+                return false;
+
+            ActiveSession.CurrentPlayer.SetProperty(
+                PlayerCharacterKey,
+                new PlayerProperty(string.Empty, VisibilityPropertyOptions.Member));
+
+            await ActiveSession.SaveCurrentPlayerDataAsync();
+            return true;
         }
     }
 }

@@ -47,13 +47,13 @@ namespace Code.Networking.PlayerSpawn
         private void SpawnAllPlayers(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
         {
             if (!IsServer) return;
-            if (_sessionManager == null || _sessionManager.ActiveSession == null)
+            if (_sessionManager == null || !_sessionManager.HasActiveSession)
             {
                 Debug.LogError("SessionManager or ActiveSession is missing!");
                 return;
             }
 
-            foreach (var sessionPlayer in _sessionManager.ActiveSession.Players)
+            foreach (var sessionPlayer in _sessionManager.GetPlayers())
             {
                 SpawnPlayer(sessionPlayer);
             }
