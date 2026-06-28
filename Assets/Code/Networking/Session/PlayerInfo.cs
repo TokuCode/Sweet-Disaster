@@ -7,9 +7,11 @@ namespace Code.Networking.Session
 {
     public class PlayerInfo : MonoBehaviour
     {
+        public string playerDisplayName;
+        
         private readonly Dictionary<string, Color> _playerColors = new()
         {
-            { "blue", Color.blue },
+            { "blue", Color.orange },
             { "red", Color.red },
             { "yellow", Color.yellow },
             { "green", Color.green }
@@ -29,9 +31,6 @@ namespace Code.Networking.Session
 
             Color color = _playerColors.TryGetValue(colorName, out var colorProp) ? colorProp : Color.gray;
             
-            if (color == Color.gray)
-                Debug.LogWarning("Color couldn't be found, using default color");
-            
             return color;
         }
 
@@ -39,9 +38,6 @@ namespace Code.Networking.Session
         {
             string propertyValue = player.Properties.TryGetValue(propertyKey, out var prop) ?
                 prop.Value : String.Empty;
-
-            if (propertyValue == String.Empty)
-                Debug.LogWarning($"Value not found in property {propertyKey}");
             
             return propertyValue;
         }
@@ -50,9 +46,9 @@ namespace Code.Networking.Session
         {
             var takenColors = new HashSet<string>();
 
-            if (SessionManager.Instance.ActiveSession != null)
+            if (SessionManager.Instance.HasActiveSession)
             {
-                foreach (var player in SessionManager.Instance.ActiveSession.Players)
+                foreach (var player in SessionManager.Instance.GetPlayers())
                     takenColors.Add(GetPropertyValue(player, SessionManager.Instance.PlayerColorKey));
             }
             foreach (var colorName in _playerColors.Keys)
@@ -67,9 +63,9 @@ namespace Code.Networking.Session
         {
             var takenNames = new HashSet<string>();
 
-            if (SessionManager.Instance.ActiveSession != null)
+            if (SessionManager.Instance.HasActiveSession)
             {
-                foreach (var player in SessionManager.Instance.ActiveSession.Players)
+                foreach (var player in SessionManager.Instance.GetPlayers())
                     takenNames.Add(GetPropertyValue(player, SessionManager.Instance.PlayerNameKey));
             }
             
@@ -84,6 +80,18 @@ namespace Code.Networking.Session
             while (takenNames.Contains(candidate));
 
             return candidate;
+        }
+        
+        public Color GetColorFromName(string colorName)
+        {
+            return _playerColors.TryGetValue(colorName, out var color)
+                ? color
+                : Color.gray;
+        }
+        
+        public IEnumerable<string> GetColorNames()
+        {
+            return _playerColors.Keys;
         }
     }
 }

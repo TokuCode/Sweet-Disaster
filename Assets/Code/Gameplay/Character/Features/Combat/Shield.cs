@@ -1,7 +1,9 @@
 ﻿using Code.Gameplay.Character.Framework;
 using Code.Gameplay.Objects;
+using Code.Gameplay.Tutorial;
 using Code.Helpers.Pipeline;
 using Code.Networking.ClientPrediction;
+using Code.Networking.Session;
 using Code.Systems.Attack;
 using Code.Systems.Input;
 using Code.Systems.NetworkObjectPool;
@@ -244,7 +246,7 @@ namespace Code.Gameplay.Character.Features
                 Success = true,
                 SenderId = playerNumber,
                 ReceiverId = playerNumber,
-                Unblockeable = true
+                Unblockeable = false
             });
 
             _isOnCooldown.Value = true;
@@ -270,6 +272,12 @@ namespace Code.Gameplay.Character.Features
 
             _isOnCooldown.Value = true;
             TryDeactivateShield();
+
+            if (SessionManager.Instance.IsPracticeMode)
+            {
+                if (TutorialActions.Instance.currentIndex == 14 && TutorialActions.Instance.waitForTrigger)
+                    TutorialActions.Instance.PlayerHasDoneAShieldBash = true;
+            }
         }
 
         [ServerRpc]
@@ -297,12 +305,14 @@ namespace Code.Gameplay.Character.Features
             bool blocked = angle <= _shieldAngle;
             @event.Success = !blocked;
 
-            if (blocked) HeatShield(@event.DamagePercentage);
-            
             _invoker.PlayerNumber.Request(out int clientId);
             bool selfAttack = @event.SenderId == clientId;
-            
-            if(blocked && !selfAttack) bomb.AccelerateReload(GunBelt.Weapon.Shield);
+
+            if (blocked && !selfAttack)
+            {
+                bomb.AccelerateReload(GunBelt.Weapon.Shield);
+                HeatShield(@event.DamagePercentage);
+            }
         }
 
         public void HeatShield(float damage)
@@ -313,6 +323,7 @@ namespace Code.Gameplay.Character.Features
         private void HeatShieldAction(float damagePercentage)
         {
             if(!IsOwner) return;
+            
             _shieldTemperature.Value = Mathf.Min(_shieldTemperature.Value + _heatPerDamagePercentage * damagePercentage * 100, _maxShieldTemperature);
             if (_shieldTemperature.Value >= _maxShieldTemperature && !_isOnCooldown.Value) SelfShieldExplosion();
         }

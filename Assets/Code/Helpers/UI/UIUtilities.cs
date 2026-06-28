@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using DG.Tweening;
 using System.Collections;
@@ -5,6 +6,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
 using Code.Helpers.Singleton;
+using UnityEditor;
 
 namespace Code.Helpers.UI
 {
@@ -22,6 +24,10 @@ namespace Code.Helpers.UI
         
         [Header("Transition panel")]
         [SerializeField] private CanvasGroup transitionPanel;
+
+        [Header("Gear")] 
+        [SerializeField] private GameObject bigGear;
+        [SerializeField] private GameObject smallGear;
         
         // Public members
         public float TransitionDuration => transitionDuration;
@@ -94,7 +100,29 @@ namespace Code.Helpers.UI
             rectTransform.anchoredPosition = initialPos;
             rectTransform.gameObject.SetActive(false);
         }
-        
-        public void Quit() => Application.Quit();
+
+        private void Update()
+        {
+            if (bigGear.activeInHierarchy)
+            {
+                bigGear.transform.localEulerAngles = new Vector3(bigGear.transform.localEulerAngles.x, bigGear.transform.localEulerAngles.y, 
+                    bigGear.transform.localEulerAngles.z - 10 * Time.deltaTime);
+            }
+
+            if (smallGear.activeInHierarchy)
+            {
+                smallGear.transform.localEulerAngles = new Vector3(smallGear.transform.localEulerAngles.x, smallGear.transform.localEulerAngles.y, 
+                    smallGear.transform.localEulerAngles.z + 10 * Time.deltaTime);
+            }
+        }
+
+        public void Quit()
+        {
+#if UNITY_EDITOR
+            EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
     }
 }

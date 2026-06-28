@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Runtime.Remoting.Messaging;
+using Code.Audio.Character;
 using Code.Gameplay.Character.Framework;
 using Code.Gameplay.Objects;
+using Code.Gameplay.Tutorial;
 using Code.Helpers;
 using Code.Helpers.Utils;
 using Code.Networking.ClientPrediction;
+using Code.Networking.Session;
 using Code.Systems.Attack;
 using Code.Systems.Input;
 using Code.Systems.NetworkObjectPool;
@@ -61,6 +64,9 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private float _onMeleeHitAccelerateTime;
         [SerializeField] private float _onWillToLiveHitAccelerateTime;
         [SerializeField] private float _onActiveReloadHitAccelerateTime;
+
+        [Header("Animation")]
+        [SerializeField] private Animator armAnimator;
 
         public void OnShootPressed() => StartThrowing();
         public void OnShootReleased() => EndThrowing();
@@ -201,7 +207,8 @@ namespace Code.Gameplay.Character.Features
         {
             var direction = InputReader.Instance.HandleDirection;
             _invoker.GunTipPosition.Request(out var position);
-            var throwForce = direction.normalized * Mathf.Lerp(_throwMinForce, _throwMaxForce, Mathf.Clamp01(_throwChargeTimer / _throwChargeTimeSeconds));
+            _invoker.Velocity.Request(out var velocity);
+            var throwForce = direction.normalized * Mathf.Lerp(_throwMinForce, _throwMaxForce, Mathf.Clamp01(_throwChargeTimer / _throwChargeTimeSeconds)) + (Vector3)velocity;
             
             ThrowAction(position, direction, throwForce, out int id);
             _invoker.PlayerNumber.Request(out int clientId);
@@ -210,6 +217,15 @@ namespace Code.Gameplay.Character.Features
         
         private void ThrowAction(Vector3 position, Vector3 direction, Vector3 throwForce, out int bombId)
         {
+            if (SessionManager.Instance.IsPracticeMode)
+            {
+                if (TutorialActions.Instance.currentIndex == 9 && TutorialActions.Instance.waitForTrigger)
+                    TutorialActions.Instance.PlayerHasShotABomb = true;
+            }
+            
+            armAnimator.Play("HornoAnim");
+            gameObject.GetComponent<CharacterAudioHandler>().NetworkPlay("Bomb");
+            
             var rotation = DirectionToRotation.GetRotation(direction);
             
             _bombNo = NonNetworkObjectPool.Singleton.GetNetworkObject(_bombPrefab, position, rotation, out bombId);

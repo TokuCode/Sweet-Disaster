@@ -1,5 +1,6 @@
 ﻿using Code.Gameplay.Character;
 using Code.Gameplay.Character.Features;
+using Code.Gameplay;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,6 +16,9 @@ namespace Code.UserInterface.HUD
         [SerializeField] private Image[] _borders;
         [SerializeField] private TextMeshProUGUI _playerName;
         [SerializeField] private Image _playerImage;
+        
+        [SerializeField] private Image frame;
+        [SerializeField] private Image nameTag;
         
         [Header("Main Portrait Overlay Elements")]
         [SerializeField] private Image _stunIcon;
@@ -56,6 +60,9 @@ namespace Code.UserInterface.HUD
             }
             _playerName.text = _playerInfo.playerName;
             _playerImage.sprite = _playerInfo.playerIcon;
+
+            frame.sprite = _playerInfo.scriptable.portraitFrame;
+            nameTag.sprite = _playerInfo.scriptable.portraitNameTag;
         }
 
         private void UpdatePortraitOverlay()

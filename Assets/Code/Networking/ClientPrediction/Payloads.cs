@@ -5,6 +5,7 @@ using Unity.Collections;
 
 namespace Code.Networking.ClientPrediction
 {
+    [Serializable]
     public struct StatePayload : INetworkSerializable
     {
         public int tick;
@@ -24,6 +25,7 @@ namespace Code.Networking.ClientPrediction
         }
     }
 
+    [Serializable]
     public struct InputPayload : INetworkSerializable
     {
         public int tick;

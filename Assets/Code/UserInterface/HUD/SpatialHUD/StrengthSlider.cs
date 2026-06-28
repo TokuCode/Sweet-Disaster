@@ -8,6 +8,7 @@ namespace Code.UserInterface.HUD
     {
         [Header("UI Elements")]
         [SerializeField] private Image _strength;
+        [SerializeField] private Image background;
 
         protected override void Update()
         {
@@ -24,9 +25,11 @@ namespace Code.UserInterface.HUD
             if (!bomb.IsThrowing)
             {
                 _strength.fillAmount = 0;
+                background.gameObject.SetActive(false);
                 return;
             }
             
+            background.gameObject.SetActive(true);
             float ratio = bomb.ThrowChargeTimer / bomb.ThrowChargeTimeSeconds;
             _strength.fillAmount = Mathf.Clamp01(ratio);
         }

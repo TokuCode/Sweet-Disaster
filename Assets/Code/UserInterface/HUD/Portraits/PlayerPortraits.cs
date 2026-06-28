@@ -13,9 +13,11 @@ namespace Code.UserInterface.HUD
         private bool _playersLoaded;
         private bool _portraitsLoaded;
         [SerializeField] private GameObject _portraitPrefab;
+        [SerializeField] private GameObject _playerPositionPrefab;
         
         [Header("UI Elements")]
         [SerializeField] private Transform _portraitContainer;
+        [SerializeField] private Transform _playerPositionContainer;
 
         public override void OnNetworkSpawn()
         {
@@ -29,34 +31,55 @@ namespace Code.UserInterface.HUD
 
         private void Update()
         {
+            Debug.Log(
+                $"[PlayerPortraits] Visibility: {PlayerVisibility.Instance.Players.Count}, " +
+                $"Expected: {_playerCount}, " +
+                $"PlayersLoaded: {_playersLoaded}, " +
+                $"PortraitsLoaded: {_portraitsLoaded}"
+            );
+
             if (PlayerVisibility.Instance.Players.Count == _playerCount && _playersLoaded && !_portraitsLoaded)
             {
-                SpawnPortraits();
+                SpawnPlayerElements();
                 _portraitsLoaded = true;
             }
         }
 
-        private void SetPlayerCount(string sceneName, UnityEngine.SceneManagement.LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
+        private void SetPlayerCount(
+            string sceneName,
+            UnityEngine.SceneManagement.LoadSceneMode loadSceneMode,
+            List<ulong> clientsCompleted,
+            List<ulong> clientsTimedOut)
         {
-            _playerCount = SessionManager.Instance.ActiveSession.Players.Count;
+            _playerCount = SessionManager.Instance.PlayerCount;
             _playersLoaded = true;
+
+            Debug.Log($"[PlayerPortraits] Player count set to {_playerCount}. Visibility count: {PlayerVisibility.Instance.Players.Count}");
         }
 
-        public void SpawnPortraits()
+        private void SpawnPlayerElements()
         {
             var players = new List<PlayerPublicInfo>(PlayerVisibility.Instance.Players);
             MergeSortUtil<PlayerPublicInfo>.MergeSort(players);
             foreach (var player in players)
             {
                 SpawnPortrait(player);
+                SpawnPositionIndicator(player);
             }
         }
 
-        public void SpawnPortrait(PlayerPublicInfo playerInfo)
+        private void SpawnPortrait(PlayerPublicInfo playerInfo)
         {
             var spawned = Instantiate(_portraitPrefab, _portraitContainer);
             var portrait = spawned.GetComponent<PlayerPortrait>();
             portrait.CachePlayerInfo(playerInfo);
+        }
+
+        private void SpawnPositionIndicator(PlayerPublicInfo playerInfo)
+        {
+            var spawned = Instantiate(_playerPositionPrefab, _playerPositionContainer);
+            var indicator = spawned.GetComponent<PlayerPositionIndicator>();
+            indicator.CachePlayerInfo(playerInfo);
         }
     }
 }

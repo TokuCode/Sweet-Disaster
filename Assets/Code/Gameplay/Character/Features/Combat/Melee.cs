@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Code.Audio.Character;
 using Code.Gameplay.Character.Framework;
 using Code.Gameplay.Objects;
 using Code.Helpers;
@@ -61,7 +62,7 @@ namespace Code.Gameplay.Character.Features
             _dependencies.TryGetFeature(out bomb);
             _dependencies.TryGetFeature(out crouch);
             _dependencies.TryGetFeature(out health);
-            if(IsOwner) InputReader.Instance.OnShieldBash += TryMelee;
+            if(IsOwner) InputReader.Instance.OnShootPressed += TryMelee;
             _cooldownTimer = new (_cooldown);
             _cooldownTimer.OnTimerStop += ResetMelee;
         }
@@ -102,6 +103,8 @@ namespace Code.Gameplay.Character.Features
 
         private void MeleeAction()
         {
+            gameObject.GetComponent<CharacterAudioHandler>().NetworkPlay("Shield");
+            
             _invoker.GunTipPosition.Request(out var position);
             _invoker.CenterPosition.Request(out var centerPosition);
             float radius = Mathf.Lerp(_minRadius, _maxRadius, shield.TemperatureProgress);

@@ -14,6 +14,7 @@ namespace Code.Gameplay.Character
         
         private CinemachineTargetGroup _cameraTargetGroup;
         [SerializeField] private List<Tracker> _targets = new ();
+        private Tracker _mimic;
         
         [Header("Base Tracker")]
         [SerializeField] private Transform _baseTargetTransform;
@@ -64,25 +65,11 @@ namespace Code.Gameplay.Character
                 tracker = playerTracker.transform,
                 target = target,
                 isPlayer = isPlayer,
-                enabled = true,
+                mimicPlayer = false,
                 internalOutOfBattle = false
             });
             
             _cameraTargetGroup.Targets.Add(target);
-        }
-
-        public void RemoveTarget(PlayerController player)
-        {
-            var tracker = _targets.Find(x => x.player == player);
-            if(_cameraTargetGroup.Targets.Contains(tracker.target)) _cameraTargetGroup.Targets.Remove(tracker.target);
-            tracker.enabled = false;
-        }
-
-        public void AddTarget(PlayerController player)
-        {
-            var tracker = _targets.Find(x => x.player == player);
-            if(!_cameraTargetGroup.Targets.Contains(tracker.target)) _cameraTargetGroup.Targets.Add(tracker.target);
-            tracker.enabled = true;
         }
 
         public void RemoveOfViewTarget(Tracker tracker)
@@ -95,6 +82,17 @@ namespace Code.Gameplay.Character
             
             if(_cameraTargetGroup.Targets.Contains(tracker.target)) _cameraTargetGroup.Targets.Remove(tracker.target);
             tracker.outOfView = true;
+
+            if (!tracker.isPlayer) return;
+            
+            var mimics = _targets.Where(t => !t.isPlayer).ToList();
+            if(!mimics.Any()) return;
+
+            _mimic = mimics.Shuffle().FirstOrDefault();
+            if (_mimic == null) return;
+            
+            _mimic.mimicPlayer = true;
+            AddToViewTarget(_mimic);
         }
 
         public void AddToViewTarget(Tracker tracker)
@@ -108,6 +106,11 @@ namespace Code.Gameplay.Character
             _cameraTargetGroup.Targets.Add(tracker.target);
             if(!_cameraTargetGroup.Targets.Contains(tracker.target)) _cameraTargetGroup.Targets.Add(tracker.target);
             tracker.outOfView = false;
+            
+            if(!tracker.isPlayer || !tracker.mimicPlayer || _mimic == null) return;
+            
+            _mimic.mimicPlayer = false;
+            _mimic = null;
         }
 
         private void Update()
@@ -132,7 +135,7 @@ namespace Code.Gameplay.Character
 
             bool inSceneView = CameraBox.Instance.Inside(playerPosition);
             bool inPlayerView = PlayerController.Singleton != null && PlayerController.Singleton.ViewBox.InsideBox(playerPosition);
-            bool isPlayer = tracker.isPlayer;
+            bool isPlayer = tracker.isPlayer || tracker.mimicPlayer;
             bool playerInBattle = !tracker.player.outOfBattle.Value && !tracker.player.defeated.Value && !tracker.internalOutOfBattle;
 
             if(!isPlayer && !tracker.outOfView && (!inSceneView || !inPlayerView || !playerInBattle))
@@ -183,7 +186,7 @@ namespace Code.Gameplay.Character
             
             foreach (var target in _targets)
             {
-                if(!target.enabled || target.outOfView) continue;
+                if(target.outOfView) continue;
                 
                 if(minX > target.tracker.position.x) minX = target.tracker.position.x;
                 if(minY > target.tracker.position.y) minY = target.tracker.position.y;
@@ -225,7 +228,7 @@ namespace Code.Gameplay.Character
         public CinemachineTargetGroup.Target target;
         public Transform tracker;
         public bool isPlayer;
-        public bool enabled;
+        public bool mimicPlayer;
         public bool outOfView;
         public bool internalOutOfBattle;
     }

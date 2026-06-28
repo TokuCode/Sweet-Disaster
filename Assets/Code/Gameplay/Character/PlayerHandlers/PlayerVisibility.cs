@@ -37,14 +37,31 @@ namespace Code.Gameplay.Character
         public PlayerPublicInfo PostPlayer(PlayerController player, bool isPlayer)
         {
             ulong clientId = (ulong)player.clientId;
-            var playerProps = SessionManager.Instance.ActiveSession.Players.First(playerProp => SessionManager.Instance.PlayerIdToClientId[playerProp.Id] == clientId);
             
-            string playerName = playerProps.Properties.TryGetValue(SessionManager.Instance.PlayerNameKey, out var playerNameProp) ? playerNameProp.Value : string.Empty;
-            string colorName = playerProps.Properties.TryGetValue(SessionManager.Instance.PlayerColorKey, out var playerColorProp) ? playerColorProp.Value : string.Empty;
-            string characterName = playerProps.Properties.TryGetValue(SessionManager.Instance.PlayerCharacterKey, out var characterProp) ? characterProp.Value : string.Empty;
+            if (!SessionManager.Instance.TryGetSessionPlayerByClientId(clientId, out var sessionPlayer))
+            {
+                Debug.LogWarning($"Could not find session player data for clientId: {clientId}");
+                //return null;
+            }
             
-            Color playerColor = _playerColors.TryGetValue(colorName, out var colorProp) ? colorProp : Color.white;
-            CharacterScriptable scriptable = _spawner.GetCharacter(characterName);
+            Debug.Log(
+                $"[PostPlayer] clientId: {clientId}, " +
+                $"name: {sessionPlayer.PlayerName}, " +
+                $"color: {sessionPlayer.PlayerColor}, " +
+                $"character: '{sessionPlayer.CharacterName}'"
+            );
+
+            string playerName = sessionPlayer.PlayerName;
+            Color playerColor = sessionPlayer.PlayerColor;
+            string characterName = sessionPlayer.CharacterName;
+            
+            CharacterScriptable scriptable = _spawner.GetCharacter(sessionPlayer.CharacterName);
+
+            Debug.Log(
+                $"[PostPlayer] scriptable: {(scriptable != null ? scriptable.characterName : "NULL")}, " +
+                $"icon: {(scriptable != null && scriptable.characterIcon != null ? scriptable.characterIcon.name : "NULL")}"
+            );
+            
             Sprite characterIcon = scriptable.characterIcon;
             
             var newPlayer = new PlayerPublicInfo

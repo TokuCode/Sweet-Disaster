@@ -2,6 +2,12 @@
 using Code.Helpers;
 using Code.Networking.ClientPrediction;
 using UnityEngine;
+using Code.Audio.Character;
+using Code.Gameplay.Tutorial;
+using Code.Networking.Session;
+using Code.Systems.NetworkObjectPool;
+using Code.Gameplay.Objects;
+using Unity.Netcode;
 
 namespace Code.Gameplay.Character.Features
 {
@@ -20,6 +26,10 @@ namespace Code.Gameplay.Character.Features
         [SerializeField] private float _lowJumpGravityMultiplier;
         [SerializeField] private float _maxFallSpeed;
         
+        [Header("VFX")]
+        [SerializeField] private GameObject _vfx;
+        [SerializeField] private Vector3 vfxPosition;
+        
         [Header("Runtime")]
         [SerializeField] private bool _onDeparture;
         public bool OnDeparture => _onDeparture;
@@ -27,17 +37,6 @@ namespace Code.Gameplay.Character.Features
         private bool _cachedJumpInput;
         private bool _cachedCrouchInput;
         private float _jumpCooldownTimer;
-
-        public float JumpImpulse
-        {
-            get => _jumpImpulse;
-            set => _jumpImpulse = value;
-        }
-        public float FallGravityMultiplier
-        {
-            get => _fallGravityMultiplier;
-            set => _fallGravityMultiplier = value;
-        }
 
         public override void ResetFeature()
         {
@@ -87,12 +86,35 @@ namespace Code.Gameplay.Character.Features
         
         private void JumpAction()
         {
+            if (SessionManager.Instance.IsPracticeMode)
+            {
+                if (TutorialActions.Instance.currentIndex == 2 && TutorialActions.Instance.waitForTrigger)
+                    TutorialActions.Instance.PlayerHasJumped = true;
+            }
+            
+            gameObject.GetComponent<CharacterAudioHandler>().NetworkPlay("Jump");
+            JumpVFX();
+            JumpVFXRpc();
+            
             float compensation = 0;
             if (_invoker.Velocity.Request(out var velocity).success)
             {
                 if(!check.OnSlope) compensation = -velocity.y;
             }
             _invoker.AddForce.Perform(new(Vector2.up, _jumpImpulse + compensation, ForceMode2D.Impulse));
+        }
+
+        private void JumpVFX()
+        {
+            var go = ObjectPoolManager.Instance.Get(_vfx, transform.localPosition + vfxPosition, Quaternion.identity);
+            go.SetActive(true);
+            go.GetComponentInChildren<AttackVFX>().InitNoRadius();
+        }
+
+        [Rpc(SendTo.NotMe)]
+        private void JumpVFXRpc()
+        {
+            JumpVFX();
         }
 
         private void VariableJumpGravity()

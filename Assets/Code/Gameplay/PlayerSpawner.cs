@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Code.Gameplay.Character;
 using Code.Networking.Session;
 using Unity.Netcode;
-using Unity.Services.Multiplayer;
 using Code.Gameplay.Character.Visuals;
 using Code.Networking;
 
@@ -19,6 +18,7 @@ namespace Code.Gameplay
 
         [Header("Spawn Points")]
         [SerializeField] private List<Transform> _spawnPoints;
+        [SerializeField] private Transform tutorialSpawnPoint;
 
         private List<int> _spawnPointIndexes = new();
         [SerializeField] private List<string> _tags;
@@ -44,22 +44,24 @@ namespace Code.Gameplay
         private void SpawnAllPlayers(string sceneName, UnityEngine.SceneManagement.LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
         {
             if (!IsServer) return;
-            if (_sessionManager == null || _sessionManager.ActiveSession == null)
+
+            if (_sessionManager == null || !_sessionManager.HasActiveSession)
             {
-                Debug.LogError("SessionManager or ActiveSession is missing!");
+                Debug.LogError("SessionManager or active session is missing!");
                 return;
             }
-            
-            if(_sessionManager.ActiveSession.Properties.TryGetValue(_sessionManager.MapPropertyKey, out SessionProperty mapProperty))
+
+            if (_sessionManager.TryGetSessionProperty(_sessionManager.MapPropertyKey, out string mapName))
             {
-                SelectMap(mapProperty.Value);
-                SetMapClientRpc(mapProperty.Value);
+                SelectMap(mapName);
+                SetMapClientRpc(mapName);
             }
 
-            for (int i = 0; i < _sessionManager.ActiveSession.Players.Count; i++)
+            var players = _sessionManager.GetSessionPlayers();
+
+            for (int i = 0; i < players.Count; i++)
             {
-                var  sessionPlayer = _sessionManager.ActiveSession.Players[i];
-                SpawnPlayer(sessionPlayer, i);
+                SpawnPlayer(players[i], i);
             }
         }
 
@@ -75,28 +77,21 @@ namespace Code.Gameplay
             }
         }
 		
-        private void SpawnPlayer(IReadOnlyPlayer sessionPlayer, int playerNumber)
+        private void SpawnPlayer(SessionPlayerData sessionPlayer, int playerNumber)
         {
-            // Map authentication ID to client ID
-            if (!SessionManager.Instance.PlayerIdToClientId.TryGetValue(sessionPlayer.Id, out ulong clientId))
-            {
-                Debug.LogError($"Client ID not found for authentication ID: {clientId}");
-                return;
-            }
+            ulong clientId = sessionPlayer.ClientId;
 
-            // Get the player's selected character
-            if (!sessionPlayer.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var characterProp))
-            {
-                Debug.LogError($"Character not selected for player: {sessionPlayer.Id}");
-                return;
-            }
+            string characterName = string.IsNullOrEmpty(sessionPlayer.CharacterName)
+                ? "Ceci"
+                : sessionPlayer.CharacterName;
 
-            string characterName = characterProp.Value;
+            Debug.Log($"Spawning LAN player: {sessionPlayer.PlayerName}, ClientId: {sessionPlayer.ClientId}, Character: '{sessionPlayer.CharacterName}'");
+            
             CharacterScriptable character = GetCharacter(characterName);
 
-            // Spawn the player
-            
             Transform spawnPoint = _spawnPoints[GetRandomIndexNotFromPrevious()];
+            if (_sessionManager.IsPracticeMode) spawnPoint = tutorialSpawnPoint;
+            
             GameObject playerObj = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
             
             playerObj.tag = _tags[_index % _tags.Count];

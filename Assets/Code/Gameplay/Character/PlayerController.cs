@@ -9,6 +9,7 @@ using Code.Networking.ClientPrediction;
 using Code.Systems.Input;
 using Code.Systems.NetworkObjectPool;
 using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 
 namespace Code.Gameplay.Character
@@ -50,22 +51,24 @@ namespace Code.Gameplay.Character
         private const int bufferSize = 1024;
         
         //Network client specific
-        private CircularBuffer<StatePayload> _clientStateBuffer;
-        private CircularBuffer<InputPayload> _clientInputBuffer;
-        private StatePayload _lastServerState;
-        private StatePayload _lastProcessedState;
+        [SerializeField] private CircularBuffer<StatePayload> _clientStateBuffer;
+        [SerializeField] private CircularBuffer<InputPayload> _clientInputBuffer;
+        [SerializeField] private StatePayload _lastServerState;
+        [SerializeField] private StatePayload _lastProcessedState;
         private ClientNetworkTransform _clientNetworkTransform;
+        private NetworkRigidbody2D _networkRigidbody2D;
+        private int _ticksToUseRigidbodyForMotion;
         
         //Network server specific
-        private CircularBuffer<StatePayload> _serverStateBuffer;
+        [SerializeField] private CircularBuffer<StatePayload> _serverStateBuffer;
         private Queue<InputPayload> _serverInputQueue;
 
         [Header("Netcode")] 
-        [SerializeField] private float _reconciliationCooldownTime = 1f;
-        [SerializeField] private float _reconciliationThreshold = 2.5f;
+        [SerializeField] private float _reconciliationCooldownTime = .1f;
+        [SerializeField] private float _reconciliationThreshold = .5f;
         [SerializeField] private float _extrapolationLimit = .5f;
         [SerializeField] private float _extrapolationMultiplier = 1.2f;
-        [SerializeField] private float _extrapolationMinLatency = .25f;
+        [SerializeField] private float _extrapolationMinLatency = .3f;
         private CountdownTimer _reconciliationTimer;
         private CountdownTimer _extrapolationTimer;
         StatePayload _extrapolationState;
@@ -76,6 +79,8 @@ namespace Code.Gameplay.Character
             collider = GetComponent<CapsuleCollider2D>();
             
             _clientNetworkTransform = GetComponent<ClientNetworkTransform>();
+            _networkRigidbody2D = GetComponent<NetworkRigidbody2D>();
+            //if (!IsOwner) _networkRigidbody2D.UseRigidBodyForMotion = false;
             
             Invoker = new PlayerCommandInvoker(this);
 
@@ -108,8 +113,8 @@ namespace Code.Gameplay.Character
         
         void SwitchAutorityMode(AuthorityType mode)
         {
-            _clientNetworkTransform.authority = mode;
             bool shouldSync = mode == AuthorityType.Client;
+            _clientNetworkTransform.AuthorityMode = shouldSync ? NetworkTransform.AuthorityModes.Owner : NetworkTransform.AuthorityModes.Server;
             _clientNetworkTransform.SyncPositionX = shouldSync;
             _clientNetworkTransform.SyncPositionY = shouldSync;
             _clientNetworkTransform.SyncScaleY = shouldSync;
@@ -220,11 +225,9 @@ namespace Code.Gameplay.Character
 
         private void ResetPlayer(Vector3 position, bool resetPosition)
         {
-            if (resetPosition)
+            if (resetPosition && IsOwner)
             {
-                transform.position = position;
-                rigidbody.position = position;
-                if(IsOwner) _clientNetworkTransform.Teleport(position, Quaternion.identity, Vector3.one);
+                _clientNetworkTransform.Teleport(position, Quaternion.identity, Vector3.one);
             }
             rigidbody.linearVelocity = Vector3.zero;
             rigidbody.constraints = RigidbodyConstraints2D.FreezeAll;
@@ -288,12 +291,18 @@ namespace Code.Gameplay.Character
             _networkTimer.Update(Time.deltaTime);
             _reconciliationTimer.Tick(Time.deltaTime);
             _extrapolationTimer.Tick(Time.deltaTime);
-            Extrapolate();
             
             if (Invoker.CenterPosition.Request(out Vector3 centerPosition).success && IsOwner)
                 InputReader.Instance.CachePlayerPosition(centerPosition);
             
             base.Update();
+
+            if (_ticksToUseRigidbodyForMotion > 0)
+            {
+                _ticksToUseRigidbodyForMotion--;
+                if (_ticksToUseRigidbodyForMotion == 0)
+                    _networkRigidbody2D.UseRigidBodyForMotion = true;
+            }
         }
 
         protected override void FixedUpdate()
@@ -323,14 +332,14 @@ namespace Code.Gameplay.Character
 
                 if (IsHost)
                 {
-                    statePayload = ProcessState(inputPayload);
+                    statePayload = ProcessState(inputPayload.tick);
                     _serverStateBuffer.Add(statePayload, bufferIndex);
                     SendStateToClientRpc(statePayload);
                     continue;
                 }
                 
                 InputPipeline.Process(ref inputPayload);
-                statePayload = ProcessState(inputPayload);
+                statePayload = ProcessState(inputPayload.tick);
                 _serverStateBuffer.Add(statePayload, bufferIndex);
             }
 
@@ -364,7 +373,7 @@ namespace Code.Gameplay.Character
             SendInputToServerRpc(inputPayload);
             
             InputPipeline.Process(ref inputPayload);
-            StatePayload statePayload = ProcessState(inputPayload);
+            StatePayload statePayload = ProcessState(inputPayload.tick);
             _clientStateBuffer.Add(statePayload, bufferIndex);
             HandleServerReconcilitation();
         }
@@ -378,15 +387,15 @@ namespace Code.Gameplay.Character
         [ClientRpc]
         void SendStateToClientRpc(StatePayload statePayload)
         {
-            if(!IsOwner) return;
+            //if(!IsOwner) return;
             _lastServerState = statePayload;
         }
 
-        StatePayload ProcessState(InputPayload input)
+        StatePayload ProcessState(int tick)
         {
             return new()
             {
-                tick = input.tick,
+                tick = tick,
                 networkObjectId = NetworkObjectId,
                 position = transform.position,
                 velocity = rigidbody.linearVelocity,
@@ -407,11 +416,12 @@ namespace Code.Gameplay.Character
             StatePayload rewindState = IsHost ? _serverStateBuffer.Get(bufferIndex - 1) : _lastServerState;
             StatePayload clientState = IsHost ? _clientStateBuffer.Get(bufferIndex - 1) : _clientStateBuffer.Get(bufferIndex);
             positionError = Vector3.Distance(rewindState.position, clientState.position);
-
-            if (positionError > _reconciliationThreshold)
+            
+            if (positionError > _reconciliationThreshold && !clientState.Equals(default))
             {
                 ReconcileState(rewindState);
                 _reconciliationTimer.Start();
+                Debug.Log("Reconciliation complete");
             }
             
             _lastProcessedState = rewindState;
@@ -428,24 +438,16 @@ namespace Code.Gameplay.Character
 
         void ReconcileState(StatePayload rewindState)
         {
+            _networkRigidbody2D.UseRigidBodyForMotion = false;
+            _ticksToUseRigidbodyForMotion = 3;
+            
             transform.position = rewindState.position;
+            _networkRigidbody2D.MovePosition(rewindState.position);
+            rigidbody.MovePosition(rewindState.position);
             rigidbody.linearVelocity = rewindState.velocity;
             transform.localScale = new Vector3(transform.localScale.x, rewindState.localYScale, transform.localScale.z);
-
-            if (rewindState.Equals(_lastServerState)) return;
             
-            _clientStateBuffer.Add(rewindState, rewindState.tick);
-            int tickToReplay = rewindState.tick;
-
-            while (tickToReplay < _networkTimer.CurrentTick)
-            {
-                int bufferIndex = tickToReplay % bufferSize;
-                InputPayload inputPayload = _clientInputBuffer.Get(bufferIndex);
-                InputPipeline.Process(ref inputPayload);
-                StatePayload statePayload = ProcessState(inputPayload);
-                _clientStateBuffer.Add(statePayload, bufferIndex);
-                tickToReplay++;
-            }
+            _clientStateBuffer.Add(rewindState, _lastServerState.tick % bufferSize);
         }
 
         static float CalculateLatencyMiliseconds(InputPayload inputPayload) => (DateTime.Now - inputPayload.timestamp).Milliseconds / 1000f; 
@@ -454,12 +456,14 @@ namespace Code.Gameplay.Character
         {
             if (IsServer && _extrapolationTimer.IsRunning)
             {
-                transform.position += _extrapolationState.position.With(y: 0);
+                transform.position += _extrapolationState.position.With(y: 0) * Time.fixedDeltaTime;
             }
         }
 
         void HandleExtrapolation(StatePayload latest, float latency)
         {
+            Debug.Log("Latency: " + latency);
+            
             if (ShouldExtrapolate(latency))
             {
                 if (_extrapolationState.position != default)
@@ -472,10 +476,12 @@ namespace Code.Gameplay.Character
                 _extrapolationState.velocity = latest.velocity;
                 _extrapolationState.localYScale = latest.localYScale;
                 _extrapolationTimer.Start();
+                Debug.Log("Starting extrapolation");
             }
             else
             {
                 _extrapolationTimer.Stop();
+                Debug.Log("Stop extrapolation");
             }
         }
 

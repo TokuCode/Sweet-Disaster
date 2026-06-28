@@ -1,5 +1,7 @@
 ﻿using Code.Gameplay.Character.Framework;
+using Code.Gameplay.Tutorial;
 using Code.Networking.ClientPrediction;
+using Code.Networking.Session;
 using UnityEngine;
 
 namespace Code.Gameplay.Character.Features
@@ -65,11 +67,11 @@ namespace Code.Gameplay.Character.Features
             {
                 CrouchAction();
             }
-            else if(_isCrouching && !crouchInput && !physics.HeadBlocked)
+            else if(_isCrouching && !crouchInput /*&& !physics.HeadBlocked*/)
             {
                 UncrouchAction();
             }
-            else if(_isCrouching && !canCrouch && !_startingCrouch && !physics.HeadBlocked)
+            else if(_isCrouching && !canCrouch && !_startingCrouch /*&& !physics.HeadBlocked*/)
             {
                 UncrouchAction();
             }
@@ -77,12 +79,18 @@ namespace Code.Gameplay.Character.Features
 
         private void CrouchAction()
         {
+            if (SessionManager.Instance.IsPracticeMode)
+            {
+                if (TutorialActions.Instance.currentIndex == 2 && TutorialActions.Instance.waitForTrigger)
+                    TutorialActions.Instance.PlayerHasCrouched = true;
+            }
+            
             if(!_invoker.LocalScale.Request(out Vector3 localScale).success) return;
 
             _startingCrouch = true;
             _isCrouching = true;
             
-            _invoker.LocalScale.Perform(new(localScale.x, _initialYScale * _crouchHeightMultiplier));
+            //_invoker.LocalScale.Perform(new(localScale.x, _initialYScale * _crouchHeightMultiplier));
             _invoker.Size.Perform(new(_initialXSize * _crouchHeightMultiplier, _initialYSize * _crouchHeightMultiplier));
         }
         
@@ -92,7 +100,7 @@ namespace Code.Gameplay.Character.Features
             
             _isCrouching = false;
             
-            _invoker.LocalScale.Perform(new(localScale.x, _initialYScale));
+            //_invoker.LocalScale.Perform(new(localScale.x, _initialYScale));
             _invoker.Size.Perform(new(_initialXSize, _initialYSize));
         }
 

@@ -5,6 +5,8 @@ using Code.Systems.Attack;
 using Code.Systems.NetworkObjectPool;
 using Unity.Netcode;
 using UnityEngine;
+using Code.Gameplay.Tutorial;
+using Code.Helpers.Utils;
 
 namespace Code.Gameplay.Objects
 {
@@ -21,6 +23,15 @@ namespace Code.Gameplay.Objects
         [SerializeField] private float _currentDamage;
         [SerializeField] private float _stunTime;
         private CountdownTimer _stunTimer;
+
+        [Header("Dummy shoot settings")] 
+        [SerializeField] private GameObject _bulletPrefab;
+        [SerializeField] private float timer;
+        [SerializeField] private float _timeBetweenShots;
+        [SerializeField] private Transform shootPos;
+        private bool startShooting;
+        [SerializeField] private float direction;
+        
         public float CurrentDamage => _currentDamage;
 
         private void Awake()
@@ -33,11 +44,34 @@ namespace Code.Gameplay.Objects
 
             _stunTimer = new(_stunTime);
             _stunTimer.OnTimerStop += ResetDummyParts;
+            timer = _timeBetweenShots;
         }
         
         private void Update()
         {
             _stunTimer.Tick(Time.deltaTime);
+
+            if (TutorialActions.Instance.currentIndex == 12 && TutorialActions.Instance.waitForTrigger)
+                startShooting = true;
+
+            if (!startShooting) return;
+            timer -= Time.deltaTime;
+            if (timer <= 0)
+            {
+                timer = _timeBetweenShots;
+                var rotation = DirectionToRotation.GetRotation(Vector3.right);
+                
+                var bulletNetworkObject = NonNetworkObjectPool.Singleton.GetNetworkObject(
+                    _bulletPrefab,
+                    new Vector3(shootPos.position.x * direction, shootPos.position.y, shootPos.position.z),
+                    rotation,
+                    out int bulletId
+                );
+
+                var bullet = bulletNetworkObject.gameObject.GetComponent<ObjectBullet>();
+
+                bullet.Initialize(Vector2.right * direction, gameObject.tag, 0, 1, 5);
+            }
         }
 
         public void Attack(AttackEvent attackEvent)
@@ -47,6 +81,9 @@ namespace Code.Gameplay.Objects
                 var direction = transform.position - attackEvent.SourcePosition;
                 Damage(attackEvent.DamagePercentage);
                 Knockback(direction.normalized, attackEvent.KnockbackForce, attackEvent.KnockbackUpForce);
+
+                if (TutorialActions.Instance.currentIndex == 7 && TutorialActions.Instance.waitForTrigger)
+                    TutorialActions.Instance.PlayerHasShotABot = true;
             }
         }
         

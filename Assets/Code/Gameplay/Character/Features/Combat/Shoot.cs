@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using Code.Audio.Character;
 using Code.Gameplay.Character.Framework;
 using Code.Gameplay.Objects;
 using Code.Helpers;
@@ -77,19 +78,11 @@ namespace Code.Gameplay.Character.Features
 
         [Header("Server Side")] 
         [SerializeField] private bool _reloadRequested;
+        
+        [Header("Animation")]
+        [SerializeField] private Animator armAnimator;
 
         public event Action OnActiveReload;
-        
-        public float MovementImprecisionPerSpeedUnit
-        {
-            get => _movementImprecisionPerSpeedUnit;
-            set => _movementImprecisionPerSpeedUnit = value;
-        }
-        public float AirImprecision
-        {
-            get => _airImprecision;
-            set => _airImprecision = value;
-        }
 
         public override void ResetFeature()
         {
@@ -159,6 +152,7 @@ namespace Code.Gameplay.Character.Features
 
         private IEnumerator ShootingSequence()
         {
+            armAnimator.Play("hueveraAnim");
             _isShooting = true;
             UpdateImprecision();
             
@@ -206,6 +200,8 @@ namespace Code.Gameplay.Character.Features
 
         private void FireAction(Vector3 position, Vector3 direction, out int bulletId, float damageMultiplier)
         {
+            gameObject.GetComponent<CharacterAudioHandler>().NetworkPlay("Egg");
+            
             var rotation = DirectionToRotation.GetRotation(direction);
             
             _bulletNetworkObject = NonNetworkObjectPool.Singleton.GetNetworkObject(_bulletPrefab, position, rotation, out bulletId);

@@ -1,9 +1,12 @@
 ﻿using System.Collections;
+using System.Linq;
 using Code.Gameplay.Character.Features;
 using Code.Gameplay.Character.Framework;
 using Code.Gameplay.Objects.ObjectBox;
 using Code.Networking.ClientPrediction;
+using Code.Networking.Session;
 using Unity.Netcode;
+using Unity.Services.Matchmaker.Models;
 using UnityEngine;
 
 namespace Code.Gameplay.Character
@@ -54,7 +57,8 @@ namespace Code.Gameplay.Character
             {
                 if(_respawning || _respawningProcess || _stocks.Value <= 0) return;
                 
-                _stocks.Value--;
+                if (!SessionManager.Instance.IsPracticeMode)
+                    _stocks.Value--;
 
                 if (_stocks.Value <= 0) ReportDefeat();
                 else ScheduleRespawn();
@@ -71,9 +75,9 @@ namespace Code.Gameplay.Character
             int stocks = _stocks.Value;
             float damage = _dependencies.TryGetFeature(out Health health) ? health.HealthAmount : Mathf.Infinity;
             
-            _invoker.PlayerNumber.Request(out var clientId);
+            //_invoker.PlayerNumber.Request(out var clientId);
             _invoker.Defeat.Perform(true);
-            LoseTracker.Instance.ReportPlayerLoss((ulong)clientId, stocks, damage);
+            LoseTracker.Instance.ReportPlayerLoss((ulong)gameObject.GetComponent<PlayerController>().clientId, stocks, damage);
         }
 
         private void ScheduleRespawn()

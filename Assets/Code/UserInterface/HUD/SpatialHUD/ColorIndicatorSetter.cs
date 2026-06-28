@@ -17,6 +17,7 @@ namespace Code.UserInterface.HUD
         private void OnPost(PlayerPublicInfo publicInfo)
         {
             colorIndicator.color = publicInfo.playerColor;
+            colorIndicator.sprite = publicInfo.scriptable.arrow;
         }
 
         private void Update()

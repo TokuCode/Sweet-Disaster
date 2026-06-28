@@ -2,7 +2,6 @@ using Unity.Netcode;
 using UnityEngine;
 using System.Collections.Generic;
 using Code.Networking.Session;
-using Unity.Services.Multiplayer;
 using UnityEngine.SceneManagement;
 
 namespace Code.Networking.PlayerSpawn
@@ -47,35 +46,29 @@ namespace Code.Networking.PlayerSpawn
         private void SpawnAllPlayers(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
         {
             if (!IsServer) return;
-            if (_sessionManager == null || _sessionManager.ActiveSession == null)
+            if (_sessionManager == null || !_sessionManager.HasActiveSession)
             {
                 Debug.LogError("SessionManager or ActiveSession is missing!");
                 return;
             }
 
-            foreach (var sessionPlayer in _sessionManager.ActiveSession.Players)
+            foreach (var sessionPlayer in _sessionManager.GetSessionPlayers())
             {
                 SpawnPlayer(sessionPlayer);
             }
         }
 		
-        private void SpawnPlayer(IReadOnlyPlayer sessionPlayer)
+        private void SpawnPlayer(SessionPlayerData sessionPlayer)
         {
-            // Map authentication ID to client ID
-            if (!SessionManager.Instance.PlayerIdToClientId.TryGetValue(sessionPlayer.Id, out ulong clientId))
+            ulong clientId = sessionPlayer.ClientId;
+
+            if (string.IsNullOrEmpty(sessionPlayer.CharacterName))
             {
-                Debug.LogError($"Client ID not found for authentication ID: {clientId}");
+                Debug.LogError($"Character not selected for player: {sessionPlayer.PlayerId}");
                 return;
             }
 
-            // Get the player's selected character
-            if (!sessionPlayer.Properties.TryGetValue(_sessionManager.PlayerCharacterKey, out var characterProp))
-            {
-                Debug.LogError($"Character not selected for player: {sessionPlayer.Id}");
-                return;
-            }
-
-            string characterName = characterProp.Value;
+            string characterName = sessionPlayer.CharacterName;
             CharacterVisuals character = characterVisualsList.Find(c => c.characterName == characterName);
 
             if (character == null)

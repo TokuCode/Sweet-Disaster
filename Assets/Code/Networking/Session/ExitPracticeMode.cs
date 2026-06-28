@@ -5,19 +5,30 @@ namespace Code.Networking.Session
 {
     public class ExitPracticeMode : MonoBehaviour
     {
-        private bool _hasPressedEscape;
+        private bool _isLeaving;
         
-        private void Update()
+        private async void Update()
         {
+            if (_isLeaving) return;
+            if (SessionManager.Instance == null) return;
             if (!SessionManager.Instance.IsPracticeMode) return;
-            
-            if (_hasPressedEscape) return;
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (!Input.GetKeyDown(KeyCode.Escape)) return;
+
+            _isLeaving = true;
+
+            try
             {
-                Time.timeScale = 1;
-                _hasPressedEscape = true;
-                SessionManager.Instance.LeaveSession();
-                UIUtilities.Instance.LoadScene("MainMenu");
+                await SessionManager.Instance.LeaveSessionAsync();
+
+                if (UIUtilities.Instance != null)
+                    UIUtilities.Instance.LoadScene("MainMenu");
+            }
+            catch (System.Exception e)
+            {
+#if UNITY_EDITOR
+                Debug.LogException(e);
+#endif
+                _isLeaving = false;
             }
         }
     }
