@@ -85,6 +85,8 @@ namespace Code.Gameplay
                 ? "Ceci"
                 : sessionPlayer.CharacterName;
 
+            Debug.Log($"Spawning LAN player: {sessionPlayer.PlayerName}, ClientId: {sessionPlayer.ClientId}, Character: '{sessionPlayer.CharacterName}'");
+            
             CharacterScriptable character = GetCharacter(characterName);
 
             Transform spawnPoint = _spawnPoints[GetRandomIndexNotFromPrevious()];

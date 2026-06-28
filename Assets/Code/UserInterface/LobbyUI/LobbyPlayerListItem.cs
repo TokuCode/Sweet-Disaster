@@ -87,9 +87,21 @@ namespace Code.UserInterface.LobbyUI
 
         public override void OnNetworkDespawn()
         {
-            if (!_sessionManager.HasActiveSession) return;
-            _sessionManager.PlayerPropertiesChanged -= CheckCharacterAvailability;
-            _sessionManager.PlayerLeaving -= OnPlayerLeft;
+            if (_sessionManager != null)
+            {
+                _sessionManager.PlayerPropertiesChanged -= CheckCharacterAvailability;
+                _sessionManager.PlayerLeaving -= OnPlayerLeft;
+            }
+            base.OnNetworkDespawn();
+        }
+        
+        private void OnDestroy()
+        {
+            if (_sessionManager != null)
+            {
+                _sessionManager.PlayerPropertiesChanged -= CheckCharacterAvailability;
+                _sessionManager.PlayerLeaving -= OnPlayerLeft;
+            }
         }
 
         private void OnPlayerLeft(string id)
@@ -195,6 +207,18 @@ namespace Code.UserInterface.LobbyUI
         {
             try
             {
+                if (_sessionManager.IsLanMode)
+                {
+                    if (!_sessionManager.TryGetCurrentPlayerId(out string currentPlayerId))
+                        return false;
+
+                    if (_sessionManager.IsCharacterTaken(characterName))
+                        return false;
+
+                    RequestSelectLanCharacterRpc(currentPlayerId, characterName);
+                    return true;
+                }
+
                 return await _sessionManager.TrySelectCurrentPlayerCharacterAsync(characterName);
             }
             catch (Exception e)
@@ -205,6 +229,21 @@ namespace Code.UserInterface.LobbyUI
                 UIUtilities.Instance.MessagePopUp("Hubo un problema guardando las propiedades del jugador", true);
                 return false;
             }
+        }
+        
+        [Rpc(SendTo.Server)]
+        private void RequestSelectLanCharacterRpc(string playerId, string characterName)
+        {
+            if (!_sessionManager.TrySetLanPlayerCharacter(playerId, characterName))
+                return;
+
+            SyncLanCharacterSelectionRpc(playerId, characterName);
+        }
+
+        [Rpc(SendTo.NotMe)]
+        private void SyncLanCharacterSelectionRpc(string playerId, string characterName)
+        {
+            _sessionManager.TrySetLanPlayerCharacter(playerId, characterName);
         }
     }
 }

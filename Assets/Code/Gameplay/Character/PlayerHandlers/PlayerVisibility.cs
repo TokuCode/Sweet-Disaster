@@ -38,16 +38,30 @@ namespace Code.Gameplay.Character
         {
             ulong clientId = (ulong)player.clientId;
             
-            if (!SessionManager.Instance.TryGetPlayerByClientId(clientId, out var playerProps))
+            if (!SessionManager.Instance.TryGetSessionPlayerByClientId(clientId, out var sessionPlayer))
             {
-                Debug.LogWarning($"Could not find session player for clientId: {clientId}");
+                Debug.LogWarning($"Could not find session player data for clientId: {clientId}");
+                //return null;
             }
-
-            string playerName = SessionManager.Instance.GetPlayerName(playerProps);
-            Color playerColor = SessionManager.Instance.GetPlayerColor(playerProps);
-            string characterName = SessionManager.Instance.GetPlayerCharacter(playerProps);
             
-            CharacterScriptable scriptable = _spawner.GetCharacter(characterName);
+            Debug.Log(
+                $"[PostPlayer] clientId: {clientId}, " +
+                $"name: {sessionPlayer.PlayerName}, " +
+                $"color: {sessionPlayer.PlayerColor}, " +
+                $"character: '{sessionPlayer.CharacterName}'"
+            );
+
+            string playerName = sessionPlayer.PlayerName;
+            Color playerColor = sessionPlayer.PlayerColor;
+            string characterName = sessionPlayer.CharacterName;
+            
+            CharacterScriptable scriptable = _spawner.GetCharacter(sessionPlayer.CharacterName);
+
+            Debug.Log(
+                $"[PostPlayer] scriptable: {(scriptable != null ? scriptable.characterName : "NULL")}, " +
+                $"icon: {(scriptable != null && scriptable.characterIcon != null ? scriptable.characterIcon.name : "NULL")}"
+            );
+            
             Sprite characterIcon = scriptable.characterIcon;
             
             var newPlayer = new PlayerPublicInfo

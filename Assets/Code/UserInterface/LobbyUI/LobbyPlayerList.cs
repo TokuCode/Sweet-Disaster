@@ -22,28 +22,49 @@ namespace Code.UserInterface.LobbyUI
         private void Start()
         {
             UpdatePlayerList();
-            _sessionManager.SessionChanged += UpdatePlayerList;
+            if (_sessionManager != null)
+                _sessionManager.SessionChanged += UpdatePlayerList;
         }
 
         private void OnDisable()
         {
-            if (!_sessionManager.HasActiveSession) return;
-            _sessionManager.SessionChanged -= UpdatePlayerList;
+            if (_sessionManager != null)
+                _sessionManager.SessionChanged -= UpdatePlayerList;
+        }
+        
+        private void OnDestroy()
+        {
+            if (_sessionManager != null)
+                _sessionManager.SessionChanged -= UpdatePlayerList;
         }
 
         private void UpdatePlayerList()
         {
-            var players = _sessionManager.GetPlayers().ToList();
+            if (this == null || !gameObject.scene.isLoaded)
+                return;
+
+            if (_sessionManager == null)
+                return;
+
+            var players = _sessionManager.GetSessionPlayers();
 
             foreach (var item in lobbyPlayerListItems)
-                item.ResetItem();
-            
-            for (int i = 0; i < players.Count; i++)
             {
-                string playerName = _sessionManager.GetPlayerName(players[i]);
-                Color playerColor = _sessionManager.GetPlayerColor(players[i]);
-                
-                lobbyPlayerListItems[i].Set(players[i].Id, playerName, playerColor);
+                if (item == null) continue;
+                item.ResetItem();
+            }
+
+            for (int i = 0; i < players.Count && i < lobbyPlayerListItems.Count; i++)
+            {
+                if (lobbyPlayerListItems[i] == null) continue;
+
+                var player = players[i];
+
+                lobbyPlayerListItems[i].Set(
+                    player.PlayerId,
+                    player.PlayerName,
+                    player.PlayerColor
+                );
             }
         }
     }   

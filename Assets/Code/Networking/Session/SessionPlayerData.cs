@@ -7,6 +7,7 @@ namespace Code.Networking.Session
         public string PlayerId;
         public ulong ClientId;
         public string PlayerName;
+        public string PlayerColorName;
         public Color PlayerColor;
         public string CharacterName;
         public bool IsHost;

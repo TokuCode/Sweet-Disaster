@@ -31,6 +31,13 @@ namespace Code.UserInterface.HUD
 
         private void Update()
         {
+            Debug.Log(
+                $"[PlayerPortraits] Visibility: {PlayerVisibility.Instance.Players.Count}, " +
+                $"Expected: {_playerCount}, " +
+                $"PlayersLoaded: {_playersLoaded}, " +
+                $"PortraitsLoaded: {_portraitsLoaded}"
+            );
+
             if (PlayerVisibility.Instance.Players.Count == _playerCount && _playersLoaded && !_portraitsLoaded)
             {
                 SpawnPlayerElements();
@@ -38,10 +45,16 @@ namespace Code.UserInterface.HUD
             }
         }
 
-        private void SetPlayerCount(string sceneName, UnityEngine.SceneManagement.LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
+        private void SetPlayerCount(
+            string sceneName,
+            UnityEngine.SceneManagement.LoadSceneMode loadSceneMode,
+            List<ulong> clientsCompleted,
+            List<ulong> clientsTimedOut)
         {
-            _playerCount = SessionManager.Instance.GetPlayers().Count;
+            _playerCount = SessionManager.Instance.PlayerCount;
             _playersLoaded = true;
+
+            Debug.Log($"[PlayerPortraits] Player count set to {_playerCount}. Visibility count: {PlayerVisibility.Instance.Players.Count}");
         }
 
         private void SpawnPlayerElements()

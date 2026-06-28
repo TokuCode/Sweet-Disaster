@@ -81,5 +81,17 @@ namespace Code.Networking.Session
 
             return candidate;
         }
+        
+        public Color GetColorFromName(string colorName)
+        {
+            return _playerColors.TryGetValue(colorName, out var color)
+                ? color
+                : Color.gray;
+        }
+        
+        public IEnumerable<string> GetColorNames()
+        {
+            return _playerColors.Keys;
+        }
     }
 }

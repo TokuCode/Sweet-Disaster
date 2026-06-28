@@ -14,39 +14,50 @@ namespace Code.UserInterface.LobbyUI
         private void Awake()
         {
             _sessionManager = SessionManager.Instance;
+
             startGameButton.onClick.AddListener(StartGame);
 
-            _sessionManager.PlayerPropertiesChanged += UpdateButtonState;
+            if (_sessionManager != null)
+                _sessionManager.PlayerPropertiesChanged += UpdateButtonState;
+        }
+
+        private void Start()
+        {
+            UpdateButtonState();
         }
 
         private void OnDisable()
         {
             startGameButton.onClick.RemoveListener(StartGame);
-            if (!_sessionManager.HasActiveSession) return;
-            _sessionManager.PlayerPropertiesChanged -= UpdateButtonState;
+
+            if (_sessionManager != null)
+                _sessionManager.PlayerPropertiesChanged -= UpdateButtonState;
         }
         
-        private bool AllPlayersHaveSelectedCharacters()
-        {
-            foreach (var player in _sessionManager.GetPlayers())
-            {
-                if (string.IsNullOrEmpty(_sessionManager.GetPlayerCharacter(player)))
-                    return false;
-            }
-            return true;
-        }
-
         private void UpdateButtonState()
         {
-            if ((_sessionManager.IsLocalPlayerSessionHost && _sessionManager.PlayerCount > 1) ||
-                (_sessionManager.IsLocalPlayerSessionHost && _sessionManager.PlayerCount == 1 && _sessionManager.IsPracticeMode))
-                startGameButton.interactable = AllPlayersHaveSelectedCharacters();
+            if (_sessionManager == null)
+                return;
+
+            bool canStart =
+                _sessionManager.IsLocalPlayerSessionHost &&
+                (
+                    _sessionManager.PlayerCount > 1 ||
+                    (_sessionManager.PlayerCount == 1 && _sessionManager.IsPracticeMode)
+                ) &&
+                _sessionManager.HaveAllPlayersSelectedCharacters();
+
+            startGameButton.interactable = canStart;
         }
         
         private void StartGame()
         {
-            if (!_sessionManager.IsLocalPlayerSessionHost) return;
-            NetworkManager.Singleton.SceneManager.LoadScene(_sessionManager.IsPracticeMode? "Tutorial" : "MultiplayerTest", UnityEngine.SceneManagement.LoadSceneMode.Single);
+            if (!_sessionManager.IsLocalPlayerSessionHost)
+                return;
+
+            NetworkManager.Singleton.SceneManager.LoadScene(
+                _sessionManager.IsPracticeMode ? "Tutorial" : "MultiplayerTest",
+                UnityEngine.SceneManagement.LoadSceneMode.Single);
         }
     }
 }

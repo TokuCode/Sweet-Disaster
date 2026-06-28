@@ -2,6 +2,7 @@ using System;
 using Code.UserInterface.LobbyUI;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Code.Networking.Session;
 using TMPro;
 using Unity.Netcode;
@@ -68,16 +69,22 @@ namespace Code.UserInterface.PostGameUI
         {
             for (int i = 0; i < _sessionManager.PlayerCount; i++)
             {
-                var playerStatusData = WinnersData.playerStatusDataStack.Pop();
-
-                if (!_sessionManager.TryGetPlayerByClientId(playerStatusData.ClientId, out var player))
+                if (WinnersData.playerStatusDataStack.Count == 0)
                 {
-                    Debug.LogWarning($"Could not find session player for clientId: {playerStatusData.ClientId}");
+                    Debug.LogWarning("[PostGameUI] No more player status data available.");
                     return;
                 }
 
-                var playerName = _sessionManager.GetPlayerName(player);
-                var playerColor = _sessionManager.GetPlayerColor(player);
+                var playerStatusData = WinnersData.playerStatusDataStack.Pop();
+
+                if (!_sessionManager.TryGetSessionPlayerByClientId(playerStatusData.ClientId, out var sessionPlayer))
+                {
+                    Debug.LogWarning($"[PostGameUI] Could not find session player data for clientId: {playerStatusData.ClientId}");
+                    return;
+                }
+
+                string playerName = sessionPlayer.PlayerName;
+                Color playerColor = sessionPlayer.PlayerColor;
                 
                 playerSlots[i].SetSlot(playerName, playerColor);
                 
@@ -137,15 +144,41 @@ namespace Code.UserInterface.PostGameUI
 
         private void ReturnListChanged(NetworkListEvent<ulong> listEvent)
         {
-            Debug.Log($"_playersReadyToRestart.Count {_playersReadyToRestart.Count} , _numberOfPlayers {_numberOfPlayers}, _sessionManager.PlayerCount {_sessionManager.PlayerCount}");
-            if (_playersReadyToRestart.Count < _numberOfPlayers) return;
+            Debug.Log($"_playersReadyToReturn.Count {_playersReadyToReturn.Count} , _numberOfPlayers {_numberOfPlayers}, _sessionManager.PlayerCount {_sessionManager.PlayerCount}");
+
+            if (_playersReadyToReturn.Count < _numberOfPlayers) return;
             if (_sessionManager.PlayerCount < 2) return;
+
+            if (_sessionManager.IsLanMode)
+            {
+                ClearLanCharactersAndReturnToLobby();
+                return;
+            }
+
             ResetCharacterProperty();
             ResetCharacterPropertyRpc();
+        }
+        
+        private void ClearLanCharactersAndReturnToLobby()
+        {
+            if (!IsServer)
+                return;
+
+            _sessionManager.ClearAllLanPlayerCharacters();
+            ClearAllLanCharactersRpc();
+
+            NetworkManager.Singleton.SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
+        }
+        
+        [Rpc(SendTo.NotMe)]
+        private void ClearAllLanCharactersRpc()
+        {
+            _sessionManager.ClearAllLanPlayerCharacters();
         }
 
         private void Update()
         {
+            if (_sessionManager.IsLanMode) return;
             if (!_sessionManager.HasActiveSession) return;
             if (!IsServer) return;
 
@@ -165,6 +198,12 @@ namespace Code.UserInterface.PostGameUI
         {
             try
             {
+                if (_sessionManager.IsLanMode)
+                {
+                    ResetLanCharacterProperty();
+                    return;
+                }
+
                 bool success = await _sessionManager.TryClearCurrentPlayerCharacterAsync();
 
                 if (!success)
@@ -184,6 +223,49 @@ namespace Code.UserInterface.PostGameUI
                 UIUtilities.Instance.MessagePopUp("Hubo un error al reiniciar el personaje del jugador", true);
             }
         }
+        
+        private void ResetLanCharacterProperty()
+        {
+            if (!_sessionManager.TryGetCurrentPlayerId(out string playerId))
+            {
+                Debug.LogWarning("[PostGameUI] Could not clear LAN character because current player id is missing.");
+                return;
+            }
+
+            if (IsServer)
+            {
+                if (!_sessionManager.TryClearLanPlayerCharacter(playerId))
+                {
+                    Debug.LogWarning($"[PostGameUI] Server could not clear LAN character for playerId: {playerId}");
+                    return;
+                }
+
+                SyncClearLanCharacterRpc(playerId);
+                return;
+            }
+
+            // Client clears its local copy if possible, but the server is authoritative.
+            _sessionManager.TryClearLanPlayerCharacter(playerId);
+            SendClearLanCharacterRpc(playerId);
+        }
+        
+        [Rpc(SendTo.Server)]
+        private void SendClearLanCharacterRpc(string playerId)
+        {
+            if (!_sessionManager.TryClearLanPlayerCharacter(playerId))
+            {
+                Debug.LogWarning($"[PostGameUI] Server could not clear LAN character for playerId: {playerId}");
+                return;
+            }
+
+            SyncClearLanCharacterRpc(playerId);
+        }
+
+        [Rpc(SendTo.NotMe)]
+        private void SyncClearLanCharacterRpc(string playerId)
+        {
+            _sessionManager.TryClearLanPlayerCharacter(playerId);
+        }
 
         [Rpc(SendTo.Server)]
         private void SendReadyToQuitStatusRpc()
@@ -198,14 +280,13 @@ namespace Code.UserInterface.PostGameUI
         }
 
         [Rpc(SendTo.Server)]
-        private void SendPlayerLeavingRpc(FixedString32Bytes playerId, RpcParams rpcParams = default)
+        private void SendPlayerLeavingRpc(string playerId, RpcParams rpcParams = default)
         {
-            string playerIdString = playerId.ToString();
-            Debug.Log(playerIdString);
+            Debug.Log(playerId);
 
             var clientId = rpcParams.Receive.SenderClientId;
 
-            _sessionManager.RemovePlayerClientId(playerIdString);
+            _sessionManager.RemovePlayerClientId(playerId);
             _playersReadyToRestart.Remove(clientId);
             _playersReadyToReturn.Remove(clientId);
         }
@@ -217,31 +298,48 @@ namespace Code.UserInterface.PostGameUI
             _playersReadyToReturn.Remove(clientId);
         }
         
-        private void PerformReturnToMenu()
+        private async void PerformReturnToMenu()
         {
-            ReturnToMenu();
-            if (!_sessionManager.IsLocalPlayerSessionHost) return;
-            ReturnToMenuRpc();
+            bool wasHost = _sessionManager.IsLocalPlayerSessionHost;
+
+            if (wasHost)
+            {
+                ReturnToMenuRpc();
+
+                // Small delay so the RPC has a chance to be sent before host shuts down.
+                await Task.Delay(100);
+            }
+
+            await ReturnToMenuAsync();
+
+            UIUtilities.Instance.LoadScene("MainMenu");
         }
 
-        private void ReturnToMenu()
+        private async Task ReturnToMenuAsync()
         {
             if (_sessionManager.TryGetCurrentPlayerId(out string playerId))
             {
                 SendPlayerLeavingRpc(playerId);
             }
 
-            SessionManager.Instance.LeaveSession();
-            UIUtilities.Instance.LoadScene("MainMenu");
+            await SessionManager.Instance.LeaveSessionAsync();
         }
 
         [Rpc(SendTo.NotMe)]
         private void ReturnToMenuRpc()
         {
-            SessionManager.Instance.LeaveSession();
-            
+            _ = HandleHostReturnToMenuAsync();
+        }
+
+        private async Task HandleHostReturnToMenuAsync()
+        {
+            await SessionManager.Instance.LeaveSessionAsync();
+
             UIUtilities.Instance.MessagePopUp("El anfitrión abandonó la partida", true);
-            UIUtilities.Instance.MessageOkBtn.onClick.AddListener(() => UIUtilities.Instance.LoadScene("MainMenu"));
+            UIUtilities.Instance.MessageOkBtn.onClick.AddListener(() =>
+            {
+                UIUtilities.Instance.LoadScene("MainMenu");
+            });
         }
     }
 }

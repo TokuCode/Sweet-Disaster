@@ -15,21 +15,30 @@ namespace Code.Networking.Session
 
         private void OnDisable()
         {
-            if (!_sessionManager.HasActiveSession) return;
+            if (_sessionManager == null) return;
             _sessionManager.PlayerLeft -= OnPlayerLeft;
         }
 
-        private void OnPlayerLeft(string playerId)
+        private bool _isLeaving;
+
+        private async void OnPlayerLeft(string playerId)
         {
-            _sessionManager.LeaveSession();
-            UIUtilities.Instance.MessagePopUp("Un jugador ha abandonado la partida, la partida será cancelada", true);
-            UIUtilities.Instance.MessageOkBtn.onClick.AddListener(() => UIUtilities.Instance.LoadScene("MainMenu"));
-            
-            if (!_sessionManager.IsHostPlayer(playerId)) return;
-            
-            _sessionManager.LeaveSession();
-            UIUtilities.Instance.MessagePopUp("El anfitrión ha abandonado la partida, la partida será cancelada", true);
-            UIUtilities.Instance.MessageOkBtn.onClick.AddListener(() => UIUtilities.Instance.LoadScene("MainMenu"));
+            if (_isLeaving) return;
+            _isLeaving = true;
+
+            bool hostLeft = _sessionManager.IsHostPlayer(playerId);
+
+            string message = hostLeft
+                ? "El anfitrión ha abandonado la partida, la partida será cancelada"
+                : "Un jugador ha abandonado la partida, la partida será cancelada";
+
+            await _sessionManager.LeaveSessionAsync();
+
+            UIUtilities.Instance.MessagePopUp(message, true);
+            UIUtilities.Instance.MessageOkBtn.onClick.AddListener(() =>
+            {
+                UIUtilities.Instance.LoadScene("MainMenu");
+            });
         }
     }
 }

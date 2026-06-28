@@ -1,10 +1,9 @@
-using System;
+using System.Threading.Tasks;
 using Code.Networking.Session;
 using UnityEngine;
 using UnityEngine.UI;
 using Code.Helpers.UI;
 using Unity.Netcode;
-using Unity.Collections;
 
 namespace Code.UserInterface.LobbyUI
 {
@@ -17,43 +16,59 @@ namespace Code.UserInterface.LobbyUI
             if (SessionManager.Instance == null || UIUtilities.Instance == null) return;
             
             backButton.onClick.AddListener(PerformReturnToMenu);
-            backButton.onClick.AddListener(() => UIUtilities.Instance.LoadScene("MainMenu"));
         }
         
-        private void PerformReturnToMenu()
+        private async void PerformReturnToMenu()
         {
-            ReturnToMenu();
-            if (!SessionManager.Instance.IsLocalPlayerSessionHost) return;
-            ReturnToMenuRpc();
+            bool wasHost = SessionManager.Instance.IsLocalPlayerSessionHost;
+
+            if (wasHost)
+            {
+                ReturnToMenuRpc();
+            }
+
+            await ReturnToMenuAsync();
+
+            UIUtilities.Instance.LoadScene("MainMenu");
         }
         
         [Rpc(SendTo.NotMe)]
         private void ReturnToMenuRpc()
         {
-            SessionManager.Instance.LeaveSession();
+            _ = HandleHostReturnToMenuAsync();
+        }
+        
+        private async Task HandleHostReturnToMenuAsync()
+        {
+            await SessionManager.Instance.LeaveSessionAsync();
             
             UIUtilities.Instance.MessagePopUp("El anfitrión abandonó la partida", true);
-            UIUtilities.Instance.MessageOkBtn.onClick.AddListener(() => UIUtilities.Instance.LoadScene("MainMenu"));
+            UIUtilities.Instance.MessageOkBtn.onClick.AddListener(() =>
+            {
+                UIUtilities.Instance.LoadScene("MainMenu");
+            });
         }
 
-        private void ReturnToMenu()
+        private async Task ReturnToMenuAsync()
         {
             if (SessionManager.Instance.TryGetCurrentPlayerId(out string playerId))
+            {
                 SendPlayerLeavingRpc(playerId);
-            SessionManager.Instance.LeaveSession();
+            }
+
+            await SessionManager.Instance.LeaveSessionAsync();
         }
 
         [Rpc(SendTo.Server)]
-        private void SendPlayerLeavingRpc(FixedString32Bytes playerId, RpcParams rpcParams = default)
+        private void SendPlayerLeavingRpc(string playerId, RpcParams rpcParams = default)
         {
-            string playerIdString = playerId.ToString();
-            SessionManager.Instance.RemovePlayerClientId(playerIdString);
+            SessionManager.Instance.RemovePlayerClientId(playerId);
         }
 
         private void OnDisable()
         {
-            backButton.onClick.RemoveAllListeners();
-            backButton.onClick.RemoveAllListeners();
+            if (backButton != null)
+                backButton.onClick.RemoveListener(PerformReturnToMenu);
         }
     }
 }
