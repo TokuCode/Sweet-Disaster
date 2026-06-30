@@ -565,7 +565,11 @@ namespace Code.Networking.Session
         public List<SessionPlayerData> GetSessionPlayers()
         {
             if (IsLanMode)
-                return new List<SessionPlayerData>(lanPlayers);
+            {
+                return lanPlayers
+                    .OrderBy(player => player.ClientId)
+                    .ToList();
+            }
 
             var result = new List<SessionPlayerData>();
 
@@ -592,7 +596,9 @@ namespace Code.Networking.Session
                 });
             }
 
-            return result;
+            return result
+                .OrderBy(player => player.ClientId)
+                .ToList();
         }
         
         public string LocalPlayerDisplayName
@@ -940,7 +946,7 @@ namespace Code.Networking.Session
             }
             public bool HaveAllPlayersSelectedCharacters()
             {
-                var players = GetSessionPlayers();
+                var players = GetLobbyPlayers();
 
                 if (players.Count == 0)
                     return false;
@@ -1050,6 +1056,38 @@ namespace Code.Networking.Session
                 if (NetworkManager.Singleton.IsListening)
                     Debug.LogWarning("NetworkManager is still listening after leave/shutdown.");
 #endif
+            }
+            public List<SessionPlayerData> GetLobbyPlayers()
+            {
+                if (IsLanMode)
+                    return GetSessionPlayers();
+
+                var result = new List<SessionPlayerData>();
+
+                if (ActiveSession == null)
+                    return result;
+
+                foreach (var player in ActiveSession.Players)
+                {
+                    bool hasClientId = TryGetClientIdFromPlayerId(player.Id, out ulong clientId);
+
+                    result.Add(new SessionPlayerData
+                    {
+                        PlayerId = player.Id,
+                        ClientId = hasClientId ? clientId : ulong.MaxValue,
+                        PlayerName = GetPlayerName(player),
+                        PlayerColor = GetPlayerColor(player),
+                        CharacterName = GetPlayerCharacter(player),
+                        IsHost = IsHostPlayer(player.Id),
+                        IsCurrentPlayer = IsCurrentPlayer(player.Id)
+                    });
+                }
+
+                return result
+                    .OrderByDescending(player => player.IsHost)
+                    .ThenBy(player => player.ClientId)
+                    .ThenBy(player => player.PlayerId)
+                    .ToList();
             }
     }
     

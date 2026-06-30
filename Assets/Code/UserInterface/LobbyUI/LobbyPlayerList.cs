@@ -46,12 +46,19 @@ namespace Code.UserInterface.LobbyUI
             if (_sessionManager == null)
                 return;
 
-            var players = _sessionManager.GetSessionPlayers();
+            var players = _sessionManager.GetLobbyPlayers();
 
             foreach (var item in lobbyPlayerListItems)
             {
                 if (item == null) continue;
                 item.ResetItem();
+            }
+            
+            Debug.Log($"[LobbyPlayerList] LocalClientId: {Unity.Netcode.NetworkManager.Singleton.LocalClientId}, PlayersCount: {players.Count}");
+
+            for (int i = 0; i < players.Count; i++)
+            {
+                Debug.Log($"[LobbyPlayerList] Slot {i}: {players[i].PlayerName}, ClientId: {players[i].ClientId}, IsCurrent: {players[i].IsCurrentPlayer}");
             }
 
             for (int i = 0; i < players.Count && i < lobbyPlayerListItems.Count; i++)
